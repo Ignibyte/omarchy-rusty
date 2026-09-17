@@ -185,6 +185,15 @@ rewrites on rename, backlinks as Obsidian resolves them, command-palette actions
   a block are broadcast but never logged: the `assistant` line that follows carries the
   whole block, so a replay loses nothing. `rusty agent list|attach|stop|rm` is the same
   client in a terminal. The terminal tabs stay tmux terminals.
+- The Agent tab (2026-09-17, TICKET-032): the surface on those sessions. A tab kind of its
+  own holds one client and reads a conversation as cards — the answer rendered as markdown
+  when its block ends, thinking as a line, a tool call with its permission and its result
+  in one card, an `Edit` as a line diff, `AskUserQuestion` as chips and `ExitPlanMode` as a
+  plan with three ways out — over a composer that sends on Enter, interrupts on Escape and
+  carries the permission mode and the model. The transcript and the composer are shared
+  with the pane beside a note, the sessions on the machine are a fourth left-sidebar pane,
+  and the Claude glyph in the top bar now opens a tab (the other agents still open
+  terminals).
 - The workspace (2026-09-02, TICKET-002): `qml/Main.qml` lays the window out as Obsidian
   does (ribbon, left sidebar with `Explorer`, `SearchPane` and `BookmarksPane`, tab strip and a stack of
   `TabHost`s, right sidebar `RightPane`, status bar) with `QuickSwitcher` and

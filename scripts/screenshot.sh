@@ -292,9 +292,39 @@ mkdir -p "$scratch/bin"
 cat > "$scratch/bin/claude" <<'FAKE'
 #!/usr/bin/env bash
 sid="scene-session-0001"
-echo "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"$sid\",\"tools\":[]}"
+echo "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"$sid\",\"model\":\"claude-fable-5-1\",\"permissionMode\":\"default\",\"tools\":[]}"
 while IFS= read -r line; do
+  # An answer to a permission lets the turn it belongs to finish.
+  case "$line" in
+    *'"behavior":"allow"'*)
+      echo "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"toolu_sh\",\"content\":\"   Compiling rusty-app v3.0.0-alpha.1\\n    Finished in 9.66s\\nrunning 92 tests\\ntest result: ok. 92 passed; 0 failed\",\"is_error\":false}]}}"
+      echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"All 92 tests pass.\"}]}}"
+      echo "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"session_id\":\"$sid\",\"num_turns\":2,\"total_cost_usd\":0.0412,\"duration_ms\":8120,\"result\":\"All 92 tests pass.\"}"
+      continue ;;
+    *'"behavior":"deny"'*) echo "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"session_id\":\"$sid\",\"num_turns\":1,\"total_cost_usd\":0.0021,\"duration_ms\":900,\"result\":\"Left it alone.\"}"; continue ;;
+  esac
   case "$line" in *control_response*|*control_request*) continue ;; esac
+  # The tab's scenes, chosen by what was asked.
+  case "$line" in
+    *"run the tests"*)
+      echo "{\"type\":\"stream_event\",\"event\":{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\"}}}"
+      echo "{\"type\":\"system\",\"subtype\":\"thinking_tokens\",\"estimated_tokens\":180,\"session_id\":\"$sid\"}"
+      echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_sh\",\"name\":\"Bash\",\"input\":{\"command\":\"cargo test -p rusty-app\",\"description\":\"Run the app's tests\"}}]}}"
+      echo "{\"type\":\"control_request\",\"request_id\":\"req-sh\",\"request\":{\"subtype\":\"can_use_tool\",\"tool_name\":\"Bash\",\"display_name\":\"Bash\",\"input\":{\"command\":\"cargo test -p rusty-app\",\"description\":\"Run the app's tests\"},\"description\":\"Run the app's tests\",\"tool_use_id\":\"toolu_sh\",\"permission_suggestions\":[{\"type\":\"addRules\",\"rules\":[{\"toolName\":\"Bash\",\"ruleContent\":\"cargo test:*\"}],\"behavior\":\"allow\",\"destination\":\"localSettings\"}]}}"
+      continue ;;
+    *"fix the typo"*)
+      echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_ed\",\"name\":\"Edit\",\"input\":{\"file_path\":\"/home/you/notes/orbit.md\",\"old_string\":\"# Orbit\\n\\nOrbit is a keyboard-frist launcher for the desk.\\nIt opens what you meant.\",\"new_string\":\"# Orbit\\n\\nOrbit is a keyboard-first launcher for the desk.\\nIt opens what you meant.\"}}]}}"
+      echo "{\"type\":\"control_request\",\"request_id\":\"req-ed\",\"request\":{\"subtype\":\"can_use_tool\",\"tool_name\":\"Edit\",\"display_name\":\"Edit\",\"input\":{\"file_path\":\"/home/you/notes/orbit.md\",\"old_string\":\"# Orbit\\n\\nOrbit is a keyboard-frist launcher for the desk.\\nIt opens what you meant.\",\"new_string\":\"# Orbit\\n\\nOrbit is a keyboard-first launcher for the desk.\\nIt opens what you meant.\"},\"description\":\"orbit.md\",\"tool_use_id\":\"toolu_ed\",\"permission_suggestions\":[{\"type\":\"setMode\",\"mode\":\"acceptEdits\",\"destination\":\"session\"}]}}"
+      continue ;;
+    *"which one"*)
+      echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_q\",\"name\":\"AskUserQuestion\",\"input\":{\"questions\":[{\"question\":\"Where should the sessions be listed?\",\"header\":\"Sessions\",\"multiSelect\":false,\"options\":[{\"label\":\"The sidebar\",\"description\":\"One list for the workspace, beside files and search\"},{\"label\":\"In each tab\",\"description\":\"A column inside every Agent tab\"}]},{\"question\":\"What should a card show by default?\",\"header\":\"Cards\",\"multiSelect\":true,\"options\":[{\"label\":\"The command\",\"description\":\"What a shell call runs\"},{\"label\":\"The diff\",\"description\":\"What an edit changes\"},{\"label\":\"The result\",\"description\":\"What the tool answered\"}]}]}}]}}"
+      echo "{\"type\":\"control_request\",\"request_id\":\"req-q\",\"request\":{\"subtype\":\"can_use_tool\",\"tool_name\":\"AskUserQuestion\",\"display_name\":\"AskUserQuestion\",\"input\":{\"questions\":[{\"question\":\"Where should the sessions be listed?\",\"header\":\"Sessions\",\"multiSelect\":false,\"options\":[{\"label\":\"The sidebar\",\"description\":\"One list for the workspace, beside files and search\"},{\"label\":\"In each tab\",\"description\":\"A column inside every Agent tab\"}]},{\"question\":\"What should a card show by default?\",\"header\":\"Cards\",\"multiSelect\":true,\"options\":[{\"label\":\"The command\",\"description\":\"What a shell call runs\"},{\"label\":\"The diff\",\"description\":\"What an edit changes\"},{\"label\":\"The result\",\"description\":\"What the tool answered\"}]}]},\"description\":\"two questions\",\"tool_use_id\":\"toolu_q\"}}"
+      continue ;;
+    *"plan it"*)
+      echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_pl\",\"name\":\"ExitPlanMode\",\"input\":{\"plan\":\"## What I would do\\n\\n1. Read the four pages the change touches.\\n2. Move the shared parts into one component.\\n3. Leave the terminal tabs alone.\\n\\nNothing is written until you approve.\"}}]}}"
+      echo "{\"type\":\"control_request\",\"request_id\":\"req-pl\",\"request\":{\"subtype\":\"can_use_tool\",\"tool_name\":\"ExitPlanMode\",\"display_name\":\"ExitPlanMode\",\"input\":{\"plan\":\"## What I would do\\n\\n1. Read the four pages the change touches.\\n2. Move the shared parts into one component.\\n3. Leave the terminal tabs alone.\\n\\nNothing is written until you approve.\"},\"description\":\"a plan\",\"tool_use_id\":\"toolu_pl\"}}"
+      continue ;;
+  esac
   echo "{\"type\":\"stream_event\",\"event\":{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_1\",\"name\":\"mcp__rusty__brain_read_page\",\"input\":{}}}}"
   echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_1\",\"name\":\"mcp__rusty__brain_read_page\",\"input\":{\"slug\":\"projects/orbit\"}}]}}"
   echo "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"toolu_1\",\"content\":\"# Orbit\\n\\nOrbit is a keyboard-first launcher for the desk.\",\"is_error\":false}]}}"

@@ -314,9 +314,12 @@ workflow in `CONSTITUTION.md`.
       process, logs every event and serves it over a socket; `Assistant` is a client that
       attaches and replays, one per surface, and `rusty agent start|stop|list|attach|rm` is
       the same client in a terminal; the note pane's conversation survives the window
-- [ ] TICKET-032 The Agent tab: the VS Code-style surface on those sessions — a transcript
-      of cards (markdown, thinking, tool calls, an Edit as a diff), permissions and
-      questions answered from the keyboard, a composer with mode and model, a sessions pane
+- [x] TICKET-032 The Agent tab (2026-09-17): the surface on those sessions — a transcript
+      of cards (the answer as markdown, thinking as a line, a tool call with its permission
+      and result in one card, an Edit as a line diff, questions as chips, a plan to
+      approve), answered from the keyboard, a composer with the mode and the model, a
+      sessions pane in the sidebar, and the Claude glyph opening the tab; the pane beside a
+      note is the same two components
 - [ ] TICKET-033 Composer extras: slash commands, `@` mentions, image paste, fork, the
       context meter, subagent nesting, open in terminal
 - [ ] Brain: tiered context (abstract, overview, details per page and folder) and

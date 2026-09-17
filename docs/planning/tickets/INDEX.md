@@ -8,13 +8,13 @@ This directory is the authoritative ticket store for Ignibyte/rusty.
 
 ## Open queue
 
-- [`TICKET-032` — The Agent tab](open/TICKET-032-agent-tab.md) (open, 2026-09-17; after TICKET-031)
 - [`TICKET-033` — Composer extras](open/TICKET-033-composer-extras.md) (open, 2026-09-17; after TICKET-032)
 - [`TICKET-034` — The tmux server as its own unit](open/TICKET-034-tmux-server-unit.md) (open, 2026-09-17; found while planning TICKET-031)
 - [`TICKET-030` — Omarchy 4 key binding](open/TICKET-030-omarchy-4-key-binding.md) (open, 2026-09-05; follow-up of TICKET-029)
 
 ## Closed
 
+- [`TICKET-032` — The Agent tab](closed/TICKET-032-agent-tab.md) (2026-09-17)
 - [`TICKET-031` — Agent sessions that outlive the app](closed/TICKET-031-agent-sessions.md) (2026-09-17)
 - [`TICKET-029` — Session commands](closed/TICKET-029-session-commands.md) (2026-09-05)
 - [`TICKET-028` — Live preview editing](closed/TICKET-028-live-preview-editing.md) (2026-09-05)

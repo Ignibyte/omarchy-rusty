@@ -2,7 +2,7 @@
 type: "Reference"
 title: "Workspace app: Obsidian's layout with terminals inside"
 openwiki_generated: true
-generated: {by: "claude-code", at: "2026-09-17T22:15:38.100Z"}
+generated: {by: "claude-code", at: "2026-09-17T22:35:17.751Z"}
 sources:
   - id: openwiki-source-4059556410fe6db8498fe8e9
     resource: repo://crates/rusty-app/build.rs
@@ -10,8 +10,20 @@ sources:
     resource: repo://crates/rusty-app/cpp/tools.cpp
   - id: openwiki-source-d2bdf6ec1c7f1e0a3412e424
     resource: repo://crates/rusty-app/cpp/tools.h
+  - id: openwiki-source-ab34b1913f9099e2d5899ac0
+    resource: repo://crates/rusty-app/qml/AgentDiff.qml
+  - id: openwiki-source-7d6574e0b71cca40bb53ab3b
+    resource: repo://crates/rusty-app/qml/AgentPage.qml
+  - id: openwiki-source-8d3d7508a3df324275103cc1
+    resource: repo://crates/rusty-app/qml/AgentQuestionCard.qml
   - id: openwiki-source-a2d65a21b1f78042c4d974ff
     resource: repo://crates/rusty-app/qml/AgentTerminal.qml
+  - id: openwiki-source-43d558ea1d3332f0e6ac3c68
+    resource: repo://crates/rusty-app/qml/AgentTextCard.qml
+  - id: openwiki-source-44a9fd10fb81abe864f5abd5
+    resource: repo://crates/rusty-app/qml/AgentToolCard.qml
+  - id: openwiki-source-1e676f3c205aadaae1de1f49
+    resource: repo://crates/rusty-app/qml/AgentTranscript.qml
   - id: openwiki-source-1762a766e47a090b0ce4e932
     resource: repo://crates/rusty-app/qml/BookmarksPane.qml
   - id: openwiki-source-5db647af1e42157766e439f7
@@ -60,6 +72,8 @@ sources:
     resource: repo://crates/rusty-app/src/backend.rs
   - id: openwiki-source-c20a2a4e587e9ab45705b8d4
     resource: repo://crates/rusty-app/src/desk.rs
+  - id: openwiki-source-b4bcb569f13fada1675ca323
+    resource: repo://crates/rusty-app/src/diff.rs
   - id: openwiki-source-6dd37e4946f07f310a54638b
     resource: repo://crates/rusty-app/src/folders.rs
   - id: openwiki-source-c8c0347aa7a687c601520d1a
@@ -82,7 +96,7 @@ sources:
     resource: repo://scripts/screenshot.sh
 verified:
   - by: openwiki/0.3.3
-    at: 2026-09-17T22:15:38.100Z
+    at: 2026-09-17T22:36:06.754Z
 ---
 
 # Workspace app: Obsidian's layout with terminals inside
@@ -149,7 +163,12 @@ every view backed by the MCP server that agents share.
 - `src/agents.rs`: `Agents`, the sessions on the machine as JSON for QML, refreshed when
   the state directory changes. It is a bridge of its own file because cxx-qt takes every
   bridge of a QML module from one directory.
-- `src/diff.rs`: the line diff (`same`, `add`, `del`) behind `Assistant.diff`.
+- `src/diff.rs`: the line diff (`same`, `add`, `del`) behind `Assistant.diff`, which the
+  Edit card draws.
+- `qml/AgentPage.qml`, `AgentTranscript.qml`, `AgentComposer.qml`, `AgentTextCard.qml`,
+  `AgentToolCard.qml`, `AgentQuestionCard.qml`, `AgentDiff.qml`, `AgentDecision.qml`,
+  `AgentsPane.qml` (TICKET-032): the Agent tab and the sessions pane. The transcript and
+  the composer are shared with the pane beside a note.
 - `src/markdown.rs`, `cpp/highlighter.*`, `cpp/tools.*`: the editor's highlighter and
   the window grab.
 - `qml/Main.qml`: the layout and the tab model; `Explorer.qml`, `SearchPane.qml`,
@@ -303,6 +322,36 @@ every view backed by the MCP server that agents share.
   conversation is only ever resumed. The terminal tabs stay tmux terminals
   (`AD-rusty-agents-are-terminals-001`, qualified twice); Codex has no print mode, so the
   pane is Claude-only and says so when `claude`, or `systemd-run`, is missing.
+- The Agent tab (`AgentPage.qml`; TICKET-032) is a session read as a conversation, and the
+  surface the pane's items were a sketch of. The Claude glyph opens one for the folder the
+  workspace is in (`agentCwd`: the current tab's directory, else the first root, else
+  `HOME`), as do `Ctrl+Shift+A`, the ribbon's agent button, the `+` menu and the palette;
+  the tab holds its own `Assistant`, keeps its session id among the tabs and reattaches on
+  restart, and starts no process until its first message. `AgentTranscript` is the reading:
+  one row per thing said or done, written by a single `push` so the model's roles cannot
+  drift, and a delegate that loads a card by kind. Prose is `AgentTextCard` — the user's
+  bubble, the answer (plain while it streams, rendered as markdown by `brain_render` when
+  its block ends, asked for by the card as it is built so a replay renders only what is
+  read), the thinking as one line saying how many tokens it took (the thinking itself does
+  not travel), a notice, and a turn's footer with its duration, turns and cost. A call is
+  `AgentToolCard`, chosen by the tool: a command for `Bash` with its output collapsed, a
+  path for `Read` and `Write`, an `AgentDiff` for `Edit` (a gutter character as well as a
+  tint, so it reads in a one-hue skin), a pattern for a search, a server and a tool for
+  Rusty's own. The call, the permission it needs and the result it returns are one card,
+  joined by the tool-use id the request carries, so a decision is taken beside what it is
+  about: `AgentDecision` offers Allow, Allow always when the CLI suggested a rule to echo
+  back, Deny, and Deny with a reason the agent reads. What the agent asks rather than
+  guesses is `AgentQuestionCard`: `AskUserQuestion` as chips with an "Other" row,
+  `ExitPlanMode` as the plan rendered with Approve, "Approve, accept edits" and "Keep
+  planning". `AgentComposer` sends on Enter (Shift+Enter breaks a line), interrupts on
+  Escape, cycles the permission mode on Shift+Tab as the CLI's own key does, walks back
+  through what was asked before on Up, and carries the mode and model chips, the queued
+  count and what the session has cost. The transcript follows the tail only while the
+  reader is at it — a scroll away stops it and a pill brings it back — and gathers text
+  deltas into one model write per frame. Y, A, N and Shift+N answer a focused card from
+  the keyboard. The sessions on the machine are a fourth left-sidebar pane
+  (`AgentsPane.qml`), reading the `Agents` registry, so a session started from a terminal
+  is listed too.
 - Importing an Obsidian vault (`Main.qml`; TICKET-026) is a palette command, "Vault:
   Import an Obsidian vault…", that opens a folder picker and then `importDialog`. The
   dialog asks `brain_import_plan` and shows the summary — pages, folders, attachments,
@@ -508,6 +557,8 @@ an agent run it are in `workflow-and-gates.md`.
 - A new tab kind: a `Component` in `TabHost`, a title in `viewTitles`, a ribbon button.
 - A new surface on an agent session: an `Assistant` of its own and the signals it already
   emits; nothing about the host changes, and several surfaces may watch one session.
+- A new card in the transcript: a `kind` written by `push`, a branch in the delegate's
+  `Loader`, and a component beside it; the row shape does not change.
 - A new session shape (a different working directory, mode, model, tool allowance or idle
   timeout): the options `create` takes, which are stored in the entry and reread at every
   spawn.
@@ -564,6 +615,13 @@ an agent run it are in `workflow-and-gates.md`.
   `scripts/screenshot.sh <out> "right:agent,agent:ask:<text>" "right:agent"` photographs
   a turn against the fake `claude` and then, in a second run of the app over the same
   state, the same conversation replayed from the session's log.
+- `cargo test -p rusty-app theme::tests::every_qml_file_is_in_the_module` refuses a QML
+  file the module does not carry, which would otherwise load as nothing at run time and
+  show as an empty pane. The Agent tab's own surfaces are photographed:
+  `"tab:agent,tab:agent:ask:run the tests"` and `",agent:answer:allow"` (a shell call, its
+  decision, the answer and the footer), `"tab:agent:ask:fix the typo"` (an Edit as a
+  diff), `"which one"` (chips), `"plan it"` (a rendered plan) and `"left:agents"` (the
+  sessions pane); the script's fake `claude` answers each of those by name.
 - `scripts/screenshot.sh <out> "import:obsidian-vault"` photographs the import dialog
   with the plan for the small vault the script seeds.
 - `scripts/screenshot.sh <out> "open:sources/example-com-launchers"` photographs a

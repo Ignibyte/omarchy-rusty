@@ -24,9 +24,23 @@ Item {
         { name: "Terminal: Previous or next tab while a terminal has focus", keys: "Ctrl+PgUp / Ctrl+PgDn" },
         { name: "Terminal: Move the tab left or right", keys: "Ctrl+Shift+PgUp / Ctrl+Shift+PgDn" }
     ]
+    // The Agent tab's keys live on the cards and the composer, not on the window, so the
+    // palette does not list them.
+    readonly property var agentKeys: [
+        { name: "Agent: Send the message", keys: "Enter (Shift+Enter breaks a line)" },
+        { name: "Agent: Stop the running turn", keys: "Escape in the composer" },
+        { name: "Agent: Cycle the permission mode", keys: "Shift+Tab" },
+        { name: "Agent: The message asked before", keys: "Up at the start of an empty line" },
+        { name: "Agent: Leave the composer for the cards", keys: "Tab" },
+        { name: "Agent: Allow what is asked", keys: "Y on the card" },
+        { name: "Agent: Allow it and stop asking", keys: "A on the card" },
+        { name: "Agent: Refuse it", keys: "N on the card (Shift+N to give a reason)" },
+        { name: "Agent: Open or close a card", keys: "Enter or Space on the card" },
+        { name: "Agent: Back to the latest", keys: "Ctrl+End" }
+    ]
     function hotkeyRows(filter) {
         const q = filter.trim().toLowerCase()
-        const rows = commands.map(function (c) { return { name: c.name, keys: c.keys || "" } }).concat(terminalKeys)
+        const rows = commands.map(function (c) { return { name: c.name, keys: c.keys || "" } }).concat(terminalKeys).concat(agentKeys)
         return q.length === 0 ? rows : rows.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0 || r.keys.toLowerCase().indexOf(q) >= 0 })
     }
 

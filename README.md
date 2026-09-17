@@ -203,6 +203,24 @@ the `notes_path` setting names. An older install kept notes in `~/.rusty/notes`;
 when a name already exists in the vault, deletes nothing, leaves a README behind that
 says where the notes went, and points `notes_path` at the new folder.
 
+## The Agent tab
+
+Claude Code reads as a conversation, not a terminal. The Claude glyph in the top bar (or
+`Ctrl+Shift+A`, or the ribbon's agent button) opens an Agent tab for the folder you are in;
+nothing starts until you send the first message. What comes back is a transcript of cards:
+the answer rendered as markdown, thinking folded to a line, a tool call with its command or
+its path, an edit as a line diff, and the permission it needs answered in the same card —
+Allow, Allow always when Claude Code offers a rule to remember, Deny, or Deny with a reason
+it reads. `Y`, `A` and `N` answer the focused card; `Shift+N` gives the reason. When Claude
+asks rather than guesses, its questions are chips and its plan is a plan with Approve,
+"Approve, accept edits" and "Keep planning".
+
+The composer sends on Enter (Shift+Enter breaks a line), stops a turn on Escape, walks back
+through what you asked before on Up, and carries the permission mode (Shift+Tab cycles it,
+as in the CLI) and the model. The sessions on the machine are listed in the left sidebar,
+whether they were started here or from a terminal. The same transcript and composer are
+what the pane beside a note uses, narrowed.
+
 ## Agent sessions
 
 A conversation with Claude Code is a session of its own, not a child of the window. Starting

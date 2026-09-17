@@ -1,11 +1,11 @@
 ---
 title: TICKET-032-agent-tab
-status: open
+status: done
 ticket_number: 032
 type: feature
 created: 2026-09-17
 intake:
-pipeline_spec: TBC
+pipeline_spec: docs/planning/pipeline/completed/agent-tab.spec.md
 ---
 
 # TICKET-032-agent-tab

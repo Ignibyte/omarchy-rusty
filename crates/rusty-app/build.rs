@@ -32,6 +32,15 @@ fn main() {
                 "qml/SecretsPage.qml",
                 "qml/SettingsPage.qml",
                 "qml/Splitter.qml",
+                "qml/AgentPage.qml",
+                "qml/AgentsPane.qml",
+                "qml/AgentTranscript.qml",
+                "qml/AgentComposer.qml",
+                "qml/AgentTextCard.qml",
+                "qml/AgentToolCard.qml",
+                "qml/AgentDiff.qml",
+                "qml/AgentDecision.qml",
+                "qml/AgentQuestionCard.qml",
             ]),
     )
     .files([

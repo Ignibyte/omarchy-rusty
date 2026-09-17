@@ -469,6 +469,31 @@ mod tests {
         assert!((scale_for(18) - 1.5).abs() < f64::EPSILON);
     }
 
+    /// A QML file the module does not carry loads as nothing at run time and shows as an
+    /// empty pane, which no test of the Rust side would notice.
+    #[test]
+    fn every_qml_file_is_in_the_module() {
+        let crate_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let build = std::fs::read_to_string(crate_dir.join("build.rs")).expect("build.rs");
+        let mut missing = Vec::new();
+        for entry in std::fs::read_dir(crate_dir.join("qml")).expect("qml dir") {
+            let path = entry.expect("entry").path();
+            if path.extension().is_none_or(|e| e != "qml") {
+                continue;
+            }
+            let name = path.file_name().unwrap().to_string_lossy().to_string();
+            if !build.contains(&format!("\"qml/{name}\"")) {
+                missing.push(name);
+            }
+        }
+        missing.sort();
+        assert!(
+            missing.is_empty(),
+            "QML files missing from build.rs's qml_files:\n{}",
+            missing.join("\n")
+        );
+    }
+
     /// Every text size in the QML derives from the theme's scale: no literal
     /// `pixelSize`, and a literal `pointSize` only where the terminal keeps the
     /// Alacritty font (REQ-005 of TICKET-012).

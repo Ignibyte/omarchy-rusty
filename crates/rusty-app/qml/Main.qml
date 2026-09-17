@@ -77,6 +77,7 @@ ApplicationWindow {
         property string skillsLayout: ""
         // The agent pane's session id per page, as JSON (TICKET-025).
         property string agentSessions: "{}"
+        property string agentPrefs: "{}"
         // The editing mode a page opens in on Ctrl+E: "live" or "source" (TICKET-028).
         property string editMode: "live"
         property bool loaded: false
@@ -115,6 +116,7 @@ ApplicationWindow {
                 if (typeof s.theme === "string") ui.theme = s.theme
                 if (typeof s.skillsLayout === "string") ui.skillsLayout = s.skillsLayout
                 if (typeof s.agentSessions === "string") ui.agentSessions = s.agentSessions
+                if (typeof s.agentPrefs === "string") ui.agentPrefs = s.agentPrefs
                 if (s.editMode === "live" || s.editMode === "source") ui.editMode = s.editMode
                 if (typeof s.textSize === "number" && s.textSize > 0) { theme.setTextSize(s.textSize); ui.textSize = theme.baseSize }
             } catch (e) {}
@@ -123,7 +125,7 @@ ApplicationWindow {
         function save() { if (ui.loaded) saveTimer.restart() }
         function write() {
             terminals.saveState(JSON.stringify({ leftWidth: ui.leftWidth, rightWidth: ui.rightWidth, leftOpen: ui.leftOpen, rightOpen: ui.rightOpen,
-                                                 leftPane: ui.leftPane, rightPane: ui.rightPane, expanded: ui.expanded, paneProgram: ui.paneProgram, graph: ui.graph, bookmarks: ui.bookmarks, roots: ui.roots, theme: ui.theme, textSize: ui.textSize, skillsLayout: ui.skillsLayout, agentSessions: ui.agentSessions, editMode: ui.editMode }))
+                                                 leftPane: ui.leftPane, rightPane: ui.rightPane, expanded: ui.expanded, paneProgram: ui.paneProgram, graph: ui.graph, bookmarks: ui.bookmarks, roots: ui.roots, theme: ui.theme, textSize: ui.textSize, skillsLayout: ui.skillsLayout, agentSessions: ui.agentSessions, agentPrefs: ui.agentPrefs, editMode: ui.editMode }))
         }
     }
     Timer { id: saveTimer; interval: 400; onTriggered: ui.write() }
@@ -243,7 +245,7 @@ ApplicationWindow {
     readonly property bool terminalFocused: activeFocusItem !== null && activeFocusItem !== undefined && activeFocusItem.objectName === "term"
     readonly property var agentNames: ({ claude: "Claude Code", codex: "Codex", gemini: "Gemini", aider: "Aider", opencode: "OpenCode", shell: "Shell" })
     readonly property var agentGlyphs: ({ claude: "✳", codex: "◇", gemini: "✦", aider: "⌁", opencode: "◈", shell: "$" })
-    readonly property var viewTitles: ({ tasks: "Tasks", memory: "Memory", skills: "Skills", secrets: "Secrets", settings: "Settings", graph: "Graph view", decisions: "Decisions" })
+    readonly property var viewTitles: ({ agent: "Agent", tasks: "Tasks", memory: "Memory", skills: "Skills", secrets: "Secrets", settings: "Settings", graph: "Graph view", decisions: "Decisions" })
     // The page a local graph follows: the last page tab that was current.
     property string lastPageSlug: ""
     readonly property var graphSettings: { try { return JSON.parse(ui.graph || "{}") } catch (e) { return ({}) } }
@@ -251,6 +253,61 @@ ApplicationWindow {
     // Folder roots: `[{path, name}]` under `roots` in the state, per machine.
     readonly property var rootList: { try { return JSON.parse(ui.roots || "[]") } catch (e) { return [] } }
     // The agent pane's session per page, from the state.
+    // Where a new session works: the folder of whatever is open, else the first root,
+    // else home. A session is about a directory the way a terminal tab is.
+    function agentCwd() {
+        const t = win.currentTab()
+        if (t !== null && (t.kind === "agent" || t.kind === "terminal") && t.cwd.length > 0) return t.cwd
+        if (t !== null && t.kind === "file" && t.slug.length > 0) {
+            const roots = win.rootList
+            for (const r of roots) if (t.slug.indexOf(r.path) === 0) return r.path
+            const at = t.slug.lastIndexOf("/")
+            if (at > 0) return t.slug.slice(0, at)
+        }
+        const roots = win.rootList
+        if (roots.length > 0) return roots[0].path
+        return theme.homeDir
+    }
+    function agentTitleFor(cwd, title) {
+        if (title !== undefined && title.length > 0) return title
+        const at = cwd.lastIndexOf("/")
+        return "Agent · " + (at >= 0 ? cwd.slice(at + 1) : cwd)
+    }
+    // One tab per session: an id already open is shown rather than opened twice.
+    function openAgent(cwd, sessionId, title, inNewTab) {
+        if (sessionId !== undefined && sessionId.length > 0 && inNewTab !== true) {
+            for (let i = 0; i < tabs.count; i++) {
+                if (tabs.get(i).kind === "agent" && tabs.get(i).session === sessionId) { stack.currentIndex = i; return }
+            }
+        }
+        const dir = cwd.length > 0 ? cwd : win.agentCwd()
+        tabs.append({ kind: "agent", title: win.agentTitleFor(dir, title), slug: "", session: sessionId === undefined ? "" : sessionId,
+                      program: "claude", cwd: dir, pinned: false, unread: false, termTitle: "" })
+        stack.currentIndex = tabs.count - 1
+        win.saveTabs()
+    }
+    // The Agent tab of the moment, for the palette and the keys.
+    // The ribbon: the Agent tab that is open, or a new one.
+    function openAgentTab() {
+        for (let i = 0; i < tabs.count; i++) if (tabs.get(i).kind === "agent") { stack.currentIndex = i; return }
+        win.openAgent("", "", "", true)
+    }
+    // Stopping a session from the list: the tab that shows it keeps its log and says so.
+    function stopAgentSession(id) {
+        for (let i = 0; i < tabs.count; i++) {
+            if (tabs.get(i).kind === "agent" && tabs.get(i).session === id) {
+                const host = hosts.itemAt(i)
+                if (host !== null && host.item !== null) { host.item.stopSession(); return }
+            }
+        }
+        win.registry.refresh()
+    }
+    function currentAgent() {
+        const t = win.currentTab()
+        if (t === null || t.kind !== "agent") return null
+        const host = hosts.itemAt(stack.currentIndex)
+        return host !== null ? host.item : null
+    }
     function sessionMap() { try { const m = JSON.parse(ui.agentSessions || "{}"); return m !== null && typeof m === "object" ? m : {} } catch (e) { return {} } }
     function addRoot(chosen) {
         const p = String(chosen).replace(/^file:\/\//, "").replace(/\/+$/, "")
@@ -359,7 +416,7 @@ ApplicationWindow {
     }
     function takenSessions() {
         const names = []
-        for (let i = 0; i < tabs.count; i++) if (tabs.get(i).session.length > 0) names.push(tabs.get(i).session)
+        for (let i = 0; i < tabs.count; i++) if (tabs.get(i).kind === "terminal" && tabs.get(i).session.length > 0) names.push(tabs.get(i).session)
         for (const s of terminals.sessions()) names.push(s)
         return names
     }
@@ -437,7 +494,7 @@ ApplicationWindow {
         explorer.currentSlug = currentNote ? currentNote.slug : ""
         if (currentNote && currentNote.slug.length > 0) lastPageSlug = currentNote.slug
         const t = currentTab()
-        if (t && t.kind === "terminal") tabs.setProperty(stack.currentIndex, "unread", false)
+        if (t && (t.kind === "terminal" || t.kind === "agent")) tabs.setProperty(stack.currentIndex, "unread", false)
     }
 
     // ── Vault actions ─────────────────────────────────────────────────────
@@ -514,7 +571,9 @@ ApplicationWindow {
 
     // `RUSTY_SHOT=<png>`: grab the window once it has settled, then quit. Screenshots for
     // the docs and the record come from here, against a scratch vault. `RUSTY_SHOT_SCENE`
-    // sets the scene first: `switcher`, `palette`, `edit`, `right:<pane>`, `left:<pane>`.
+    // sets the scene first: `switcher`, `palette`, `edit`, `right:<pane>`, `left:<pane>`,
+    // `tab:agent` and `tab:agent:ask:<text>` for the Agent tab, `agent:answer:allow|deny`
+    // for whatever it is asking.
     Timer {
         id: shot
         running: theme.shotPath.length > 0
@@ -535,6 +594,9 @@ ApplicationWindow {
                 else if (p.startsWith("expand:")) explorer.expandPath(shot.resolve(p.slice(7)))
                 else if (p.startsWith("tagfield:")) { if (win.currentNote) win.currentNote.focusTagAdd(p.slice(9)) }
                 else if (p.startsWith("agent:ask:")) { win.showRight("agent"); rightPane.askAgent(p.slice(10)) }
+                else if (p.startsWith("tab:agent:ask:")) { const text = p.slice(14); Qt.callLater(function () { const a = win.currentAgent(); if (a !== null) a.sendText(text) }) }
+                else if (p === "tab:agent") win.openAgent(theme.homeDir, "", "", true)
+                else if (p === "agent:answer:allow" || p === "agent:answer:deny") { answerWhenAsked.allow = p.endsWith("allow"); answerWhenAsked.tries = 0; answerWhenAsked.start() }
                 else if (p.startsWith("import:")) win.planImport(shot.resolve(p.slice(7)))
                 else if (p === "edit" && win.currentNote) { win.currentNote.editing = true }
                 else if (p.startsWith("live:") && win.currentNote) { ui.editMode = "live"; win.currentNote.editing = true; const n = parseInt(p.slice(5)); Qt.callLater(function () { win.currentNote.editSection(isNaN(n) ? 0 : n, 0) }) }
@@ -548,6 +610,21 @@ ApplicationWindow {
                 else if (p === "localgraph") win.openGraph(true)
                 else if (p.startsWith("tab:")) stack.currentIndex = parseInt(p.slice(4))
             }
+        }
+    }
+    // A scene answers what the agent asks, which arrives a moment after the message that
+    // provoked it; the timer waits for the question rather than guessing when it lands.
+    Timer {
+        id: answerWhenAsked
+        property bool allow: true
+        property int tries: 0
+        interval: 150
+        repeat: true
+        onTriggered: {
+            const a = win.currentAgent()
+            const answered = a !== null ? a.answerPending(allow) : rightPane.answerPending(allow)
+            answerWhenAsked.tries++
+            if (answered || answerWhenAsked.tries > 20) answerWhenAsked.stop()
         }
     }
     Timer {
@@ -573,6 +650,10 @@ ApplicationWindow {
     Shortcut { sequences: ["Ctrl+Shift+Tab"]; enabled: !win.terminalFocused; onActivated: win.prevTab() }
     Shortcut { sequences: ["Ctrl+PgDown"]; onActivated: win.nextTab() }
     Shortcut { sequences: ["Ctrl+PgUp"]; onActivated: win.prevTab() }
+    // The Agent tab's keys; like every window key they stand down inside a terminal.
+    Shortcut { sequences: ["Ctrl+Shift+A"]; enabled: !win.terminalFocused; onActivated: win.openAgent("", "", "", true) }
+    Shortcut { sequences: ["Ctrl+L"]; enabled: !win.terminalFocused && win.currentAgent() !== null; onActivated: win.currentAgent().focusComposer() }
+    Shortcut { sequences: ["Ctrl+."]; enabled: !win.terminalFocused && win.currentAgent() !== null; onActivated: win.currentAgent().focusPending() }
     Shortcut { sequences: ["Ctrl+Shift+F"]; enabled: !win.terminalFocused; onActivated: win.showLeft("search") }
     Shortcut { sequences: ["Ctrl+,"]; enabled: !win.terminalFocused; onActivated: win.openView("settings") }
     Shortcut { sequences: ["Ctrl+G"]; enabled: !win.terminalFocused; onActivated: win.openGraph(false) }
@@ -627,7 +708,14 @@ ApplicationWindow {
             { name: "Tags: Show tags", keys: "", run: function () { win.showRight("tags"); rightPane.focusTags() } },
             { name: "Tags: Tag this page", keys: "", run: function () { if (win.currentNote) win.currentNote.focusTagAdd() } },
             { name: "Properties: Add a property to this page", keys: "", enabled: win.currentNote !== null, run: function () { win.currentNote.startAddProperty() } },
-            { name: "Agent: Show the agent pane", keys: "", run: function () { win.showRight("agent") } },
+            { name: "Agent: New session here", keys: "Ctrl+Shift+A", run: function () { win.openAgent("", "", "", true) } },
+            { name: "Agent: Show the sessions", keys: "", run: function () { win.showLeft("agents") } },
+            { name: "Agent: Open the Agent tab", keys: "", run: function () { win.openAgentTab() } },
+            { name: "Agent: Focus the composer", keys: "Ctrl+L", enabled: win.currentAgent() !== null, run: function () { win.currentAgent().focusComposer() } },
+            { name: "Agent: Answer what is pending", keys: "Ctrl+.", enabled: win.currentAgent() !== null, run: function () { win.currentAgent().focusPending() } },
+            { name: "Agent: Interrupt the turn", keys: "Escape in the composer", enabled: win.currentAgent() !== null, run: function () { win.currentAgent().interrupt() } },
+            { name: "Agent: Stop this session", keys: "", enabled: win.currentAgent() !== null, run: function () { win.currentAgent().stopSession() } },
+                        { name: "Agent: Show the agent pane", keys: "", run: function () { win.showRight("agent") } },
             { name: "Graph view: Open graph view", keys: "Ctrl+G", run: function () { win.openGraph(false) } },
             { name: "Graph view: Open local graph", keys: "", enabled: win.currentNote !== null || win.lastPageSlug.length > 0, run: function () { win.openGraph(true) } },
             { name: "Tasks: Open tasks", keys: "", run: function () { win.openView("tasks") } },
@@ -788,6 +876,7 @@ ApplicationWindow {
                            : host.kind === "skills" ? skillsComp
                            : host.kind === "secrets" ? secretsComp
                            : host.kind === "settings" ? settingsComp
+                           : host.kind === "agent" ? agentComp
                            : host.kind === "graph" ? graphComp : null
             onLoaded: if (host.isCurrent) win.updateCurrent()
         }
@@ -839,6 +928,26 @@ ApplicationWindow {
                 onOpenPage: (slug) => win.openPage(slug, false)
                 onSearchTag: (tag) => win.searchFor("tag:" + tag)
                 onSettingsEdited: (s) => win.saveGraphSettings(s)
+            }
+        }
+        Component {
+            id: agentComp
+            AgentPage {
+                backend: win.backend
+                theme: win.theme
+                registry: win.registry
+                folders: diskFolders
+                sessionId: host.session
+                cwd: host.cwd
+                tabTitle: host.title
+                isCurrent: host.isCurrent
+                windowActive: win.active
+                savedPrefs: ui.agentPrefs
+                onPrefsEdited: (json) => ui.agentPrefs = json
+                onSessionBound: (id) => { tabs.setProperty(host.index, "session", id); win.saveTabs() }
+                onUnread: win.markUnread(host.index)
+                onAttention: (m) => win.attention(host.index, m)
+                onOpenFile: (p) => win.openFile(p)
             }
         }
         Component { id: tasksComp; TasksPage { backend: win.backend; theme: win.theme } }
@@ -936,6 +1045,7 @@ ApplicationWindow {
                     RibbonButton { Layout.alignment: Qt.AlignHCenter; icon: "daily"; label: "daily"; tip: "Open today's daily note"; onClicked: win.todayNote() }
                     RibbonButton { Layout.alignment: Qt.AlignHCenter; icon: "graph"; label: "graph"; tip: "Graph view (Ctrl+G)"; active: win.currentTab() !== null && win.currentTab().kind === "graph"; onClicked: win.openGraph(false) }
                     Rectangle { Layout.alignment: Qt.AlignHCenter; width: 22; height: 1; color: theme.line; Layout.topMargin: 4; Layout.bottomMargin: 4 }
+                    RibbonButton { Layout.alignment: Qt.AlignHCenter; icon: "agent"; label: "agent"; tip: "Agent sessions (Ctrl+Shift+A for a new one)"; active: win.currentTab() !== null && win.currentTab().kind === "agent"; onClicked: win.openAgentTab() }
                     RibbonButton { Layout.alignment: Qt.AlignHCenter; icon: "tasks"; label: "tasks"; tip: "Tasks"; active: win.currentTab() !== null && win.currentTab().kind === "tasks"; onClicked: win.openView("tasks") }
                     RibbonButton { Layout.alignment: Qt.AlignHCenter; icon: "memory"; label: "memory"; tip: "Memory"; active: win.currentTab() !== null && win.currentTab().kind === "memory"; onClicked: win.openView("memory") }
                     RibbonButton { Layout.alignment: Qt.AlignHCenter; icon: "check-square"; label: "decide"; tip: "Decisions"; active: win.currentTab() !== null && win.currentTab().kind === "decisions"; onClicked: win.openView("decisions") }
@@ -971,18 +1081,19 @@ ApplicationWindow {
                         Layout.topMargin: 6
                         Layout.bottomMargin: 4
                         spacing: 2
-                        Text { text: ui.leftPane === "files" ? "Vault files" : ui.leftPane === "search" ? "Search" : "Bookmarks"; color: theme.bright; font.pixelSize: Math.round(9 * theme.scale); font.letterSpacing: 1.3; font.capitalization: Font.AllUppercase; Layout.leftMargin: 6 }
+                        Text { text: ui.leftPane === "files" ? "Vault files" : ui.leftPane === "search" ? "Search" : ui.leftPane === "agents" ? "Agent sessions" : "Bookmarks"; color: theme.bright; font.pixelSize: Math.round(9 * theme.scale); font.letterSpacing: 1.3; font.capitalization: Font.AllUppercase; Layout.leftMargin: 6 }
                         Item { Layout.fillWidth: true }
                         SideTab { icon: "files"; tip: "Files"; active: ui.leftPane === "files"; onClicked: win.showLeft("files") }
                         SideTab { icon: "search"; tip: "Search (Ctrl+Shift+F)"; active: ui.leftPane === "search"; onClicked: win.showLeft("search") }
                         SideTab { icon: "bookmark"; tip: "Bookmarks"; active: ui.leftPane === "bookmarks"; onClicked: win.showLeft("bookmarks") }
+                        SideTab { icon: "agent"; tip: "Agent sessions"; active: ui.leftPane === "agents"; onClicked: win.showLeft("agents") }
                         SideTab { icon: "panel-left"; tip: "Collapse"; onClicked: ui.leftOpen = false }
                     }
                     Rectangle { Layout.fillWidth: true; height: 1; color: theme.line }
                     StackLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        currentIndex: ui.leftPane === "search" ? 1 : ui.leftPane === "bookmarks" ? 2 : 0
+                        currentIndex: ui.leftPane === "search" ? 1 : ui.leftPane === "bookmarks" ? 2 : ui.leftPane === "agents" ? 3 : 0
                         Explorer {
                             id: explorer
                             backend: win.backend
@@ -1030,6 +1141,14 @@ ApplicationWindow {
                             onOpenBookmark: (b) => win.openBookmark(b)
                             onRemoveBookmark: (i) => win.removeBookmark(i)
                             onRetitleBookmark: (i, t) => win.retitleBookmark(i, t)
+                        }
+                        AgentsPane {
+                            id: agentsPane
+                            theme: win.theme
+                            registry: win.registry
+                            onOpenSession: (id, cwd, title, inNewTab) => win.openAgent(cwd, id, title, inNewTab)
+                            onNewSession: win.openAgent("", "", "", true)
+                            onStopSession: (id) => win.stopAgentSession(id)
                         }
                     }
                     Rectangle { Layout.fillWidth: true; height: 1; color: theme.line; opacity: 0.6 }
@@ -1112,7 +1231,8 @@ ApplicationWindow {
                                             spacing: 7
                                             Icon { visible: tabItem.pinned; name: "pin"; color: theme.muted; size: 12 }
                                             Text { visible: tabItem.kind !== "terminal" && tabItem.kind !== "graph"; text: tabItem.active ? "◆" : "◇"; color: tabItem.active ? theme.accent : theme.muted; font.pixelSize: Math.round(10 * theme.scale) }
-                                            Text { visible: tabItem.kind === "terminal"; text: win.agentGlyph(tabItem.program); color: tabItem.active ? theme.foreground : theme.muted; font.pixelSize: Math.round(12 * theme.scale) }
+                                            Text { visible: tabItem.kind === "agent"; text: win.agentGlyph("claude"); color: tabItem.isCurrent ? win.theme.accent : win.theme.faint; font.pixelSize: Math.round(10 * win.theme.scale) }
+                            Text { visible: tabItem.kind === "terminal"; text: win.agentGlyph(tabItem.program); color: tabItem.active ? theme.foreground : theme.muted; font.pixelSize: Math.round(12 * theme.scale) }
                                             Icon { visible: tabItem.kind === "graph"; name: "graph"; color: tabItem.active ? theme.foreground : theme.muted; size: 13 }
                                             Text {
                                                 id: tabLabel
