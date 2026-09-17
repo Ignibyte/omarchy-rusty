@@ -89,6 +89,17 @@ recovery was needed again.
 - The `Agents` bridge had to move out of `agent/` after the build failed: cxx-qt takes
   every bridge of a QML module from one directory (QTBUG-93443). Ten minutes, but it is
   the kind of constraint worth knowing before laying out a module.
+- A second drain defect of the same family survived inspect and was caught by a gate run:
+  the exit could be recorded before the stderr reader had taken the process's last words,
+  so a failing session would have said "exited (exit 1)" with nothing to explain it. It
+  showed up as one host test failing inside the gate and passing on its own — a flake
+  worth reading rather than re-running, because the flake was the product's race, not the
+  test's.
+- The screenshot scenes leaked a session host each, found while tidying the box after
+  delivery: the stand-in `systemd-run` detaches the host on purpose, and the script's
+  cleanup had learned about the scratch back end and the tmux sessions but not about
+  sessions. Three were still running eight minutes later. The cleanup now stops them with
+  the product's own verb.
 - I recorded the OpenWiki hook as having fired, on the evidence that the receipt file
   existed. It was the previous pipeline's receipt, dated twelve days earlier. TICKET-010
   wrote that trap down and I walked into it anyway; the notes and this AAR were corrected
@@ -113,7 +124,9 @@ recovery was needed again.
 ## 5. Lessons
 
 - `PR-rusty-drain-before-the-runtime-goes-001`: keep the writers' handles and await them
-  before the owner returns, or the last thing said is lost.
+  before the owner returns, or the last thing said is lost. It has a twin at the other end
+  of the same process: the exit waits for the stderr reader, or a failure is reported
+  without the reason the reader was about to deliver.
 - `PR-rusty-a-test-that-panics-must-not-hold-a-process-001`: a harness's `Drop` stops what
   it started before it joins.
 - `PR-rusty-read-the-stream-in-the-order-it-is-written-001`: a wait for a later line eats
@@ -124,6 +137,9 @@ recovery was needed again.
   minimum that makes one scene pass.
 - `PR-rusty-read-the-receipt-not-the-filename-001`: a receipt is read, never listed — the
   previous pipeline's file sits at the same path and looks exactly like success.
+- `PR-rusty-a-harness-cleans-up-what-it-starts-001`: when a harness gains the power to
+  start something that outlives it on purpose, its cleanup learns about it in the same
+  change, or every run leaks one.
 - `AD-rusty-agent-sessions-are-user-units-001`: the decision itself, qualifying
   `AD-rusty-pane-agent-is-headless-claude-001` and, through it,
   `AD-rusty-agents-are-terminals-001` a second time.

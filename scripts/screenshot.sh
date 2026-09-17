@@ -24,6 +24,15 @@ scratch=$(mktemp -d "${TMPDIR:-/tmp}/rusty-shot.XXXXXX")
 cleanup() {
   [[ -n "${server:-}" ]] && kill "$server" 2>/dev/null || true
   for s in $(tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -E '^rusty-(shot|pane)-' || true); do tmux kill-session -t "$s" 2>/dev/null || true; done
+  # A scene that talks to the agent pane starts a session host, which the stand-in
+  # `systemd-run` detaches on purpose: it must outlive the app the way a real unit does,
+  # so nothing else ends it. Stop each one the way anybody would.
+  for entry in "$scratch"/agents/*.json; do
+    [[ -e "$entry" ]] || continue
+    id=$(basename "$entry" .json)
+    RUSTY_AGENT_STATE_DIR="$scratch/agents" RUSTY_AGENT_RUN_DIR="$scratch/run/agents" \
+      "$target/debug/rusty" agent stop "$id" >/dev/null 2>&1 || true
+  done
   if [[ -n ${SHOT_KEEP:-} ]]; then echo "scratch kept at $scratch"; else rm -rf "$scratch"; fi
 }
 trap cleanup EXIT

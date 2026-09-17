@@ -268,6 +268,8 @@ passed.
 | 12 | correctness | The host's own interrupt used `u64::MAX` as its request number. | low | Fixed: the host numbers its control requests like any client. |
 | 13 | keyboard, empty states | The pane's states were re-read: no `claude` (or no `systemd-run`) says so and hides the input; a page with no session shows the ask-about line and creates one on the first message; a detached host shows its notice; Enter sends and Shift+Enter breaks a line as before; every size still derives from `theme.scale` (the scan test passes). | — | No finding. |
 | 14 | data safety | Nothing new touches the store, the vault or `~/.rusty`: the host's files are under XDG state and runtime, and the only thing sent anywhere is the localhost MCP URL the pane already used. | — | No finding. |
+| 16 | correctness (found after delivery, 2026-09-17) | The screenshot scenes leaked a session host each: the stand-in `systemd-run` detaches the host on purpose, so it outlives the app as a real unit would, and the script's cleanup — which kills its scratch back end and its tmux sessions — knew nothing about agent sessions. Three hosts and their fake processes were still running eight minutes after the last scene. | medium | Fixed in a follow-up commit: `cleanup` walks the scratch state directory and runs `rusty agent stop` for each entry, the way anybody would. Verified: a scene run leaves no `agent host` process. The leaked three were stopped by hand. |
+| 17 | correctness (found after delivery by a gate run, 2026-09-17) | A process's exit could be recorded with an empty stderr tail although it had written one: reading stderr and reaping the process are two tasks, and the reap often won. A failing session would have said "exited (exit 1)" with no reason — exactly when the reason matters. It surfaced as one host test failing in the gate and passing on its own. | high | Fixed: the exit waits for the stderr task (two seconds at most, so a process hung with its stderr open cannot hold the exit) before it reads the tail. The test that caught it ran five times green after. Same family as finding 1: report after the readers have drained, not before. |
 | 15 | false positive | CodeGraph reports "no covering tests found" for `serve`, `spawn_child`, `end_child` and `client_line`, and seven cross-crate callers for `entry`. | — | Rejected: the host is tested through its socket end to end (eleven tests drive `serve` as a client would), which is the level that matters; the `entry` callers are unrelated functions of the same name in `folders.rs` and the brain. |
 
 - Post-implementation CodeGraph (`codegraph_explore` over `serve`, `spawn_child`,
@@ -364,7 +366,14 @@ passed.
   the genuine finish result fed to `.claude/hooks/record-pipeline-tool-use.sh` on stdin
   with the spec put back under `active/` for the moment it reads the pipeline id (the
   planning record is not among the gated paths, so the move does not move the
-  fingerprint), then the pair archived again and `--verify` re-read.
+  fingerprint), then the pair archived again and `--verify` re-read. Two further runs
+  followed the same day (`6143e131…`, `3339619e…`): the two defects found after delivery
+  moved the line ranges six claims cite, and the first of those runs came back
+  `complete` with a warning that `development-and-validation.md` still carried evidence
+  debt — its sidecar was left unchanged, so a third run re-cited the three claims on that
+  page (including one that had gone stale on the screenshot script before this ticket).
+  The last `openwiki_finish` returned `{"status":"complete"}` with no warnings against the
+  code as delivered.
 - AAR: `docs/planning/knowledge/aar/AAR-031-agent-sessions.md`, submitted. Register:
   `AD-rusty-agent-sessions-are-user-units-001` and five prevention rules
   (`PR-rusty-drain-before-the-runtime-goes-001`,

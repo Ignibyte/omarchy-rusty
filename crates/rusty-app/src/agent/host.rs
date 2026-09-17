@@ -643,9 +643,13 @@ impl Host {
         let stdout = child.stdout.take();
         let stderr = child.stderr.take();
         let tail: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+        // The exit waits for this, so a process that says why it is going says it in the
+        // event: reading stderr and reaping the process are two tasks, and the reap wins
+        // the race often enough that "exit 1" would arrive with no reason attached.
+        let mut stderr_task: Option<tokio::task::JoinHandle<()>> = None;
         if let Some(stderr) = stderr {
             let tail = Arc::clone(&tail);
-            tokio::spawn(async move {
+            stderr_task = Some(tokio::spawn(async move {
                 let mut reader = BufReader::new(stderr);
                 let mut buf = [0u8; 1024];
                 while let Ok(n) = reader.read(&mut buf).await {
@@ -665,7 +669,7 @@ impl Host {
                         }
                     }
                 }
-            });
+            }));
         }
         let tx = self.tx.clone();
         tokio::spawn(async move {
@@ -683,6 +687,11 @@ impl Host {
                 use std::os::unix::process::ExitStatusExt;
                 s.signal()
             });
+            // Let the last of stderr land before the exit is reported; a process that is
+            // hung with its stderr open must not hold the exit for ever.
+            if let Some(task) = stderr_task {
+                let _ = tokio::time::timeout(Duration::from_secs(2), task).await;
+            }
             let stderr = tail
                 .lock()
                 .map(|t| t.trim().to_string())

@@ -2,7 +2,7 @@
 type: "Reference"
 title: "Workspace app: Obsidian's layout with terminals inside"
 openwiki_generated: true
-generated: {by: "claude-code", at: "2026-09-17T22:06:12.177Z"}
+generated: {by: "claude-code", at: "2026-09-17T22:15:38.100Z"}
 sources:
   - id: openwiki-source-4059556410fe6db8498fe8e9
     resource: repo://crates/rusty-app/build.rs
@@ -82,7 +82,7 @@ sources:
     resource: repo://scripts/screenshot.sh
 verified:
   - by: openwiki/0.3.3
-    at: 2026-09-17T22:06:12.177Z
+    at: 2026-09-17T22:15:38.100Z
 ---
 
 # Workspace app: Obsidian's layout with terminals inside
@@ -287,7 +287,8 @@ every view backed by the MCP server that agents share.
   session (the page in `--append-system-prompt`, `HOME` as the working directory,
   Rusty's server through `--mcp-config` with its reads pre-allowed, ten minutes of idle);
   leaving the page only detaches, so a turn in flight finishes and the host notifies when
-  it ends. Enter sends a `user` message (Shift+Enter breaks a line), Send becomes Stop
+  it ends; an exit carries the reason its process printed, because the host lets the
+  stderr reader drain before it reports one. Enter sends a `user` message (Shift+Enter breaks a line), Send becomes Stop
   while a turn runs and sends an `interrupt`, Allow and Deny write a `control_response`
   and the answer comes back as the `answered` the item is stamped with, New ends the
   page's session and unbinds it while its log stays on the machine. A session id kept by
