@@ -128,6 +128,22 @@ pub fn state_path() -> PathBuf {
         .join(".config/rusty/workspace.json")
 }
 
+/// A desktop notification through `notify-send` (so mako shows it on Omarchy), from the
+/// window or from a session host; `RUSTY_NOTIFY_SEND` names a stand-in. Quietly does
+/// nothing where the program is missing.
+pub fn send_notification(title: &str, body: &str) {
+    let program = std::env::var_os("RUSTY_NOTIFY_SEND")
+        .filter(|p| !p.is_empty())
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("notify-send"));
+    let _ = Command::new(program)
+        .args(["--app-name=Rusty", "--icon=com.ignibyte.rusty", title, body])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn();
+}
+
 /// The agent command-line tools the launch bar looks for, in the order they are shown.
 /// Each entry is the binary name; the QML side gives them their labels.
 pub const AGENT_CANDIDATES: &[&str] = &["claude", "codex", "gemini", "aider", "opencode"];
@@ -324,17 +340,7 @@ impl qobject::Terminals {
 
     /// Desktop notification; quietly does nothing where `notify-send` is missing.
     pub fn notify(&self, title: &QString, body: &QString) {
-        let _ = Command::new("notify-send")
-            .args([
-                "--app-name=Rusty",
-                "--icon=com.ignibyte.rusty",
-                &title.to_string(),
-                &body.to_string(),
-            ])
-            .stdin(std::process::Stdio::null())
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
-            .spawn();
+        send_notification(&title.to_string(), &body.to_string());
     }
 
     /// The saved workspace state, or an empty object.

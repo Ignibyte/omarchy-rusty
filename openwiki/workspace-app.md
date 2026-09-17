@@ -2,7 +2,7 @@
 type: "Reference"
 title: "Workspace app: Obsidian's layout with terminals inside"
 openwiki_generated: true
-generated: {by: "claude-code", at: "2026-09-05T14:39:51.324Z"}
+generated: {by: "claude-code", at: "2026-09-17T22:06:12.177Z"}
 sources:
   - id: openwiki-source-4059556410fe6db8498fe8e9
     resource: repo://crates/rusty-app/build.rs
@@ -42,6 +42,18 @@ sources:
     resource: repo://crates/rusty-app/qml/Splitter.qml
   - id: openwiki-source-f536fe8c8de4eb428d24ba4b
     resource: repo://crates/rusty-app/qml/TopBar.qml
+  - id: openwiki-source-99a6e48b7904a84607bbfebf
+    resource: repo://crates/rusty-app/src/agent/host.rs
+  - id: openwiki-source-c98365caf5b5f92dde34e1ad
+    resource: repo://crates/rusty-app/src/agent/launch.rs
+  - id: openwiki-source-28b01ecea4d5e11c815a21c8
+    resource: repo://crates/rusty-app/src/agent/log.rs
+  - id: openwiki-source-6db403fd15f39cd68c2bfe93
+    resource: repo://crates/rusty-app/src/agent/mod.rs
+  - id: openwiki-source-39453e9fb87bdf846b78ed28
+    resource: repo://crates/rusty-app/src/agent/registry.rs
+  - id: openwiki-source-4ea56c69ef207cec908243db
+    resource: repo://crates/rusty-app/src/agent/wire.rs
   - id: openwiki-source-e85475b7b040fd879ddef935
     resource: repo://crates/rusty-app/src/assistant.rs
   - id: openwiki-source-68599611588cfbbf1f2b222b
@@ -70,7 +82,7 @@ sources:
     resource: repo://scripts/screenshot.sh
 verified:
   - by: openwiki/0.3.3
-    at: 2026-09-05T14:39:51.324Z
+    at: 2026-09-17T22:06:12.177Z
 ---
 
 # Workspace app: Obsidian's layout with terminals inside
@@ -125,6 +137,19 @@ every view backed by the MCP server that agents share.
 - `src/terminals.rs`: `Terminals`, the tabs file (`~/.config/rusty/tabs.json`), the
   workspace state file (`~/.config/rusty/workspace.json`), tmux session names and
   listing, installed agents, desktop notifications.
+- `src/agent/`: the `agent` noun and the session host (TICKET-031). `mod.rs` the verbs,
+  the id and the paths; `host.rs` the host itself (the process, the log, the socket, the
+  loop, the stop sequence, the idle timer); `launch.rs` the transient unit; `protocol.rs`
+  the socket's messages; `log.rs` the append-only log; `registry.rs` the entries;
+  `spawn.rs` the process's arguments; `wire.rs` Claude Code's stream-json in and out;
+  `client.rs` a connection to a host.
+- `src/assistant.rs`: `Assistant`, a client of a host — `create`, `attach`, `detach`,
+  `send`, `answer`, `interrupt`, the mode and model changes, `stop`, `remove` — and
+  `translate`, which turns one host message into the events a surface renders.
+- `src/agents.rs`: `Agents`, the sessions on the machine as JSON for QML, refreshed when
+  the state directory changes. It is a bridge of its own file because cxx-qt takes every
+  bridge of a QML module from one directory.
+- `src/diff.rs`: the line diff (`same`, `add`, `del`) behind `Assistant.diff`.
 - `src/markdown.rs`, `cpp/highlighter.*`, `cpp/tools.*`: the editor's highlighter and
   the window grab.
 - `qml/Main.qml`: the layout and the tab model; `Explorer.qml`, `SearchPane.qml`,
@@ -231,30 +256,52 @@ every view backed by the MCP server that agents share.
   selects because that button is never accepted. Copy in the menu follows the widget's
   `copyAvailable` signal, read through `Connections { ignoreUnknownSignals: true }` as
   every other third-party signal here is.
-- The agent pane (`RightPane.qml`, `src/assistant.rs`; TICKET-025) is a conversation
-  with a headless Claude Code beside the note, not a terminal. `Assistant` spawns
-  `claude -p --input-format stream-json --output-format stream-json
-  --include-partial-messages --verbose --permission-prompt-tool stdio --permission-mode
-  default --strict-mcp-config`, with Rusty's own server as an HTTP MCP server
-  (`--mcp-config` at `Backend.url`), its read-only tools pre-allowed by name
-  (`READ_TOOLS`; a write prompts), the open page named in `--append-system-prompt`,
-  `HOME` as the working directory, and `--resume <id>` when the page has a session. A
-  reader thread hands every stdout line to the Qt thread, where `parse_line` turns it
-  into typed signals — init, a block starting, a text delta and the final text, a tool
-  call's input, a tool result, a permission asked, a turn done, a notice, the exit with
-  the tail of stderr — and the pane renders them as its own items: the user's bubble,
-  selectable text, a tool call with its input, its result in the terminal face, a
-  permission prompt whose Allow or Deny writes a `control_response`, a notice. Enter
-  sends a `user` message (Shift+Enter breaks a line), Send becomes Stop while a turn
-  runs and sends an `interrupt` control request, New forgets the page's session. One
-  process per page: another page stops it, clears the list and starts with that page's
-  session; the session id comes from the `init` event into `ui.agentSessions`, and an
-  exit before `init` with an id to resume forgets it, so a stale transcript never fails
-  twice. The wire was read off this box's `claude` 2.1.260 with two probes:
-  `--permission-prompts host` denies unless a host announces itself;
-  `--permission-prompt-tool stdio` is what prompts on stdout. The terminal tabs stay
-  tmux terminals (`AD-rusty-agents-are-terminals-001`, qualified); Codex has no print
-  mode, so the pane is Claude-only and says so when `claude` is missing.
+- Agent sessions (`src/agent/`; TICKET-031) are what a conversation with Claude Code is
+  made of, and they do not belong to the window. Starting one writes a JSON entry under
+  the XDG state directory and asks the user manager for a transient unit,
+  `systemd-run --user --unit=rusty-agent-<id> … rusty agent host --id <id>`, in
+  `app.slice` with `KillMode=mixed`, `TimeoutStopSec=20`, `Restart=on-failure` and
+  `--collect`. The host owns the one `claude -p` process over stream-json (the flags of
+  TICKET-025, plus `--session-id` on a session's first spawn so the Rusty id is the
+  Claude session id, `--resume` after that, and the mode, model and name the session was
+  created with), appends every line it forwards or receives to `<id>/events.jsonl` and
+  serves it over `<id>.sock` in the XDG runtime directory. A client sends `attach` with
+  the sequence number it has; the log after it is replayed, `caught_up` marks the end of
+  the replay, and the stream is live. The deltas of a block are broadcast without a
+  sequence number and never logged, because the `assistant` line that follows carries the
+  whole block — a replay is rendered from those, and loses only the typing. The host
+  writes to the process, then logs and broadcasts what it wrote as a `sent` line, so
+  every client sees the user's turns and the answers to permissions in log order, itself
+  included. It stops the process after its idle timeout and respawns it with `--resume`
+  on the next message; it records an exit and expires the permissions that were pending;
+  a resume the transcript cannot satisfy leaves a note and the next message opens a fresh
+  conversation. With nobody attached it raises the desktop notification for a permission
+  asked or a turn ended. Told to stop, or sent SIGTERM by the unit, it interrupts a
+  running turn, closes the process's stdin, then signals it, each step with its own
+  grace. `rusty agent start|list|attach|stop|rm` is the same client in a terminal.
+- The agent pane (`RightPane.qml`, `src/assistant.rs`) is one of those clients, beside
+  the note. Each pane holds its own `Assistant`: opening a page whose session the
+  registry knows attaches and replays it (the user's bubbles come from the host's `sent`
+  lines, so a replayed conversation and a live one are rendered by the same handlers);
+  opening a page without one starts nothing until the first message, which creates the
+  session (the page in `--append-system-prompt`, `HOME` as the working directory,
+  Rusty's server through `--mcp-config` with its reads pre-allowed, ten minutes of idle);
+  leaving the page only detaches, so a turn in flight finishes and the host notifies when
+  it ends. Enter sends a `user` message (Shift+Enter breaks a line), Send becomes Stop
+  while a turn runs and sends an `interrupt`, Allow and Deny write a `control_response`
+  and the answer comes back as the `answered` the item is stamped with, New ends the
+  page's session and unbinds it while its log stays on the machine. A session id kept by
+  a page from before this ticket is Claude Code's own, which no entry knows; it becomes
+  the `resume` of the session the first message creates, so the conversation carries over
+  without a migration. The wire was read off this box's `claude` 2.1.260 for TICKET-025
+  and again off 2.1.274 for TICKET-031 (`scripts/probe-claude-wire.sh`, eleven scenarios
+  whose lines are the parser's fixtures): `--permission-prompts host` denies unless a
+  host announces itself and `--permission-prompt-tool stdio` is what prompts on stdout;
+  `init` opens every turn rather than the process; the thinking text never travels, only
+  its token estimate; `--session-id` is refused for a session that exists, so an existing
+  conversation is only ever resumed. The terminal tabs stay tmux terminals
+  (`AD-rusty-agents-are-terminals-001`, qualified twice); Codex has no print mode, so the
+  pane is Claude-only and says so when `claude`, or `systemd-run`, is missing.
 - Importing an Obsidian vault (`Main.qml`; TICKET-026) is a palette command, "Vault:
   Import an Obsidian vault…", that opens a folder picker and then `importDialog`. The
   dialog asks `brain_import_plan` and shows the summary — pages, folders, attachments,
@@ -398,7 +445,18 @@ an agent run it are in `workflow-and-gates.md`.
   file are the back end's; a value reaches the page only through a tool answer.
 - The agent pane never bypasses a permission: a write through Claude Code's own tools
   or Rusty's asks, a read of the store does not; the pane's process is Claude Code's,
-  so nothing leaves the machine that a terminal session would not send.
+  so nothing leaves the machine that a terminal session would not send. Rusty names a
+  permission mode and adds no flag of its own that would skip the checks.
+- A session outlives the app because it is nobody's child: its unit is a sibling of the
+  app's, in `app.slice` rather than `app-graphical.slice`, so a stop, a crash restart or
+  a compositor restart leaves it running. Anything the app spawns itself — the terminal
+  tabs' tmux server — is in the app unit's cgroup and does not.
+- The host is the only writer of a session's log and the only owner of its process; every
+  client is a view that may come and go, and several may watch at once.
+- A session's files are the user's own: the state and log directories are `0700` and the
+  entry and log `0600`, because the log holds what was typed and what the tools answered.
+  They live under the XDG state and runtime directories, never in the store, the vault or
+  `~/.rusty`.
 - The disk is not the store: a folder root is read and written by the app alone, no root
   reaches a brain tool, and no disk write overwrites anything — an existing target is
   refused, a delete is a move to the trash, a text save is an atomic rename. A root's git
@@ -430,15 +488,28 @@ an agent run it are in `workflow-and-gates.md`.
 - A `git` that is missing, a root outside any repository, or a root whose real path git
   does not report as under its top level (a bind mount) all answer `{repo: false}`: the
   tree shows no mark rather than a wrong one, and nothing is reported.
-- The agent pane without `claude` on `PATH` (or `RUSTY_CLAUDE_BIN`) says so and hides
-  its input; a process that fails to start or exits appends a notice with the exit code
-  and the tail of stderr, and the next message starts it again; a session id whose
-  transcript is gone is forgotten on that exit. `rusty-pane-<program>` tmux sessions
-  from before the pane became a conversation end on their own.
+- The agent pane without `claude` on `PATH` (or `RUSTY_CLAUDE_BIN`), or without
+  `systemd-run`, says so and hides its input. A session whose host does not answer shows
+  the reason and reattaches on the next message, starting the unit again when the entry
+  is still there; a page whose session the registry no longer knows is unbound and its id
+  is offered as the `resume` of the next one. An exit the user asked for — the idle stop,
+  a stop — is not reported as a failure; any other exit is, with its code and the tail of
+  the process's stderr, and the next message starts the process again.
+- A session's process that ends before its first turn because the conversation cannot be
+  opened leaves a note and the next message opens a fresh one, so a transcript that is
+  gone never fails twice. A host that crashes is restarted by the unit, reopens the log
+  and continues; a host that fails to bind because another already holds the session
+  exits rather than compete for it. A run directory long enough to overrun a Unix socket
+  path is refused before a unit is asked for, with the limit in the message.
 
 ## Extension points
 
 - A new tab kind: a `Component` in `TabHost`, a title in `viewTitles`, a ribbon button.
+- A new surface on an agent session: an `Assistant` of its own and the signals it already
+  emits; nothing about the host changes, and several surfaces may watch one session.
+- A new session shape (a different working directory, mode, model, tool allowance or idle
+  timeout): the options `create` takes, which are stored in the entry and reread at every
+  spawn.
 - A new palette command: an entry in `commandList()`.
 - A new role: `skin::Roles`, `skin::fill` for its default, `skin::tokens`, a `Theme`
   property, its use in QML. A new preset: an entry in `skin::PRESETS`.
@@ -470,15 +541,28 @@ an agent run it are in `workflow-and-gates.md`.
   counts and in `tag:` search, and a tag removed through the property leaves both.
   `scripts/screenshot.sh <out> "tagfield:r" "right:tags"` photographs the completion
   list and the pane.
-- `cargo test -p rusty-app assistant::` covers the wire without Qt: `parse_line` on the
-  lines the probes recorded (init, block starts, deltas, the assistant's tool input, tool
-  results, a `control_request`, results good and bad, a denied permission), the
-  messages out (`user`, `control_response` allow and deny, `interrupt`), `build_args`
-  (both formats, the prompt tool, the MCP config, the allowed reads, `--resume`), and
-  `spawn` against a fake script (its lines, then `Exit(3)` with stderr's tail; a missing
-  binary refused; a kill ending a waiting process).
-  `scripts/screenshot.sh <out> "right:agent,agent:ask:<text>"` photographs a canned
-  turn from the fake `claude` the script seeds.
+- `cargo test -p rusty-app agent::` covers the sessions without Qt. `wire::` reads the
+  lines both probes recorded, off `claude` 2.1.260 and 2.1.274 (init with its model and
+  mode, the status and mode lines, thinking estimates, block starts, text deltas, the
+  assistant's tool input, tool results, a `can_use_tool` with its suggestions and tool
+  use id, the control acknowledgements, results good and bad including a conversation
+  that could not be opened, the rate-limit line, a compaction, a retry) and writes the
+  messages out (`user`, `control_response` allowing, allowing always and denying with a
+  reason, `interrupt`, the mode and model changes); `spawn::` asserts the process's
+  arguments for a pane session and a general one, and that a mode is named and nothing
+  more; `protocol::` round-trips every socket message; `log::` numbers, reopens and
+  tolerates a line cut mid-write; `registry::` writes, reads, lists and removes entries
+  and checks their permissions; `launch::` asserts the `systemd-run` line word for word
+  and refuses a socket path too long; `client::` covers a refused connection and a late
+  socket; and eleven `host::` tests drive `serve` through its socket with a bash script
+  standing in for `claude` — the replay and the catch-up, several clients, a client that
+  leaves mid-turn, the permissions and their notifications, the respawn with `--resume`,
+  a stale resume, the idle stop, and the stop sequence against a process that ignores
+  SIGTERM. `assistant::` covers what a host message means to a surface, replay included,
+  and `diff::` the line diff.
+  `scripts/screenshot.sh <out> "right:agent,agent:ask:<text>" "right:agent"` photographs
+  a turn against the fake `claude` and then, in a second run of the app over the same
+  state, the same conversation replayed from the session's log.
 - `scripts/screenshot.sh <out> "import:obsidian-vault"` photographs the import dialog
   with the plan for the small vault the script seeds.
 - `scripts/screenshot.sh <out> "open:sources/example-com-launchers"` photographs a
@@ -492,5 +576,7 @@ an agent run it are in `workflow-and-gates.md`.
 ## Primary sources
 
 - `crates/rusty-app/qml/Main.qml`, `NoteTab.qml`, `Explorer.qml`, `RightPane.qml`, `AgentTerminal.qml`, `src/assistant.rs`
+- `crates/rusty-app/src/agent/host.rs`, `launch.rs`, `protocol.rs`, `wire.rs`, `log.rs`, `registry.rs`, `spawn.rs`, `client.rs`, `mod.rs`
+- `crates/rusty-app/src/agents.rs`, `diff.rs`
 - `crates/rusty-app/src/backend.rs`, `theme.rs`, `omarchy.rs`, `terminals.rs`
 - `crates/rusty-app/cpp/highlighter.cpp`, `crates/rusty-app/cpp/tools.cpp`

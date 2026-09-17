@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:a09e94c667e7c76093dec6b0afac2d2741a810f9bad131d9acc5850d2aeb6927",
+  "pageVersion": "sha256:e04e54007978058f9eb2e2731adce9727cad40c8e4f086804fb08e7a70120b80",
   "claims": [
     {
       "id": "claim_9e9c10ea2bb241a7a0f7b9b28a1928f6",
@@ -14,21 +14,35 @@
     },
     {
       "id": "claim_59796b5c11f0472b80b11dd59e8b5070",
-      "statement": "`rusty session start`, `stop` and `status` are the one entry point into a running Rusty: the back end then the app unit, the app stopped with the back end kept, and both units with whether the port answers; they are verbs of the app binary and run to completion without Qt.",
+      "statement": "`rusty session start`, `stop` and `status` are the one entry point into a running Rusty: the back end then the app unit, the app stopped with the back end kept, and both units with whether the port answers; they are verbs of the app binary and run to completion without Qt, as `rusty agent` does for the sessions that outlive it.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-app/src/session.rs#L94-L159",
-          "version": "repo-lines-v1:sha256:2bfa16f895225f3d9d6dd5bfb206cf00ba62503bfd2492da95b9a88697ed9e83:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1MGY5YzU4OWVkNTQ2MWNjMjZkYTYxNTYxOTU5YzEzZTRlNjU0YjhmZDg4ZGY4NGJiZWZhYzljNGY0ZmNlNTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM3MDU2YTRjZDIyNmQzNmE0NGZmZmU1NTg1OWEzN2Y3OTAwNjA3ZTI5ZWE3ZjMxMDQ1YjFmYjE1MzcyMDYxZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkMDg5ZmUxY2JkM2YzMTQ4ZGQwOGE0ZmU0MzI1NDAxZDk3YTI5ZDU4NzI2ODFiMjBkZmRjZjIyYTQwOTllNjAifQ"
+          "resource": "repo://crates/rusty-app/src/session.rs#L98-L163",
+          "version": "repo-lines-v1:sha256:59e28368fad3b4ad7ba9c7cfa680943226943d27b22597da2a769971ce880bc4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNmFlYThkNWMyYzRkZmRmZTJmYzZjNDkwY2YwNjgzNzVmZGI3MzA0OGMzYTg1NzI0MTMyM2Q5Mjk4ZmE4Y2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiNGM3YWFiYmY5ZDUzMjMwMGUzYzY3YTlmY2JiMTE5ZTUwZmQ2NTRkZTI1NDFiMjM3NDg1N2ZjOTRjMTEwMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4OTE5MTY1MDVlMDE2ZDQzMjU2MmI2ZjVjNjIxMjc3MDg1MGY3ZWQ0N2ZhNWFjMzZiZTg2MjllNjY4NjUxYTYifQ"
         },
         {
-          "resource": "repo://crates/rusty-app/src/main.rs#L71-L101",
-          "version": "repo-lines-v1:sha256:96329d870bafe6512c684ef242082fd6feda75850c4f50b371b15e5526aac351:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYjllZWU5MWJjMGIxYTc3YjVmMjI0ZmQ2OTQ1ZjNkZWMyMzRlNTU5NmI5NDc1YzkwYzVhZWM5ZTZhZTIwYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1Yjg4NzAzOTY1M2EwMmY0ZmM1YWMyMWU3NTVhNTdkZjk1OGE0YjA3M2ExYzAxYjhiM2RkNGZjYmI1MjU1YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjY2NiOTBiZjU2MWVjODYzZjNiNzM5YTk2Njg1YmY2M2U0NzliNmUwNDdjMjdjYjdiYWFmM2NiODIxNGZkNmIifQ"
+          "resource": "repo://crates/rusty-app/src/main.rs#L74-L104",
+          "version": "repo-lines-v1:sha256:9e5a6a81e5cd9a0c03e5c7ad7b013b8028e945ea4ec3d237d68ed7f268e8520c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2YThlZTM3NDA1MjVkMGQzNjFhNjA0MzZiZDY3YjQ0YzM0NTM4NWM3YjI0M2YxMTY2YjMyOTZlY2QyYTExOWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNGFhOTUzZTI3YTVlNWIwZTcyMWFkYjhjZGQ3YzQ1NDRmYzdhNGQyYWY4ZWQ5ZjQ5YWZmMzZhOGJmMzMyZTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzNDM2ZWI0ZjBmNWRlNDM3NGQwZDE1MTNlYzUzMWE4M2YzNjEzN2EyNmYxOGM2NDNhODgzMWJjMTU1MWYyYjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ff0f8bfd2e894a5abbd26ff7b2180a6d",
+      "statement": "`rusty agent` is the second noun of the binary and the way a conversation is seen from a terminal: `start` runs a session under its own unit, `list` shows every session and whether a host answers, `attach` prints its event stream and sends what is typed, `stop` and `rm` end and delete it, and `host` is what the unit itself runs.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/mod.rs#L26-L42",
+          "version": "repo-lines-v1:sha256:539139a58b6168b033c735b58fd3ee3f91ff2d2bfb945e7ce3707f7b5b5eab52:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMWY3MmJiMTE4OGZhNjY4ZWM3N2M4OThiZTBhZTVhMTk5ZTkyODQ1OGRkZDIxOTNmNjg4NDM3NDkwNDRjMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2YzAxZGVmNWU2ZTg0NTkzN2ZhMmVkYTE4NmU5ZjM3NjVmY2Y4ZTdkMmE5N2Y1ZGQ4YWE4NzI4MzIyZWNkMWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4NGExYzM0ZWJhYTIxYjRlNzY4NjM3NWQ0N2Y5OTI4ZmE2MzMyZjEwMzQ4MmMwNDk2NGZmMTlkZTZkZjcwYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxOTNmNGExMmRkY2YxYzZjYjVhNjRhNTA4ZDBhZmM0NjM2MzMzNDFlODYyNzVjNThhMjkzMWY4MzU5YzIzMGYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/mod.rs#L185-L225",
+          "version": "repo-lines-v1:sha256:98d8af1c9b78bc903f2459f66c0ac4af16123546f54e9be22f8f64237f49dfc1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzOTdmODk1OWVmMWZjZTI2NzBlM2NhMmQzMTg2ODE1ODJmYzE2NDhhZmE5YWUwZTIzNWVkMDVjYWRhOGU4NDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhNDBiZTM0NGI4NWNjYjdiYzQyNWZmZjVjNTM0ZDc2NTExNWM1NWUwYzEyZDgwNGE0NTcyYjlhZTMzMjQ4OTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiNTI4ZGMxYmQ1ODZkOTk1MWJkZWZmNTRlYmZhNzM3YmI0YWU2OWJhYjU3MjkxNzZmM2U1OGQ3ZjQwZmQxMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NzAwOWFmODMzOTA2ODI4NWY1NzFiNjU5ZWIwNmQ5NmYyNTdhNzc1MzFjMDgwNzM5NGVmYTZlNDU0MzNhNmQifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-09-05T14:39:51.324Z"
+    "at": "2026-09-17T22:06:12.177Z"
   }
 }

@@ -41,6 +41,7 @@ fn main() {
         "src/terminals.rs",
         "src/backend.rs",
         "src/assistant.rs",
+        "src/agents.rs",
         "src/markdown.rs",
     ])
     .cpp_files([

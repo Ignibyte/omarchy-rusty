@@ -292,11 +292,34 @@ while IFS= read -r line; do
   echo "{\"type\":\"stream_event\",\"event\":{\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}}}"
   echo "{\"type\":\"stream_event\",\"event\":{\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Orbit is a keyboard-first launcher: one key, a line of text, and the thing you meant opens. \"}}}"
   echo "{\"type\":\"stream_event\",\"event\":{\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Its north stars are a local-first feel and a keyboard answer on every surface.\"}}}"
+  # The whole block once it is complete, as Claude Code sends it: the deltas are live
+  # only, and this is what a replayed conversation is rendered from.
+  echo "{\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"Orbit is a keyboard-first launcher: one key, a line of text, and the thing you meant opens. Its north stars are a local-first feel and a keyboard answer on every surface.\"}]}}"
   echo "{\"type\":\"control_request\",\"request_id\":\"req-1\",\"request\":{\"subtype\":\"can_use_tool\",\"tool_name\":\"mcp__rusty__brain_add_timeline\",\"input\":{\"slug\":\"projects/orbit\",\"summary\":\"Summarised for Chad\"},\"description\":\"Add a timeline entry to projects/orbit\"}}"
   echo "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"session_id\":\"$sid\",\"num_turns\":2,\"total_cost_usd\":0.0123,\"result\":\"Orbit is a keyboard-first launcher.\"}"
 done
 FAKE
 chmod 755 "$scratch/bin/claude"
+
+# A stand-in for `systemd-run --user` (TICKET-031): the scenes must never touch Chad's
+# user manager, so the session host runs as a plain background child here. It logs its
+# arguments beside itself, then runs whatever follows `--`.
+cat > "$scratch/bin/systemd-run" <<'STANDIN'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >> "$(dirname "$0")/systemd-run.log"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --) shift; break ;;
+    *) shift ;;
+  esac
+done
+[[ $# -eq 0 ]] && exit 1
+setsid "$@" >>"$(dirname "$0")/../agent-host.log" 2>&1 &
+exit 0
+STANDIN
+chmod 755 "$scratch/bin/systemd-run"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$scratch/bin/true"
+chmod 755 "$scratch/bin/true"
 
 HOME="$scratch" XDG_CONFIG_HOME="$scratch/.config" XDG_RUNTIME_DIR="$scratch/run" \
   "$target/debug/rusty-mcp" --http "127.0.0.1:$port" >"$scratch/server.log" 2>&1 &
@@ -315,6 +338,7 @@ for scene in "${scenes[@]}"; do
     QT_QPA_PLATFORM="${SHOT_PLATFORM:-offscreen}" QT_FORCE_STDERR_LOGGING=1 \
     RUSTY_MCP_URL="http://127.0.0.1:$port/mcp" RUSTY_TABS="$scratch/tabs.json" RUSTY_STATE="$scratch/workspace.json" \
     RUSTY_OMARCHY_THEME_DIR="$theme" RUSTY_SHOT="$file" RUSTY_SHOT_DELAY="${RUSTY_SHOT_DELAY:-3500}" RUSTY_CLAUDE_BIN="$scratch/bin/claude" \
+    RUSTY_SYSTEMD_RUN="$scratch/bin/systemd-run" RUSTY_AGENT_STATE_DIR="$scratch/agents" RUSTY_AGENT_RUN_DIR="$scratch/run/agents" RUSTY_NOTIFY_SEND="$scratch/bin/true" \
     RUSTY_SHOT_SCENE="$([[ "$scene" == reading ]] || printf '%s' "$scene")" RUSTY_DEBUG=1 \
     timeout 40 "$target/debug/rusty" >"$out/$name.log" 2>&1 || echo "scene $scene exited $?" >&2
   [[ -s "$file" ]] && echo "wrote $file" || echo "no image for $scene (see $out/$name.log, or journalctl -t rusty)" >&2

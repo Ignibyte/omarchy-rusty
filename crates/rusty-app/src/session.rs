@@ -42,6 +42,8 @@ usage: rusty [<command> [args...]]
   rusty session stop         stop the app unit; the back end keeps serving
   rusty session status       both units, the port, the app's processes
   rusty session run          what rusty-app.service runs: PATH completed, then the window
+  rusty agent <verb> ...     Claude Code sessions that outlive the app: start, stop, list,
+                             attach, rm (rusty agent help)
   rusty <script> [args...]   a store script, a *.sh beside a skill (rusty-cli scripts list)
   rusty help                 this text
 An argument that starts with a dash goes to Qt.";
@@ -66,6 +68,8 @@ pub enum Request {
     Session(Verb),
     /// `rusty session` alone, or with a verb that does not exist.
     SessionUsage(Option<String>),
+    /// `rusty agent ...`, with everything after the noun.
+    Agent(Vec<String>),
     /// A store script by name, with its arguments.
     Script(String, Vec<String>),
     /// A bare word that is neither a noun nor a script.
@@ -87,6 +91,7 @@ pub fn parse(args: &[String], script_exists: impl Fn(&str) -> bool) -> Request {
             Some("run") => Request::Session(Verb::Run),
             other => Request::SessionUsage(other.map(str::to_string)),
         },
+        "agent" => Request::Agent(args[1..].to_vec()),
         name if script_exists(name) => Request::Script(name.to_string(), args[1..].to_vec()),
         name => Request::Unknown(name.to_string()),
     }
@@ -462,6 +467,23 @@ mod tests {
         for verb in ["start", "stop", "status", "run"] {
             assert!(USAGE.contains(&format!("rusty session {verb}")), "{verb}");
         }
+        assert!(USAGE.contains("rusty agent <verb>"));
+    }
+
+    /// The `agent` noun (TICKET-031) is answered before Qt starts and before the store
+    /// scripts, whatever follows it.
+    #[test]
+    fn agent_is_a_noun_before_the_scripts() {
+        let owned = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert_eq!(
+            parse(&owned(&["agent", "list"]), |_| true),
+            Request::Agent(vec!["list".to_string()])
+        );
+        assert_eq!(parse(&owned(&["agent"]), |_| false), Request::Agent(vec![]));
+        assert_eq!(
+            parse(&owned(&["agent", "start", "--cwd", "/x"]), |_| false),
+            Request::Agent(owned(&["start", "--cwd", "/x"]))
+        );
     }
 
     /// The wrapper TICKET-009 installed is gone: nothing shipped from `omarchy/` or

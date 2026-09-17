@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:d375e681c435e68e0fbcdbb2f73687a4ed1df512166f524d5e6500652a0e9c70",
+  "pageVersion": "sha256:e5f229c163f1138ed1120fbae55c607b3b043b349bbe35dbcb395b4e34497b79",
   "claims": [
     {
       "id": "claim_ea61ceb0077d4de5a6e3321bc8cbed7f",
@@ -74,15 +74,15 @@
     },
     {
       "id": "claim_1bae340b188a4956926b8783f2bc7caa",
-      "statement": "The workspace state (sidebars, panes, expanded folders, the graph and page layouts, bookmarks, roots, the skin, the agent pane's session id per page under `agentSessions`, the editing mode under `editMode`) lives in a JSON file the Rust side loads and saves.",
+      "statement": "The workspace state (sidebars, panes, expanded folders, the graph and page layouts, bookmarks, roots, the skin, the agent session id per page under `agentSessions`, the editing mode under `editMode`) lives in a JSON file the Rust side loads and saves.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-app/src/terminals.rs#L335-L345",
-          "version": "repo-lines-v1:sha256:6e007ffa40b4cc857272231e05b1fc4d350e33e3e622af56a16ede1727b07895:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlNTE1MWQzMjZmNTA5NDlhMjY1NzBhYWYyNDNjOTIwNTc0ZTA2NzgzMGU2ZmQ4MmIwMmQxZGE1Zjc0MTY2MWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxODRmN2M3MzI0NDkxMjAwY2UyMWNhYzA4YjIxM2NkZmVmZmU1NDQxMjUwZDhiZjhjOWY4ZmE1OWE2OGM3Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4NzE2MzI3MzkxYzM2YmRjMThlOTc5NmViZmNhNTM4MTIyYjY4YjE5M2FhMzg1ZDA3NWMwZjdmNTRhOWQzOWQifQ"
+          "resource": "repo://crates/rusty-app/src/terminals.rs#L345-L365",
+          "version": "repo-lines-v1:sha256:2f505bab5e464c14052a6fc9aee1b1f3243d9510291db3ff4b90cd5c703d04cd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNzBlYmVkMjZmNTQxNjBmZDg4MDYzZTg1NDE4OTQyODExMGFhYjBiMmI2NTQwMzk0ZDQ0NmU5MTU1NGFlYmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc1NGZiNmVmZDBhNjNiMzdmNGYwZmZmNTk4YjBhMTAyMGZiOWQyMmE5ZWEyZTRmMzFlMzIwMDRkMGQ4MmJiZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlNDI2NmI2YTRlNTZiZTJmZWFhMzhiMzM4NGY0NjZkMDlkNjdhZDYwZjc2YjU5MGZmZWZmMDM0NjZhNWE2MzcifQ"
         },
         {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L58-L126",
-          "version": "repo-lines-v1:sha256:670c8eb373a5a8e9da083f55adaf57e5d243d19a559253969c1ff06a660f596b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmYTIxYTU1ODk4ZDhlYWE4MGIzMmYxZDUxNTIzYzllODAwMjcwYWM2Y2QxNjZjM2FiOTQxZmNhZTFmYmQ5OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzMWIxYzZiZDY1ZWQ4NTE0MDRkMGVhZjEzMzBjMDlkZWIxNjkzNTBiM2QwY2E2MjAyNzVkNmE4Yjg1ZGZmNjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyZGNhY2IwNjcwZTk2ZGQ1Njc2OTJlM2JkMzEzODI1ZDM0ZjUxZTNiNTExY2E1ZmExM2U5Njc4YzFjYmY3MDQifQ"
+          "resource": "repo://crates/rusty-app/qml/Main.qml#L60-L128",
+          "version": "repo-lines-v1:sha256:670c8eb373a5a8e9da083f55adaf57e5d243d19a559253969c1ff06a660f596b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmYTIxYTU1ODk4ZDhlYWE4MGIzMmYxZDUxNTIzYzllODAwMjcwYWM2Y2QxNjZjM2FiOTQxZmNhZTFmYmQ5OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmZDE4OTdlYzFjZGM3Yzg4YjdjYjI3ODA4NWZiNzMyN2FhYTcxZTlkZDhmYWVkMDk4OTY2NWYwY2VjMGIxMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyZGNhY2IwNjcwZTk2ZGQ1Njc2OTJlM2JkMzEzODI1ZDM0ZjUxZTNiNTExY2E1ZmExM2U5Njc4YzFjYmY3MDQifQ"
         }
       ]
     },
@@ -458,19 +458,19 @@
     },
     {
       "id": "claim_cf2c7a43fd0b4acd938ccf92dcbab179",
-      "statement": "The app binary doubles as the command front end and answers `rusty <noun> <verb>` before Qt starts: `help`, `--help` and `-h` print the usage; any other argument starting with a dash goes to Qt untouched; `session` with `start`, `stop` or `status` runs to completion and exits with its status, and `session run` completes `PATH` and continues into the window; any other bare word is looked up in the active skills store as a script and, on a hit, execs `rusty-cli scripts run` in place of the window; a word that is neither prints the usage on stderr and exits 2, so a typo never opens a window.",
+      "statement": "The app binary doubles as the command front end and answers `rusty <noun> <verb>` before Qt starts: `help`, `--help` and `-h` print the usage; any other argument starting with a dash goes to Qt untouched; `session` with `start`, `stop` or `status` runs to completion and exits with its status, and `session run` completes `PATH` and continues into the window; `agent` hands everything after it to the agent verbs, which include the session host a unit runs; any other bare word is looked up in the active skills store as a script and, on a hit, execs `rusty-cli scripts run` in place of the window; a word that is neither prints the usage on stderr and exits 2, so a typo never opens a window.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-app/src/session.rs#L75-L95",
-          "version": "repo-lines-v1:sha256:f19a1c3bb04e0e330020934200130553c3d2c1347b4c6b490604ec0fddbca77a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3ZTg5MjM1MzA3YWIzNmM5ZGJhZGVkYWI4YWQyNzU5NzRjOGMzMGNhODhhNGZjMmI3NGVkOThmZGIyMjU4NWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0NzA4ODU3YThhZjQxMmE2NTlhYWNkNjljY2I4ODBkNjZlODdjMTRkOWRhODk1MzA3NWE0Y2U5NDFlNGJkYTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTBlODQzZDgwODUzMWUzZDNkYzdmNjI4MmQxM2NjNzkwZWUzZGEyMjQxOThlOGM4MzJkY2Q2ZWFlOTM1MjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0MGJhODc0ZDlhMDA3OTczMWU1MTk0YjdmY2Y2NjA5NWViOTk2NzFkNTY5NzZlMjc3ZTVkZTAxNjlmNjM3ODYifQ"
+          "resource": "repo://crates/rusty-app/src/session.rs#L79-L98",
+          "version": "repo-lines-v1:sha256:bdea8c523441c8d84e23450a5dc1a3e91584efcaa5c63a4d357212647317b17a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3ZTg5MjM1MzA3YWIzNmM5ZGJhZGVkYWI4YWQyNzU5NzRjOGMzMGNhODhhNGZjMmI3NGVkOThmZGIyMjU4NWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTBlODQzZDgwODUzMWUzZDNkYzdmNjI4MmQxM2NjNzkwZWUzZGEyMjQxOThlOGM4MzJkY2Q2ZWFlOTM1MjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1MjI5NjI0MGRhMmNjZjFhZjNiOGY2ZWI0ZGRiY2Y1NTE2NWZkM2YyM2RmZTBkNzgyNTJmZWZkNmVhNTVjMzcifQ"
         },
         {
-          "resource": "repo://crates/rusty-app/src/main.rs#L36-L69",
-          "version": "repo-lines-v1:sha256:1bfef1efde2b904c358558eb3b706e9e54e605bf5c66b1801b036be32c28b568:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhNDhjZGU4MTNlMjJkMmFmMmM4MTIwZTYxYmRiMWI2NzhlZWU3NTg5ZjEyMjBiMmQzOTg0NDg0N2E4ZDdmMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3Njc3MjA3YTU5MzhiOTFjYWI4YTk2OGQ5YTU2ZTI5MGI4ZjNmYTgzMGRkZjJhZTI3Y2YzYjI1ZTUxYjUwM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmNmRjNTc1NDI2NDBlMDkzMDBiNjk4NjU4NjZmMDk3YWJjNjg2MWJhNDVhOGRiODBjYjk3YjdjZjgzZGI3NmUifQ"
+          "resource": "repo://crates/rusty-app/src/main.rs#L74-L104",
+          "version": "repo-lines-v1:sha256:9e5a6a81e5cd9a0c03e5c7ad7b013b8028e945ea4ec3d237d68ed7f268e8520c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2YThlZTM3NDA1MjVkMGQzNjFhNjA0MzZiZDY3YjQ0YzM0NTM4NWM3YjI0M2YxMTY2YjMyOTZlY2QyYTExOWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNGFhOTUzZTI3YTVlNWIwZTcyMWFkYjhjZGQ3YzQ1NDRmYzdhNGQyYWY4ZWQ5ZjQ5YWZmMzZhOGJmMzMyZTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzNDM2ZWI0ZjBmNWRlNDM3NGQwZDE1MTNlYzUzMWE4M2YzNjEzN2EyNmYxOGM2NDNhODgzMWJjMTU1MWYyYjkifQ"
         },
         {
-          "resource": "repo://crates/rusty-app/src/main.rs#L71-L101",
-          "version": "repo-lines-v1:sha256:96329d870bafe6512c684ef242082fd6feda75850c4f50b371b15e5526aac351:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYjllZWU5MWJjMGIxYTc3YjVmMjI0ZmQ2OTQ1ZjNkZWMyMzRlNTU5NmI5NDc1YzkwYzVhZWM5ZTZhZTIwYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1Yjg4NzAzOTY1M2EwMmY0ZmM1YWMyMWU3NTVhNTdkZjk1OGE0YjA3M2ExYzAxYjhiM2RkNGZjYmI1MjU1YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjY2NiOTBiZjU2MWVjODYzZjNiNzM5YTk2Njg1YmY2M2U0NzliNmUwNDdjMjdjYjdiYWFmM2NiODIxNGZkNmIifQ"
+          "resource": "repo://crates/rusty-app/src/agent/mod.rs#L185-L225",
+          "version": "repo-lines-v1:sha256:98d8af1c9b78bc903f2459f66c0ac4af16123546f54e9be22f8f64237f49dfc1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzOTdmODk1OWVmMWZjZTI2NzBlM2NhMmQzMTg2ODE1ODJmYzE2NDhhZmE5YWUwZTIzNWVkMDVjYWRhOGU4NDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhNDBiZTM0NGI4NWNjYjdiYzQyNWZmZjVjNTM0ZDc2NTExNWM1NWUwYzEyZDgwNGE0NTcyYjlhZTMzMjQ4OTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiNTI4ZGMxYmQ1ODZkOTk1MWJkZWZmNTRlYmZhNzM3YmI0YWU2OWJhYjU3MjkxNzZmM2U1OGQ3ZjQwZmQxMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NzAwOWFmODMzOTA2ODI4NWY1NzFiNjU5ZWIwNmQ5NmYyNTdhNzc1MzFjMDgwNzM5NGVmYTZlNDU0MzNhNmQifQ"
         }
       ]
     },
@@ -576,23 +576,19 @@
     },
     {
       "id": "claim_422d7b99298d492e9a867ddbe5d03d0b",
-      "statement": "Screenshot scenes exist for the chrome that only shows on demand: `RUSTY_SHOT_SCENE=rename` opens the rename dialog for the current tab, `plus` pops the tab strip's menu, `skills:collapse-scripts` (or `collapse-skills`) sets the Skills page's remembered layout before `view:skills` opens it, `file:<path>` opens a file tab and `file:edit` puts it in edit mode, `root:<path>` adds a folder root and expands it once the roots have changed, `expand:<path>` opens any row, `tagfield:<text>` puts the text in the open page's tags field so the completion list shows, `agent:ask:<text>` shows the agent pane and sends the text (the screenshot script points `RUSTY_CLAUDE_BIN` at a fake `claude` it seeds), `import:<path>` opens the import dialog with the plan for a vault (the script seeds a small one), `live:<n>` puts the open page in live preview with section n open — a scene path is taken as given when absolute and under `HOME` otherwise — so each can be photographed offscreen against a scratch vault.",
+      "statement": "Screenshot scenes exist for the chrome that only shows on demand (the rename dialog, the tab strip's menu, the Skills layout, a file tab and its edit mode, a folder root, a tags field, the agent pane's `agent:ask:<text>`, the import dialog, live preview), photographed offscreen against a scratch vault; the script seeds a fake `claude` and a stand-in `systemd-run` and points the app at them with its scratch state and runtime directories, so a scene drives a real session host without touching the user's own agents or user manager.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L516-L543",
-          "version": "repo-lines-v1:sha256:4ef7cf8e00c9e396d3bda7d931da0ef64de5dc90a70dea5fc898acb399231625:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyMWQ0YTlkNDkwY2E3NjdmMDU5NTNiYzY3ZTQzMWRhZTM2YjJiYTBiZjFkNzQ2ZmFkODE3MGUyNGViM2I3YWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiOWQyYjZmMDQ1ZWIxNDMyOWU2OWFiYzZjZTNlZDg3NWM2NWFhOGUyNzc4N2YzODI0ZTcyMDY0NmQzNDRkNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkNTdhYmE0NThlMGMxZWFkNzk0MDhiYWUxODQ2ZjBkMDFkMzRjMWQ4ZDIzNWNhZjMzMTg3ODI0MTA5MWJjODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4ZWYyODQ3NDRjNzNlNjNkNDk0ODEyZDBkZjk2MmVlMGM4NWZiZTNmMDVjZTllYzM3Y2YzYzIzMDgzMmQ5ODIifQ"
+          "resource": "repo://crates/rusty-app/qml/Main.qml#L518-L545",
+          "version": "repo-lines-v1:sha256:658862ce4072a9fb1178b59e8cf9c292aeea8afd5a03ccad058298e1d2d9b4b4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjMjExMmQwYWQwYTNlZTkyMTM1OTlmNDU0ZWI0ZmRiYWE1MTBiZjY5NjQ2OTQ5YmQ1ZGE3Yzc1NGRkYWVjODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhOTc5MDQwMzQwN2NlODQ0OTkwYjJiYmQ2ZGM2NTNlMmFhZGQ1NmYwYWQzMDI4ZmFhN2UyZGY4ZTI1MGJmZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4ZDBlMGVmMGM2M2M2NjAzNDJmY2U1YWZmZWM5NDI0MGQ1ZDQxY2FkYzZlNDMxYmFlZmJmNTFhY2I5NWU1NGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2OWU1NThhODM4YmFhZDA3Y2Y4NzYwMjc5NWE2NWI3NDU5NTdjMWMzOTU2NDEyOGQzMWU3Y2Q3NWY2OWVlM2IifQ"
         },
         {
-          "resource": "repo://scripts/screenshot.sh#L249-L266",
-          "version": "repo-lines-v1:sha256:0ceaab9b0759bc86afaa77fcc2921bdd7de38fb4e55786c2979519043fd6a2a1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhYjQ1Y2EzN2VjZTYzZjZkOTA2YzkwODU2YWJmNzY2MzA3Y2JmMmUzY2U4Mzk1OGQ4NjQ1MDFjMTViOWYwYWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyZjU0MmU2NDhjNjk4ZmViMTk4NDM3YzA0OGQ4NTJkN2NhYmE1MGU3Njg3Y2E3ZWQ3Nzg3ODk0MmNmZmZhNTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3YzBlZjgyYWNjYWRhMjBjOGVhNTg3NTFjNDBlMzAxZTdhYzYyMjMyYjBmMjAyMDY1YThiOTJlYzYyZWM4NmYifQ"
+          "resource": "repo://scripts/screenshot.sh#L277-L321",
+          "version": "repo-lines-v1:sha256:4a7689c4d4a510ec9a0ae25134b58ffcb904befae5e73bcec0bbf8962e513672:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0Y2QzMmQ5ZGY3MDVkNWJjNDg3Njk1ZGNhMzc3YWQzZTJhNWJjMWM5NzQzMTBiN2YwMzQzY2Q1YzQ0NTcyOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3NzU2ZGM4YjY2OWQ3MTU0MTY3ODI0MzAxYjkwNzAwM2NjMDE2YmRiMTVkMjU0ZTVjMGY5OWM3M2QyMzBmNGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwNTFjMGYzNzA5OWRhOWQyODQwYzJhY2Y5OTg1YmM5MzM0YmQzNzRmNDU4OTE4N2I4MzIxZGQ5ODJkMzk4NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3MTZlNjIyZTA0NTlhY2ZmM2RkZDM1NzQ1ZjJhZGQ3NjM1Mjk0OTE5MGMwMmM3Mjk4ZGQ3NTA1NTA0MTA3MjAifQ"
         },
         {
-          "resource": "repo://scripts/screenshot.sh#L279-L298",
-          "version": "repo-lines-v1:sha256:cf2ea452f40cbe92e76c25b3783f927be092471f5a89ede4116f8ab7987f1ef0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxZWY0ZDdkNDlhY2JmNmNmYmEzMTdjNzM1ZDcyODVmZjc2OWVmNTY4YzEwOTM3NjZkZjBjYzFjZmQ3NDY3MDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwN2FjMjlmYmQxZDlmMmE3NmY5ZTYwOTM4ZjJmYmQwMmY5YTc1MmM0ZjYzM2UzMjYwMjkxODViYzQ3Mjg1NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMjhiNjBjMjI0Y2RhNzI4NmFhYjFmNTg3MDAxZjAxMTZkMjRjNDRjYWVmOGViYjliODg3MTUzNzcwNTRkZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlY2JlODUyNjBkN2FkODA1YjZhZGFlMDA4MjAzZjBjYjdkMDg3YTA4ZGRmMmFhYjI4MzA1MTJkMTFjMmIxZmEifQ"
-        },
-        {
-          "resource": "repo://scripts/screenshot.sh#L317-L317",
-          "version": "repo-lines-v1:sha256:fadd1eb52c9049ad6d430c4328f2e758dc2636d5bdc24072c128cc3827bb3821:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFkZDFlYjUyYzkwNDlhZDZkNDMwYzQzMjhmMmU3NThkYzI2MzZkNWJkYzI0MDcyYzEyOGNjMzgyN2JiMzgyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFkZDFlYjUyYzkwNDlhZDZkNDMwYzQzMjhmMmU3NThkYzI2MzZkNWJkYzI0MDcyYzEyOGNjMzgyN2JiMzgyMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzlmOGMwYzJjNzJlNDk0MDQ3ZDE4YjgyNTgzMTJiNTczYWU5NjQ5YTA0NmY3NzE2MTM4NGQ5YmUyOGU3ZmNlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWNjNDY5MjViZDcxY2VkMTI1MjNmNGU4ZjIwOTcyYjkzZTg5MjE5MGM0MzIzZmFiOGY5OWUyYzYxMTQ3MTM5NSJ9"
+          "resource": "repo://scripts/screenshot.sh#L336-L342",
+          "version": "repo-lines-v1:sha256:b33ef8701543c529e04b5a34380ea74a0a9119d7e322e5ea641b247f94d524c7:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGY4NWU5MTBjMWM5OTdhNWM1OTU0NjhkOGMzMTI0OTY2Y2ZkZTBmZWVkNDFhY2JmNGM0Mzk2NGNkNTZhMmJjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM2YzhhYzYxMjk3ZTM2YzM5MWYzZTBmODMzZDFlNjQzNzdlODdkOWYxNDhmM2E4Y2FiMTkwZTg5ZTExMDU1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODNiMmY0MDIxMDUzYTNkZTQ5MTg3OWJiZmZmOTQ4ZWQyY2FiMWZlNmJmNzI1MGUyYjA0ZWE5NDVmZDIzNDJhYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjI1M2VmMDE4ZWZhMWM2OWE5Zjc5ZjU4M2JmZWMwOTkzMjI2Y2YwNWVkNmE5Y2Y0OGQ0MzA4ZThiNGE2NDMxYSJ9"
         }
       ]
     },
@@ -784,59 +780,23 @@
     },
     {
       "id": "claim_81ebc03d53d34c91b0fd6d17d2478052",
-      "statement": "The agent pane is a headless Claude Code, not a terminal: the app's `Assistant` type spawns `claude -p --input-format stream-json --output-format stream-json --include-partial-messages --verbose --permission-prompt-tool stdio --permission-mode default --strict-mcp-config` with Rusty's own server as an HTTP MCP server, its read-only tools pre-allowed by name (`READ_TOOLS`), the open page named in `--append-system-prompt`, `HOME` as the working directory, and `--resume <id>` when the page has a session; a reader thread hands each stdout line to the Qt thread, where `parse_line` turns it into typed signals (init, block start, text delta and final text, tool input, tool result, permission asked, turn done, notice, exit) that the pane renders as items of its own — selectable text, a tool call with its input, its result in the terminal face, a permission prompt whose Allow or Deny writes a `control_response`, a notice; Enter sends a `user` message, Stop sends an `interrupt` control request, an exit is reported with the tail of stderr and any message restarts; a session id comes from the `init` event into `ui.agentSessions` and an exit before `init` forgets a stale one; the terminal tabs stay tmux terminals, Codex has no print mode so the pane is Claude-only and says when `claude` is missing.",
+      "statement": "The agent pane is a client of a session host, not the owner of a process: each pane holds its own `Assistant`, which attaches to a session's socket, replays its log and then streams, and writes the pane's messages, permission answers and control requests through the host; a page with a session attaches without starting anything, the first message on a page without one creates the session, and moving to another page only detaches, so a turn in flight finishes.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-app/src/assistant.rs#L19-L112",
-          "version": "repo-lines-v1:sha256:c47e6b2d7ad751c16b4ad58f2f022690effd40c83170cf65b70cc90b53fe63b8:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlNzJhZjU1MDMxYTZlZTE3N2MyYzIyMGUxZDYyMTZiMGJlMWNkNGFiZWQ4MWU4ZDIzMzUxYjk3ZTljMzc3NmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhNWI2ODEyMTNkMWZmZDNmMDgyNzhhMDY4ZWE4OGMyMTI0ZGY4MTZlOGQ0MDkzNDJmOWI5YWQzYmU0OGQwY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwZWUwMzU5MTZhZGZjMzJiZjY0NGQwMmRmODU0ZjJhYzRkNzI3Y2Q3NGY4NTYzZmEyOTVmMDk3ZThiNWY0ZjYifQ"
+          "resource": "repo://crates/rusty-app/src/assistant.rs#L1-L23",
+          "version": "repo-lines-v1:sha256:f4f1caaf9dc19e7c6bf59468509030df9e1c84aed297715bf8d2aeb5c2c0f83c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlMjk2YjI3NGE1MTkzNmZlYTAzZjNhN2Y3ZGM0OTc3NGFjMDQ5YzgxYTAzMTEwNDA1OGNmMDYwNjMwMzRmM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0YWU5ZWY5ZTBjZDNmN2MxYjhhZWM5MmZjNWI0MjgzYjNlZWM4ZjJjOWMyOTY3YTkwZTViNzZmM2QzYjU2YTYifQ"
         },
         {
-          "resource": "repo://crates/rusty-app/src/assistant.rs#L115-L145",
-          "version": "repo-lines-v1:sha256:47f959dc69abdf127696f77dd9272db216b06fc9e4f807082312640685b2bf0d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmOWEwMDIxZDU3ZWE5MGE3M2ZmYmY4MTBmZGI5MTgwZGQ0Y2JiMzU0MTUyMWM4Nzg2NTAwMmU0YzdkYTQ3MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzZDIyMTYzOTA1NTViZGFmMzlkMjU3YTM5YzgzNWM1ZDNmMGU1NDA3ZjBlYjhkYTdlMmEwMTU3M2Q5NGQyZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdhNjE2Nzc4ZTBmYzI1NTUzOTJjYWFkYWUzZGQ1OTc4YTQzNDAzNjg5MDc0MDk3OTUxNzVlMTlhMTlhYjg4YzMifQ"
+          "resource": "repo://crates/rusty-app/src/assistant.rs#L335-L470",
+          "version": "repo-lines-v1:sha256:13820e0e0b3dd39c03c69dff4c3c5c2be200da2e6c863a2b330dbeb86661bc76:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxMTdhZjFhODRjYTkwMWJjMTQ3MWMwN2RiZjBmOGI4MGFiNzhjNWU5ZGMyYjgxZGVmMTRhNjljOTFkYTg2ZmZjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIyOTExNTRmMWE0ODliODFmNTFmNDM3NWIwM2IzNzdjN2FhZjYwN2NhZjM3OGNkNzgxZWFlZTMzNjA4MzQzNzhhIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjNTk2ZDIyNzFiYjc2ZTM4MGJlM2E3MGFjNmY5M2E4NjA2MzlmNDhhMTkwZmVhMWNiNWZlNDE2ZjRhMTg3ODQzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4MjQ1MmE4Mjc4OGE5YjYxODM0NTMzNWU4NGUzYmE4OTA1NzYzZWQ4YjljZDQ4MzUxZTA5MGQ3ZDQzZDVlODc0In0"
         },
         {
-          "resource": "repo://crates/rusty-app/src/assistant.rs#L215-L321",
-          "version": "repo-lines-v1:sha256:cce0985c9fad260a451170a5ec52ed4adb0ff7a4a74f6cb2f531e4ce40858e96:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI5MGViZmM5OWEzZjAyMDA1MzdiODFhOTM2M2ZiY2U0OGQ4MTUxMzU3MWI5NmU3NmIzYTU4NTQwYzEzMjQxNjA1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhNjM3OWNmMGVjMDkwYjlkNzI2OWJiMGZlMTFmYWY0Njc0MWVkNDkyMWY4MzM4ZDkzMzMzMjIyMzk1ODNhMWFhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyMjhhMGMyMzc1N2ZhZDQ4YTc4ZjMwYzZjOTgyOWJkNThmMzU4OGE1MDZiOWI5ODNmNmFkMzVhNTg5Y2M1NDg3In0"
+          "resource": "repo://crates/rusty-app/qml/RightPane.qml#L11-L45",
+          "version": "repo-lines-v1:sha256:2bfc70868794bd052fd3acae3ebcc91bdd8f65fe375f98083700e723eddf76d8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1YmNjY2QxMTE0N2UzNGM3NTM1NTk4OTliZTA5YTNjNTY4NDdhNTI1Y2JmY2M4OTVjM2E3NTNiOTUzYzRkYWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1OTA2ODI3YWEwMzc3MGFlMDE3MDMyNTY0OWQ3NjVkOTg5OGY2MWEzNDIyMzBkMTA3NTI4ODQxYTE5MjQ1NzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmYWI5ZWFmOTZlMmM5MTE5ZGExZjAzODNjZTE3OTk4NzJlYjljOTUwOGVjOTE5YTI5OGIwMmE5OTRjOWMzMTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjYmRmYzkxMmI0MjQ2ZTIzMGI5NTljMjMwOTkwZTFhYzkxOTc3Njk5ZDE1NzFmMWQ2NzhjNzRkZTZiNzBmZTcifQ"
         },
         {
-          "resource": "repo://crates/rusty-app/src/assistant.rs#L324-L426",
-          "version": "repo-lines-v1:sha256:10e8922513fab9c19202f68cdc66c5b5a9bcc958849e1c00329d6ddaa47d03f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI5NWVhMGYxZThlNTRlNTIyYWM3OTFkMWZmZWY1YzU2Y2NjOTI3YmI1NTZiZmQ2ZGUwZjNjNzI2NTE3MWZkOGNjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1MzE3M2Q3N2U5ZmViYzU3YzE1OThkMTY1YTAwYzEwNjA2MjYzMmU2NjM1ZjdjMDE2M2QzYmRlMGMxMzlmYTRlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1ZDNhYjNlMDZlOGI4NzA4MzQyOTU3MzE3ZjlhMGI2NTk4NzYzMGM0NjhkZjI1YjM3NDY3NWE5MzJkNjE5ZWVkIn0"
-        },
-        {
-          "resource": "repo://crates/rusty-app/src/assistant.rs#L429-L536",
-          "version": "repo-lines-v1:sha256:0974972e8f9e9576d49bdb02662c774cfcb53e7302938776646e2497e6c59495:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzZTExZjQ4Yjk1ZDc1ZGEzODE2NDljOGFlNzY0ZGY0YTEzOTA0OGMyNWM1ZDQ0MGU1ODM3NTQwYWVkZTMwZjVlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4ODgwNzg4ZjhlNjc2NWI2OTMzYzkxMTUwOTJiNDEyZjU5MDkzZmJlMjkzNWNmN2VmOWJiZjZhYjhkMTlhYWY1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJkMDA4YjZlMzE0NGQ4NjZiNWQ4YTYwMzljZDE1MjEwMzQyZjJmMjMxY2VkYThiMDlmY2VlMWE1NDY1M2JkOTlmIn0"
-        },
-        {
-          "resource": "repo://crates/rusty-app/src/assistant.rs#L571-L757",
-          "version": "repo-lines-v1:sha256:9ee3371ede505209ab6dcc8cd710ca1905117ce173253d36f8ba1a0a290511e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiZDIxZmYzYjE5Zjc0NzJhYzM2ZDBkYzM4OTZhNTA3MWY0YzMyMjFhZjc1ZDEyYTYxMzlkZjY5MmIyZTRlMGUyIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIxOWU3NjM1NWNmMTE5OTQ4MGMzZjk5ODM2YjE0ODZjODQxZDg5MWZhYWQ5MDRjNjA4ZTA5MzAyMmQzNzU3YWVlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3YmM5OGQ2YjBkYzQ5MmM1MDE2ZGYxMDgwNWEzYTU0ZWI5YzE4NGE1YTYxMzdlN2Y0YmVjZmEwYzIyMDU1MGQwIn0"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/RightPane.qml#L14-L20",
-          "version": "repo-lines-v1:sha256:97bf1c5be127bdf96ac012f278e97a9353349879ed3d44d8133320ba5d01d459:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGMwYWJmZThkOWI5Y2U2Njk3NjdiNjBiNTM0OWVmOWQ2MDUxNWRiMDQ1MTM0YzkwNDQyYmNlMDUwNDUzY2RkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDYyMDEwN2RkMzI2ZjE5ZDZlZWIyMGE2MDRjZGU0ZTllYjE4MGZjMmUwMDEzYjg4ZDVjZDgyMmE4OTU3YjA4MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWJhZTI1ODI0MGJjMDc2YjIzNTE5NGI1MmY2NjFmZWVhN2ExMTRjNDU4ZDZhMGFkODkzNzNkNTE1OWRiMTQzZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzE3MmUyMGFiOWExNDc5ZmY0NWY5YjNhOGY3YmJlYjNiOGQwYmYwMGRkOTViYzJkMThjOGFjZGM0YTc5ZmQ3OCJ9"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/RightPane.qml#L38-L106",
-          "version": "repo-lines-v1:sha256:c045626410c904a1285de18cd73e53e7c2d92e54d6a48801a8ca91bc68f9a4d6:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyMTliZmI0YzNmMGNmNDdkYWQ0ODM3YzgyYTFjZDk3ZWUwNzZlYmMzYTJmOTU5M2MzYTg1ZjMxYTEyMjQwMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlOTAyMzc1NWQ5MTVkMGQ4MDlmNDQ0OWI2MGM1OTc4ODYzMzBmNmE2MTEwZjRiOTNlNzc5NDQzZjlhYjQzNDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxZWU0N2MwZjQ1N2M1NDJiNjc5ZTE5NjMyNjQzNjAwMDRlYjE3NmY4NDAxYjVjNTIyNWQ1NzdmNzQyNGQ1MWQifQ"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/RightPane.qml#L333-L440",
-          "version": "repo-lines-v1:sha256:b04ea5dbf5d3335b4e891427a35c3504c3f577e4f1d444cef950bd7f25b8876b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4Yjc3MDJlZWViNTY2ZmY0ZTM2OWIwYTI3OGU2NmJmZjZhYjYxNzY4ZGUwY2I2MTQ4ODZmMjczMGE1ZjZmOTFjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJlNmIwNDQ5MTQ2OTcyMmU4MzYzYTk0ZTQwNDQ1MzhlMDEzYTJhMjE3ZTM2YjFlNTY4YmE2MGFjYjdiNGM4ZjJlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyM2QzM2RiMTZmNjEyZDczZjc0ZTI2YTUxY2EzZGY4NWNiMjYzMzc4OWU0NjMzZTkyMjgyNWM4Zjc1YTc3ZDM3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzNzZjN2M4YjQwZTc4ZDM4MjcyYTU5NTk1YjJhMDU4NTg0MmNkYjQxNmQzODdiOGY3OTdmZmQ0MTMxNWNkMDg3In0"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L56-L56",
-          "version": "repo-lines-v1:sha256:f5906827aa03770ae0170325649d765d9898f61a342230d107528841a1924571:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU5MDY4MjdhYTAzNzcwYWUwMTcwMzI1NjQ5ZDc2NWQ5ODk4ZjYxYTM0MjIzMGQxMDc1Mjg4NDFhMTkyNDU3MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU5MDY4MjdhYTAzNzcwYWUwMTcwMzI1NjQ5ZDc2NWQ5ODk4ZjYxYTM0MjIzMGQxMDc1Mjg4NDFhMTkyNDU3MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2ZmMzk5NjgxYjllZDQ2NjA3OWU3YmUzYjc1ZTI1YTY0OGM3MzdjOGIwZDc0ZTdiNTU1MWI1OGQ1MmI1NDVjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzVlYWY4YmMzOWE0OTMzYWIxMWJjMWQ2Y2FjNGI3OGViMWI3MmQxMzZjMWU5ZDMwMWM4NGU2MDRmZDYzMjAzYiJ9"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L77-L77",
-          "version": "repo-lines-v1:sha256:07ff31842b6e360f7de81658f402b9888bc087cdd8f8898063ee9b4ab0280f27:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdmZjMxODQyYjZlMzYwZjdkZTgxNjU4ZjQwMmI5ODg4YmMwODdjZGQ4Zjg4OTgwNjNlZTliNGFiMDI4MGYyNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdmZjMxODQyYjZlMzYwZjdkZTgxNjU4ZjQwMmI5ODg4YmMwODdjZGQ4Zjg4OTgwNjNlZTliNGFiMDI4MGYyNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2U0MzBjZmFhYzNlN2I2YjNjMDk1ZjgxYjc4NGY1MDVkN2Q1ZDI1ZDRjOTc3YzVlNGEzMDBmYTg0NjE4MDZhNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTMwYzE2OTI1NWU5ZTA3NzllNGFiZWI1NmYzMmE4YTA3MTVhODNhNjg4OGY3OWE2NmNjM2JlZWVjNjExNTVkMiJ9"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L160-L160",
-          "version": "repo-lines-v1:sha256:88f185652ce42676f53ed04e7e3405f246cfd7a705336776851ecf6bea1e806e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODhmMTg1NjUyY2U0MjY3NmY1M2VkMDRlN2UzNDA1ZjI0NmNmZDdhNzA1MzM2Nzc2ODUxZWNmNmJlYTFlODA2ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODhmMTg1NjUyY2U0MjY3NmY1M2VkMDRlN2UzNDA1ZjI0NmNmZDdhNzA1MzM2Nzc2ODUxZWNmNmJlYTFlODA2ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzE0MWJkMTQ1MDhjMjA2Nzk3NTRjOTA2MDcxMTk1MjY1MzBiM2FhZmIyNDI4NTZjMjNiOTU5MjE3ZTFlMDMxYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWQxMDNhY2FjNDBmMjgyOGZiNTdiYjQ4NTM0MDgwMDk2NTAxNWVhZGVlODI2OGUyZmE4NzU0YWQ4MDViZmUxOSJ9"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L1102-L1115",
-          "version": "repo-lines-v1:sha256:dd89b5825b8541b673a73b6fa80fc082e29909e7ccda464d1d5a1b3173e2bb90:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NmQxZmVlODZhN2RjMmVmMDdjOTQ0NmFlZWViNmE1NWVlMjQ3NjY4NzRjMzE4Nzk5YjY0ZmNjOWZkNjQ4ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0MzRiM2Y2ZGNkYjU1MDgyYmFkNDc1MTM1YjhlZDY0NjhkYWZiNWMyNjcxZWQ2ZDAxMzBlZDY1YzMzN2NhMTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0ZGIxMmIwODc1NWExN2NhZTBlNWZmMjVmYjdjMmY1ZGFiZTc1NWE1Yjc1ODg0ZmY1N2M5ZDM0ZmEzZjg4Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1YWYzZmE5MTlkNjkwMGJmYjM3MDY4NGJmOGYyMGNiMWM2NjhlZDQ0Nzc1NGQ2MmRmMzJjMGZhMTE2ZDRhYzUifQ"
+          "resource": "repo://crates/rusty-app/qml/RightPane.qml#L68-L127",
+          "version": "repo-lines-v1:sha256:2f7970fe2f4b5f350362360fa0a6933fdbd5e824ab6d7b7a4293f43c43403d54:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiMjU2NzAzN2YzMjA1NTIxY2Y4MGIyNGY5YmQ4Njg3ZWY1NGU4NGQ0OTg1MzY1MTUxM2M1NWYzOWE0NjEwMDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmMDZjMzMwZTAwM2NjNzBlNjg1YWVjZTZkZmYxMDYyNTlkNmI1NjBkYjI3OTI5YmE1OTgxNThiMjVkODEzZTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhMTE5NzdjYzRiZGM0ZmIzYzk4ZjU0ZDg0NjA0YmE4Zjk4MThhZWU0ZmI3NWZlYTc1M2M1YjRlMmRkMDdkZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU1NmRlN2VhNWQ1ZDU5NzQ1YzI3NzVhZTIxYzEyZjk3M2Y1NzhiOGMzMGY5ODM5NjI3YjIyYjE3MDFkNjZlN2QifQ"
         }
       ]
     },
@@ -860,19 +820,11 @@
     },
     {
       "id": "claim_8a347fbdcefd49078e3b67ed5f02d191",
-      "statement": "Sources reach the app through two palette commands — \"Sources: Capture a URL…\" opens `captureDialog`, whose URL goes to `source_capture` and whose answer opens the new page (a failed capture is named in the notice), and \"Sources: Search sources\" runs the `type:source` search — and a page under `sources/` shows a glyph of its own (`⌁`, in the faint token) in the explorer's tree and its type and `url` in its properties; the screenshot script seeds one such page for the `open:sources/…` scene and maps the `reading` scene alone to the empty scene by an exact match.",
+      "statement": "Sources reach the app through two palette commands — \"Sources: Capture a URL…\" opens `captureDialog`, whose URL goes to `source_capture` and whose answer opens the new page (a failed capture is named in the notice), and \"Sources: Search sources\" runs the `type:source` search — and a page under `sources/` shows a glyph of its own (`⌁`, in the faint token) in the explorer's tree and its type and `url` in its properties; the screenshot script seeds one such page for the `open:sources/…` scene.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L209-L226",
-          "version": "repo-lines-v1:sha256:c7a42931e1826a68f3db03fd44d6edf1659868ae6a6be1d1c3b0708dc876aef8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0MDM1NTRkYzFhYWRmY2UzYzc0MWJmZTAyYTI4MjllYjI4NDZiMWI2ZmU3MjExZjk0OTk5OWQ1ODIxZmMwYWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmM2UzN2Y2NzljZDY2NzAyYjcxZjNmOThkN2IyYjYyZTAwMGEzM2FkYjQ4OTE1NDdjNjZhOTJkNDEyNGIxNzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0N2FjZGM0MWU4MDQxMDBkMTc5ZmMyOWFjYmJlZDI5Y2ViOTYzYmZjZTg2YzFlOWI4MThiNTBiY2IxYzIxY2YifQ"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L481-L481",
-          "version": "repo-lines-v1:sha256:2686e267a1e30b063e53493ca8e7a1ef6d63772736fde2a8e4027ac45e58f02c:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjY4NmUyNjdhMWUzMGIwNjNlNTM0OTNjYThlN2ExZWY2ZDYzNzcyNzM2ZmRlMmE4ZTQwMjdhYzQ1ZTU4ZjAyYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjY4NmUyNjdhMWUzMGIwNjNlNTM0OTNjYThlN2ExZWY2ZDYzNzcyNzM2ZmRlMmE4ZTQwMjdhYzQ1ZTU4ZjAyYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmU2Zjk0NTMwOWZjZmU0NTgyNWNmNDE1ZWRjNjA3OGVkMDc2NzFkZTMzNjM2ODRlY2FiM2Y4YjhmODU3ZmZkMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDU4NmYwNTg2Yzg2NmQ2MjA0YjI3MDdhMzVlNjljZTU4NmE4ODkyNDE1ZTlkYTgzOWI4OTYwNmI0NTQ0MWJjNSJ9"
-        },
-        {
-          "resource": "repo://crates/rusty-app/qml/Main.qml#L605-L606",
-          "version": "repo-lines-v1:sha256:b41ccf2bf39d3a733a4f593123da0ef5081eb2e7245283fab9d213a11d109535:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTFjOTBlYjA4YWMzNjJjZTY3YTI4Y2E2NjE3N2QxYzE0NTU3YzBhZWRkMDAwYmRjNTYyN2U0NmM4ZTY4YjYxZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2MwNDAxYmYzMzdkYTcwM2E0Y2M5ZmYyNzFjMzZmZmExMWMwMjVmZDUwM2E4MDllNDQ3NmU1OGVjMjRkMWE5NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2NhZWU2ZWI4MWE3MDVkZDc1YTgyNzViMjE3ZWQ5MDcwY2E5ZDVkZDBiMGQyYzUzYjdlY2IyNmVhMjYzNGUwYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGU3Y2QwZWYxMjk0Y2RhMjgzOGFhN2E0NmMyZjkzZWRkNzE0YmU0YzE4MTkxMTk5Y2RjOWIzNTU3MTQ1ZWQyMyJ9"
+          "resource": "repo://crates/rusty-app/qml/Main.qml#L211-L228",
+          "version": "repo-lines-v1:sha256:91067b091a3f79697ee3c51f9d7be10366a5f8edc0f28bc8403ad1b1aaa5dc57:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxZTI3MDdiNmMwOGMxNzcwYjNjNDM2NTNiZjM5ZjNmYmIzNzM5MjYwODRkZDAyNzQ0NWRlNDA2YWMzZjY2ZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjMDY0ZTUxNjEzZGQ1MWE0ZTViNzlkM2QwNGEzMDUwNzQ4ZmE5NGYwMTMzNDJjZGVlM2E1NWRiMTFlZDJlNWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxYjhlNzA2N2Q5NzYxMzUxY2M2NGJmZjg1N2IxODkwNWJjNGNhY2IxMTM3ZTdmMDkyZTM0MjRkZjQ1YTY1NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2NTFiYmZmZDM1ZjNlN2Q2ODdjM2I1ZGVjOThlOGIxOTEyN2FjZTVkYTZkOWUyZjMxZGQ2YTkzMGZmZjVkMGIifQ"
         },
         {
           "resource": "repo://crates/rusty-app/qml/Explorer.qml#L300-L301",
@@ -881,10 +833,6 @@
         {
           "resource": "repo://scripts/screenshot.sh#L190-L207",
           "version": "repo-lines-v1:sha256:f663e8c0d1423ee40484a16e129132e4d1d2ce9c83ca548fd37e3686871f30c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc1ODE0MzM4NjE2MzExMTI2YTI1YmUxZTM1NzA5YmRmZjJjMjQyNzFmMjUyYzJhYjlhMGMzOGY0NDU5YWI5YjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyNDJlYmM4MDkxMGYxOWJkMDU5NTE1NjMwOGI1ZDcwMGFmNDkxZDZjNDA3MWZmMTM3ZmIwYzMzMGY5MzM3ZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiNDE1YTZiODlmMGNiOWRiYTZkNTY3MzAxM2Q4OTliMzZhZDgyZDY1OTdmNjI0YWM2YzRlYmY2MTVmNTllODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2NjI2NmJhNDUyYjBhYzkzNDlhYzViMGI5ZWJkYmM0YzY3MDYxMDUxM2M3MGEwYzA4ZDU5ZmQ2OTc2OTRlNzMifQ"
-        },
-        {
-          "resource": "repo://scripts/screenshot.sh#L317-L318",
-          "version": "repo-lines-v1:sha256:b44c7ba51922c3642c9037e40e373ab7b6475c19b9e95838e0db6d2367ed2f6f:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFkZDFlYjUyYzkwNDlhZDZkNDMwYzQzMjhmMmU3NThkYzI2MzZkNWJkYzI0MDcyYzEyOGNjMzgyN2JiMzgyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM2YzhhYzYxMjk3ZTM2YzM5MWYzZTBmODMzZDFlNjQzNzdlODdkOWYxNDhmM2E4Y2FiMTkwZTg5ZTExMDU1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzlmOGMwYzJjNzJlNDk0MDQ3ZDE4YjgyNTgzMTJiNTczYWU5NjQ5YTA0NmY3NzE2MTM4NGQ5YmUyOGU3ZmNlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjI1M2VmMDE4ZWZhMWM2OWE5Zjc5ZjU4M2JmZWMwOTkzMjI2Y2YwNWVkNmE5Y2Y0OGQ0MzA4ZThiNGE2NDMxYSJ9"
         }
       ]
     },
@@ -967,10 +915,120 @@
           "version": "repo-lines-v1:sha256:bb5e344cec4f05d02dcbbb93d8ed50220ca8653353c39abb37036d8511538a88:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyYjVlZGY1OTQ5Y2ZlYTY3ODIyY2Y2OTExMzIzNjNkNjhkNmYxZTE2OWY1ZTBkNGY3YzE0ZTVmYTFlNmQ0ZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiYzU4MDdkMzk3ZTFmMmUzNWQzMTRiYjkzY2NlM2E2NGZmY2JhNjc0ZDY4NjZmYTNkNzRkODZiMzFhYWQ4YzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4MjNkOWVjNjQwNTRkMDRiM2QwOGIwYmQxYjM5OWQyYWIwYTU1MDE5ODYxYTk1MGIyNzI3MzFhMThkNzg1NmEifQ"
         }
       ]
+    },
+    {
+      "id": "claim_c677dde512164d33b478b9b945874fc3",
+      "statement": "A conversation with Claude Code runs under its own transient user unit, `rusty-agent-<id>`, asked for with `systemd-run --user` in `app.slice` with `KillMode=mixed`, `TimeoutStopSec=20`, `Restart=on-failure` and `--collect`, so a session is in no cgroup the app can take down and survives the window being closed, crashing or restarting.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/launch.rs#L83-L120",
+          "version": "repo-lines-v1:sha256:b2b4a916b0aa9dc73ae7142f4b9f435a28c295fbbb9947506d825aece953dfad:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiOTQ5OWQwMGJlYjA2YWIwMzVmMTJjN2U5NzI3YWJkOTc5YjhkM2NmYzcyYWZmMTQ2YjQxZmNjZDQwNTZhNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmNTY5NzYzZGE5ZTlhOGE4MDYyMDkxNDdiMWE2YWRlMTY3NWNhNzE3NWE3NDEwMjRmMzY2ZjQxYTQ5YWE2ZjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhM2M3MjdkYzIwYTc1NTYyM2ViMDVhNTg3MWUwNDg3MThjMWQwZDI3MzhkZTcxZmUyNGNhMTVkMmY0NmM3NTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExYzZhMWI3NDNkODgyYjE4MzY1OThkNDQ2NzY2MTIyMzA4N2M0YWM1NDhkNDE5MjQzZDg3OTRmOTQ1YmZhYzQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/launch.rs#L149-L170",
+          "version": "repo-lines-v1:sha256:8b4829ff4bf0441bc27f0ccc7a8bb6128b0a96e7c7330f6f815f9aeddfd8bcb0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2MDBkNGQzZjdhMGJkYmJjZGRkOWE5ODRhMTFhYmRmMmQ5ZTFmMGI4NjRmNmFiYzQzZGE1M2E1OGQwYTZhNTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NTUwZTRkY2Y3ZmJmZTA5YTIxNjU5YmFlNjY2YzIzODAwMmNiNTEzYzdiMTcxYmY0NmM3NGNkNDczM2FmYTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2b353b1f561a409e9b788c9c880c77df",
+      "statement": "The host is the only owner of a session's `claude -p` process and the only writer of its log: it appends every line it forwards or receives to `events.jsonl` and serves that log over a Unix socket, so any number of clients may attach, replay from a sequence number and stream, and none of them holds the conversation.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L164-L240",
+          "version": "repo-lines-v1:sha256:ebb93c8513ceb8c3ebd5d0fdf35fcf58d61cd044624f8c490be4ab8b5ea0110d:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgwZmM3YWViNWQzMjM2Y2Q3NWZhMDYyOGU2ZDI5ZGQ4YmMwYzkxYTMzYTllMjA0NmE5NWIwN2ZkMTNkMzNlNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzOTM1YWZmODk5MmYyMGVhNjZkODJiODJhNDk3MThhYWNkM2QxODgxY2UxNWQ5M2NiNzk3ZTBjOWQ5MTE5MmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExYjdiZTZiYzM4YzBhNDI5Y2MyYWVhODUyODAyMjIxY2Q0NDhiMzQ3MGE0OGNjMTA4MzhkYjk4N2RkZThmN2UifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L431-L520",
+          "version": "repo-lines-v1:sha256:4879eaa39b4a3869562dd3e71f2cdba47f2b4ad457d9b71b12f049402a40575c:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1Njg4N2U5MmI2ZGI1ZGE5ZGQ0Nzc3N2Q5MjEzNDM0YjJlOWZkMTA5MTI3YWY5ZmNkNzY4N2E3OGY1NDg0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmYTNjNWE2ZjljMjBlZTJmZDFlODAwM2QxNzY4OWJiMjJmMzljZWNmMTZjMWNhN2I5ZWQ2N2Q0Nzk1NDEzZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMxZTBiNGQxMDU2NzZiOTZjNjlkZTgxZWI2ZDQ3ZmM3YWZkM2VlZDNjMzdjNTczMzMyNjAyZmE0OWVhMWZiODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMDkyOGMwNmQyYmY1NjdhYzRmODQ0OGRiYTZhMGQ5NmU3YjJjNThlMGZlMzVhZTVkZjg3ZGY4MDlhNGIzMjkifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/log.rs#L18-L80",
+          "version": "repo-lines-v1:sha256:dbba38e9f47847a6bf91a676d3b6aa1a4cb9abc1bf1d0f1cb9de92fc07cfa538:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjMDI5MjUyMzY4YmE0MmUzMWQzYWExNTBhNDNlM2UxZjc1ZDg2ODRjNjdlMWI4Yjg2NmNjNjg5MDcxNzUyNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjOGE2Y2E1ZGY4NDgxOGY5MWI4MzEyODc3MTBiZGI5NDMyYTVkMjQyMWM3YzUwNWYzNzIzNWI0NTcxNTFiMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1MGJkMWM2ZWUzYTA3ZTU0MzM0NmJhMWJhYjhiNTRiYWMyYzE0Y2U1ZjVlY2NhYmI5OTA2OGU3MTVjNTRmNWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_33f665c997d64f89bb679b18e95d39fc",
+      "statement": "The deltas of a content block are broadcast to attached clients but never logged, because the `assistant` message that follows carries the whole block; a replayed conversation is therefore rendered from the complete blocks and loses nothing but the typing animation.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/wire.rs#L145-L156",
+          "version": "repo-lines-v1:sha256:8469b5729247e7c6bcdf4b68f2d0d9a768dd5e837e70426a7794cc0f3747b18b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlODVjMWI1Y2EzYmRlODg4NWU5MzFkMDQyMzIyMTljNjIzNTA0YzFjNzI2ZTk0NTRiOTc3ZjJmODVhZWRjODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkNDA0MjM4ZDUzOThmMjFjYWUwNjI3ODM2NDA3ZWYxNGQwM2E1NjY1Y2Y3ODI3NmExY2M1NGQxNmFjYTE5ZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlMmJlZjM2NjczOTZlNGEyYzQ4NjJiZWIwMWJmYjc3ZGU1ZGJkNmFhNzkwY2E4MjM1YjIxMDZiYWJjZDMyMGUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L708-L740",
+          "version": "repo-lines-v1:sha256:a2632e522946d4ba91cdb25448789ab4e0c04915e4fe4875cfa3097ed69ace7b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkYTRiZmZiMGE5YWViZjVmMDU0YTEyZmEwN2UxOTlhMGRkYTdhMDhkOGJhMjI2OTAwOTA3Yzc2ODM4Y2FkYjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYzBlNzBkYWYwOTU1ODNmYjdlZjE2YzI2NDBmYjQ1ODBlMDNmMDk5YzUzNDkxZDY5NmQxYTAyYTAzMDQ4N2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxMjAwYjlkYTcyYmEyMzE3YTNmM2Q1MmFmOWE2YmU5MjcyMjM0OWQ2MTQ3NTY3YmYzNjZiMTgyM2M1Y2E4YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjZmIwYWY5ZjgxODdiZjg0YTFkMGI4NGY1MzFiMzQwY2ZkZWM2OTg0YTY2MDM3YWNkNWRmNTRiMmFmMjI5M2QifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/assistant.rs#L202-L234",
+          "version": "repo-lines-v1:sha256:6b3478632b65ed2e8c0f5fd1dfffa14bb37c182eacf2d4cd25af33329416d31f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4MjQ2NjA2ZDExZjZjNTExNmM4N2M3OTg5NTcxMDRhZGQzODFhNTU1Y2EwY2Y0NThmODY1OGIzYjhjYWQ3MGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmNzgwY2FhNGEyYTVkMGY4MDA4MmMzZjViZTY2NDMxOTFkNjY3OWEyMzk5ZDI2ODA0MmU1MjBhYzI3MWMzNmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_63f39ffc44104b498ae94ca1c3f832d7",
+      "statement": "The host stops its process in order — an interrupt while a turn runs, then the end of its stdin, then SIGTERM, then SIGKILL, each after its own grace inside the unit's stop timeout — so a session told to stop ends its turn rather than losing it.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L861-L921",
+          "version": "repo-lines-v1:sha256:92505824a40ba9833f45d47538d2b59d4f7e9fdaa268307e602fcdb6611d0fe5:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0NWY0MDk0ZmVjNjU1ZGU3MmQ5ODMxZGFmNWQ5YzI2ZDQ4YTYyNjE5NTE0YzYxZWU2OWRjNjY2NzE3OGJkMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM0NTZlMWExNjQ3NzI0NGEyYWIzZTc5M2NiNzBkNzE3MjE5OTRkOWQyYjVkYTk5MDc2NTkwOTMzODI0N2ZhZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlMzRkMzgyMjFhZGU4NjJkZjU0MTBhYTMzZDE4OTM3YzQwZjFmOTZhNDVjZDYzZmM2ZjA4OTY0ZWU2Mjc2MTYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L30-L48",
+          "version": "repo-lines-v1:sha256:1303e2ca247c7f24723e6878f405215285aedfe5e3713a24d5c6db8927549c30:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4MzQ0YjRiOWJlMWNhM2E3NjkxMzE3MGMzZTc4MDA1NWQ1YzNhNmM1ZWM5N2ZiNmJhZmZlZjZlMzFhYTUyNzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyZTFlMDg4YzljNDUzN2E0ZmY3Njg4ZDNlMmI1YmRiNDMwNjU2N2E4NmRkZTI3MGY4MDg0NDUxMDUyZjFmZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ2ZWQ0MmE4YWUyZjZlZmIxZjM2YWE4NmUyYTJlMTFmYTY2YjcyMDIwNTcyZjRlYzRmN2MwMjYzMTYyYTdjYWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4YzgwZTM5YzhhM2M1OTBmZWZkMDJhZjE2OTRlM2RhZTMwYmJhNjg0ZWIyMDExYmNkMjk3MGFkOWQ3YTcyOWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d627aae230014dadbe32b9c0f23e0e0a",
+      "statement": "A session's process is stopped after its idle timeout and respawned with `--resume` on the next message, so a page that holds a conversation costs no process while nobody is talking to it; a resume the transcript cannot satisfy is recorded as a note and the next message opens a fresh conversation instead of failing the same way.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L590-L608",
+          "version": "repo-lines-v1:sha256:7d7b4cb9561f1431cb9dc09e3514f531f25f4cc4e6ac15ac3ec0f20744c61303:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjI2YWVjZTRlMTc1ZmIzNjU0ZmIyMGZhZDViM2MzOWY4ZWM5NjVmN2Q4MTM5MjJlODBjODE4MGE3ZTJhOTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzMjE0NzUyMzcwZWJhYmU3YTk3OTA2MWNiMzk0OGU1MjFhMmM1MDIyZGFiZDFjZDBkNzUwNjM1NDE1ZTM2YzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxNGM5MWI2OGJiOTFmZmUxZmRhZWFhYTExNDU2YmFkMWExNzIwMzI0MjhmOGUxNGQ1MGM3NTVmOWU3MjZhMWUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L786-L860",
+          "version": "repo-lines-v1:sha256:23f971eb9ede7ecfe63eb3f37c0889769fdf3d4d778ca418122f57f72a6f8fd9:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwZmMzZGJhNGMzOTBkNmJiNzA1MWM3YWI5NzcwYmUxZDk5MzU1ZWUyM2ZjMGQ3N2U4YjE2ZThmZDQ5ZjgxNTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5MGIwZjQyZWMyZGMwZTBmZWIzNTY5MDBlNTQ4YzBjOTNmZGMxZTFmNWM1N2QwYmY1NWUzZTVjNTNiNzE5ZTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzM2IwNGExNDY0MGQ0YWYwMDlmYmY4NzhmNjU3NDQxMDg1YTI5NzFjZTdiNzM2NWRjZjEzMjk2OWVhY2U2MGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0a16026754954b5b95966c1af1e25d80",
+      "statement": "When no client is attached, the host itself raises the desktop notification for a permission asked or a turn ended, through the same `notify-send` call the terminal tabs use; with a client attached it stays silent and the surface decides.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/host.rs#L740-L790",
+          "version": "repo-lines-v1:sha256:98063da482268ce4f71749297a5ac67e13d50f6e8206b3b72cb6ee07a5f691a7:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYzBlNzBkYWYwOTU1ODNmYjdlZjE2YzI2NDBmYjQ1ODBlMDNmMDk5YzUzNDkxZDY5NmQxYTAyYTAzMDQ4N2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgwZjM3YzQ4OTI2ZDRhY2Q2NzY3ZWMyNWY5NzM0NDQ4Njk5NDQwM2E3MmMyZTJmMjhhZDE0ZWRjZjdlZjU0YjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0NzA3MTEzMTVhOTRhYjRiYzcwYWMyODNkNjZhNTk4MTg4OTI0M2E1NDZlMGU5MTFiZDNlMTM1MjkzYWI2OGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxMDU2YjZlYzg0YjQxNmYwMjA2NzcwODRlYTY1MjkzMWY4NjYzOTk1MDRhYjc0ODQ5OWI2NmE4NzNhMjFmY2EifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/terminals.rs#L131-L146",
+          "version": "repo-lines-v1:sha256:8c8804ffd7336e64354feac66a81b950a045d260e6e3267d4f79d0ac4f230650:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiZWU0NWMwYzZhZTY3ZjE4MzQ2NWFjMmI2OTBjOTEzNzM0MDZjYWFhNjc2ZmMzZjE0ZjAxNGU5NGJjMDI5ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZhZDY2N2RkYTdjNTc1OTZhM2MwZTA5MDM0N2FiNjk0ZTI1ZDcxYjNlYzI3ZTVhNjJlMDdhYzUwNDllN2IwMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2YTRhNmJkZTQ5NDcxMmNkMmM2ZjEwMjIzOTM1OWQ2MzhhOGU4MDM3MGQxNDVlOTk1NTg1YzRmZDQ1OWQwODkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_14473595c0f6406ca18ddda274e06e0f",
+      "statement": "A session's state lives outside the store and outside the vault: a JSON entry and an append-only log under the XDG state directory, and a socket under the XDG runtime directory, all created for the user alone (0700 directories, 0600 files) because the log holds what was typed.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-app/src/agent/mod.rs#L100-L155",
+          "version": "repo-lines-v1:sha256:d19e5a6c6b917215d64c59b16d8af957d89de8f6b971efc003a872f805ec2d2d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3ZmZlYzU0MDM3Y2NiYzY0MzVhODBkNjA2YTYwZjZiYTY3ZjM3YjY4NTM1NjhhODBiNTM2ODJiMTBiYmVjMzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzNzVkNTkwNmJhMjM2M2I0YmJmNmQwZWIzMWRhYWMzNzM4MGZkNjBhMjY4YjEzZWJlNWNhOTAzYmFhMTZmYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/registry.rs#L60-L100",
+          "version": "repo-lines-v1:sha256:2d2b29aebb626692632a62a028fe3d4e58c5735fbd9ad5ce6ebd5128145dcafb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlZDZkYmFhMTM3Mjc0ZWNiNzQ4ODFiYWQ1NzE4MTYwZjVhZDNmNDg4NTE5ODY4NWFlMGEzNDk4Y2Y5NTcwMmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2MjA1MzE0YmVkYjNmYjllMzIxYjFmMjI1YTJhYjIwMDdhODcwMmJiZjYxMDA5NDc0ZDY4MjBhNWNkYjFkZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0NGVjMWY3MWQ0NzBiOWY2YTQ2NmRiODUzYTYxNGQ0ODYyMDdiZDEyNDg3MjM4OTQzMTc4MTE0MWQ0YTgzM2EifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-app/src/agent/log.rs#L18-L60",
+          "version": "repo-lines-v1:sha256:36c55c43dd1f4430f7e27ff88b4957bcbc529d689c489851394eeffa1c5be553:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjMDI5MjUyMzY4YmE0MmUzMWQzYWExNTBhNDNlM2UxZjc1ZDg2ODRjNjdlMWI4Yjg2NmNjNjg5MDcxNzUyNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiZTMwNzViMDEwNzEyNGFlZGRkN2I0NjVkOTIyMzk4NGVkMDY4MzYyYzE1MzM1OWQ2OWNiYjIxNTAxYWMzYzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjOGE2Y2E1ZGY4NDgxOGY5MWI4MzEyODc3MTBiZGI5NDMyYTVkMjQyMWM3YzUwNWYzNzIzNWI0NTcxNTFiMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjODQ2N2U2YWExZWJjYTFjMTkxYTc5ZThmYWRlZWYzMGRjMjhkYTJiOTBiMjY4MTA3MDI1NGQzZDZkMTkwNGMifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-09-05T14:39:51.324Z"
+    "at": "2026-09-17T22:06:12.177Z"
   }
 }

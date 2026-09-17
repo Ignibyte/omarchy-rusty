@@ -48,9 +48,53 @@ journalctl --user -u rusty-mcp -f
 ```
 
 No Wayland client outlives its compositor. When Hyprland dies the app dies with it, and
-what survives is the state: the tmux sessions behind the agent tabs, `tabs.json` and
-`workspace.json` under `~/.config/rusty/`, and the back end. The next login starts the app
-unit, which reattaches all of it.
+what survives is the state: `tabs.json` and `workspace.json` under `~/.config/rusty/`, the
+agent sessions (below), and the back end. The next login starts the app unit, which
+reattaches all of it.
+
+The tmux server behind the agent *tabs* is started by the app, so it lives in
+`rusty-app.service`'s cgroup and a stop or a crash restart of that unit ends it with the
+app. TICKET-034 moves it into a unit of its own; until then, a terminal tab's session
+survives a quit (the cgroup is cleaned only when the unit stops) but not
+`systemctl --user restart rusty-app`.
+
+## Agent sessions
+
+A conversation with Claude Code is not part of the app's lifetime. `rusty agent start`
+writes an entry under `~/.local/state/rusty/agents/` and asks the user manager for a
+transient unit:
+
+```bash
+systemd-run --user --quiet --collect --unit=rusty-agent-<id> --service-type=exec \
+  --property=KillMode=mixed --property=TimeoutStopSec=20 \
+  --property=Restart=on-failure --property=RestartSec=1 \
+  --property=SyslogIdentifier=rusty-agent \
+  -- rusty agent host --id <id>
+```
+
+The unit sits in `app.slice`, not `app-graphical.slice`: the session needs no display and
+outlives a compositor restart. `KillMode=mixed` sends the stop signal to the host alone,
+so it has its `TimeoutStopSec` to interrupt the turn, close the process's stdin and then
+signal it, in that order. `Restart=on-failure` brings a crashed host back (it reopens the
+log and resumes the conversation on the next message) while a deliberate stop stays
+stopped. `--collect` unloads a unit that failed, so nothing lingers in the unit list; the
+journal and the session's own entry keep the record. No `OOMScoreAdjust`: the session
+inherits the session-wide 200, and a process the kernel or earlyoom takes is recorded and
+resumed on the next message rather than protected above Chad's own apps.
+
+```bash
+rusty agent list
+rusty agent attach <id>            # the event stream, NDJSON; a typed line is a message
+rusty agent stop <id>
+systemctl --user list-units 'rusty-agent-*'
+journalctl --user -u rusty-agent-<id>      # or: journalctl --user -t rusty-agent
+```
+
+Sessions do not survive a logout unless the user lingers (`loginctl enable-linger`), which
+is not set here: the user manager stops every unit, each host runs its stop sequence, and
+the entries say `stopped`. The next login starts nothing by itself; opening the page, or
+`rusty agent start <id>`, runs the host again and the conversation resumes from Claude
+Code's own transcript.
 
 ## Memory pressure
 

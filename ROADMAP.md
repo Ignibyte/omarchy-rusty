@@ -309,6 +309,16 @@ workflow in `CONSTITUTION.md`.
       Enter and Space when focused) with the open one taking the height, both remembered in
       the workspace state; the splitter lifted into `Splitter.qml` so the sidebars and the page
       share one
+- [x] TICKET-031 Agent sessions that outlive the app (2026-09-17): a conversation is its own
+      transient user unit (`rusty-agent-<id>`) running a host that owns the `claude -p`
+      process, logs every event and serves it over a socket; `Assistant` is a client that
+      attaches and replays, one per surface, and `rusty agent start|stop|list|attach|rm` is
+      the same client in a terminal; the note pane's conversation survives the window
+- [ ] TICKET-032 The Agent tab: the VS Code-style surface on those sessions — a transcript
+      of cards (markdown, thinking, tool calls, an Edit as a diff), permissions and
+      questions answered from the keyboard, a composer with mode and model, a sessions pane
+- [ ] TICKET-033 Composer extras: slash commands, `@` mentions, image paste, fork, the
+      context meter, subagent nesting, open in terminal
 - [ ] Brain: tiered context (abstract, overview, details per page and folder) and
       session-to-memory extraction, the two OpenViking ideas worth keeping
 
@@ -324,6 +334,8 @@ workflow in `CONSTITUTION.md`.
 
 ## Later
 
+- TICKET-034: the terminal tabs' tmux server in its own user unit, so a stop or a crash
+  restart of the app unit no longer ends every terminal session
 - Background agents tab: dispatch, watch, results
 - Phone access through Obsidian Sync of the vault
 - A macOS build if anyone wants one; nothing in the core is Linux-only

@@ -38,7 +38,8 @@ new folder, rename, move and delete on a right click; a rename rewrites every li
 page) and search. The main area holds tabs: pages, agent terminals and the built-in views,
 each closable, pinnable and remembered between runs. The right sidebar holds backlinks with
 their context lines, outgoing links (an unresolved one creates the page), the outline, and an
-agent pane that runs a terminal beside the note. The status bar counts backlinks,
+agent pane that holds a conversation with Claude Code beside the note — one session per
+page, running in a host of its own, so it survives the window being closed. The status bar counts backlinks,
 properties, words and characters.
 
 A page opens in reading view: the inline title (Enter renames the file), the properties from
@@ -202,6 +203,31 @@ the `notes_path` setting names. An older install kept notes in `~/.rusty/notes`;
 when a name already exists in the vault, deletes nothing, leaves a README behind that
 says where the notes went, and points `notes_path` at the new folder.
 
+## Agent sessions
+
+A conversation with Claude Code is a session of its own, not a child of the window. Starting
+one writes an entry under `~/.local/state/rusty/agents/` and runs a transient user unit,
+`rusty-agent-<id>.service`, whose only job is to own the `claude -p` process over
+stream-json, keep an append-only log of everything it says and serve that log over a socket
+in `$XDG_RUNTIME_DIR/rusty/agents/`. The app is one of its clients: it attaches, replays the
+conversation, and writes messages, permission answers and interrupts back. Closing Rusty,
+restarting it, or letting the app unit crash leaves the session where it was; reopening the
+page replays it.
+
+```
+rusty agent start --cwd . --title notes --reads --strict-mcp --idle 600
+rusty agent list                 # id, state, whether a host answers, title, cwd
+rusty agent attach <id>          # the event stream here; a typed line is a message
+rusty agent stop <id>            # interrupt the turn, end the process, end the host
+rusty agent rm <id>              # stop it and delete its entry and log
+journalctl --user -u rusty-agent-<id>
+```
+
+The process itself is stopped when a session sits idle (ten minutes for the pane's), and the
+next message starts it again with `--resume`, so a page with a conversation costs nothing
+while nobody is talking to it. A permission asked or a turn finished while no client is
+attached raises a desktop notification.
+
 ## Scripts as commands
 
 A `*.sh` file beside a skill in the store is a command: `rusty usb-reset` runs
@@ -213,7 +239,8 @@ script inside a pending skill does not run until the skill is approved, and the 
 scan that reads a skill reads a script's text too. The Skills tab lists scripts under the
 skills, shows and edits them, and Run opens a terminal tab that runs the script and keeps
 a shell. Every write commits the store. The binary's own nouns come first (TICKET-029):
-`rusty session start|stop|status|run` is built in, a script named `session` is shadowed,
+`rusty session start|stop|status|run` and `rusty agent ...` are built in, a script named
+`session` or `agent` is shadowed,
 and a bare word that is neither a noun nor a script prints the usage and exits 2; an
 argument that starts with a dash goes to Qt as it always has.
 

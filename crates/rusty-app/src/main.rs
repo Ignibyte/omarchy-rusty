@@ -7,11 +7,15 @@
 //! font and colour scheme), `Terminals` (tabs and tmux), `Backend` (the MCP client) and
 //! the source editor's tokenizer behind the C++ `MarkdownHighlighter`. Data comes from
 //! `rusty-mcp` over local HTTP; the app holds no store of its own. `session.rs` answers
-//! `rusty <noun> <verb>` before Qt starts.
+//! `rusty <noun> <verb>` before Qt starts; `agent/` is the `agent` noun, the session
+//! host that keeps a Claude Code conversation alive when the window is closed.
 
+mod agent;
+mod agents;
 mod assistant;
 mod backend;
 mod desk;
+mod diff;
 mod folders;
 mod markdown;
 mod omarchy;
@@ -82,6 +86,7 @@ fn main() {
         session::Request::Session(session::Verb::Stop) => std::process::exit(session::stop()),
         session::Request::Session(session::Verb::Status) => std::process::exit(session::status()),
         session::Request::Session(session::Verb::Run) => session::complete_path(),
+        session::Request::Agent(rest) => std::process::exit(agent::run(&rest)),
         session::Request::SessionUsage(verb) => {
             if let Some(verb) = verb {
                 eprintln!("rusty session: unknown verb '{verb}'");

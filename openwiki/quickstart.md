@@ -3,16 +3,18 @@ type: "Reference"
 title: "Rusty engineering quickstart"
 openwiki_generated: true
 sources:
+  - id: openwiki-source-6db403fd15f39cd68c2bfe93
+    resource: repo://crates/rusty-app/src/agent/mod.rs
   - id: openwiki-source-68599611588cfbbf1f2b222b
     resource: repo://crates/rusty-app/src/backend.rs
   - id: openwiki-source-c8c0347aa7a687c601520d1a
     resource: repo://crates/rusty-app/src/main.rs
   - id: openwiki-source-188c50fac039d5c4d0e7eca9
     resource: repo://crates/rusty-app/src/session.rs
-generated: {by: "claude-code", at: "2026-09-05T14:39:51.324Z"}
+generated: {by: "claude-code", at: "2026-09-17T22:06:12.177Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-09-05T14:39:51.324Z
+    at: 2026-09-17T22:06:12.177Z
 ---
 
 # Rusty engineering quickstart
@@ -28,7 +30,7 @@ box without a setting that says so.
 |---|---|---|
 | `crates/rusty-core` | the managers: tasks, notes, memories, the brain vault and its SQLite index, the renderer, semantic search, skills, secrets, settings, the file watcher | [Vault and brain](vault-and-brain.md), [Markdown rendering](markdown-rendering.md) |
 | `crates/rusty-mcp` | the back end: 85 tools, five resources, change notifications, a background indexer; stdio for agents, Streamable HTTP for the app | [MCP back end](mcp-back-end.md) |
-| `crates/rusty-app` | the desktop app (binary `rusty`): the workspace in QML on cxx-qt, terminals on tmux, theme from Omarchy, and the `rusty session …` commands answered before Qt starts | [Workspace app](workspace-app.md) |
+| `crates/rusty-app` | the desktop app (binary `rusty`): the workspace in QML on cxx-qt, terminals on tmux, theme from Omarchy, the agent sessions that outlive it, and the `rusty session …` and `rusty agent …` commands answered before Qt starts | [Workspace app](workspace-app.md) |
 | `crates/rusty-cli` | terminal access to the same store (brain, tasks, notes, refresh, conversation ingest) | [MCP back end](mcp-back-end.md) |
 | `CONSTITUTION.md`, `docs/planning/`, `bin/`, `.claude/`, `scripts/` | the workflow: phases, record, gate and receipts, hooks, CodeGraph, OpenWiki | [Workflow and gates](workflow-and-gates.md) |
 
@@ -42,6 +44,8 @@ box without a setting that says so.
   app at `http://127.0.0.1:4174/mcp` and comes back on its own after a kill.
 - `rusty-cli --help` lists the terminal commands; `rusty-cli refresh` nudges the watcher
   after a raw write.
+- `rusty agent list` shows the Claude Code conversations running on this machine; each is
+  its own user unit (`rusty agent attach <id>` watches one, `stop` and `rm` end it).
 - Data lives in `~/.rusty/`: `rusty.db`, `brain/` (the vault, a git repository),
   `notes/`, `skills/`, `.secret`.
 
@@ -72,3 +76,4 @@ for each area so a change can find both quickly.
 - `docs/architecture.md`
 - `bin/gate.sh`, `omarchy/install.sh`, `scripts/screenshot.sh`
 - `crates/rusty-app/src/session.rs` (the `rusty session` verbs and the dispatch)
+- `crates/rusty-app/src/agent/mod.rs` (the `rusty agent` verbs and where a session's files live)

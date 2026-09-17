@@ -129,6 +129,11 @@ rewrites on rename, backlinks as Obsidian resolves them, command-palette actions
   quit; the back end restarts after any exit but a stop; `rusty-session` was the one entry
   point the installer, the desktop entry and the key shared; the compositor's OOM score is a
   drop-in the installer points at, at 100, the floor a user unit can reach.
+- Agent sessions on 2026-09-17 (TICKET-031): every conversation is its own transient user
+  unit under the user manager, not a child of `rusty-app.service`; a stop or a crash
+  restart of the app leaves it running, and the app reattaches to its socket and replays
+  its log. The terminal tabs' tmux server is still the app unit's child, which TICKET-034
+  takes.
 - Commands as nouns on 2026-09-05 (TICKET-029): the app binary answers `rusty <noun> <verb>`
   before Qt starts (`crates/rusty-app/src/session.rs`); `session` (`start`, `stop`, `status`,
   `run`) replaces the `rusty-session` script and the app unit runs `rusty session run`;
@@ -154,13 +159,32 @@ rewrites on rename, backlinks as Obsidian resolves them, command-palette actions
   colours and the tokens read from the theme's `obsidian.css` and Alacritty palette, font,
   generated colour scheme, live re-theme), `Terminals` (tabs and the workspace state as JSON
   files, tmux), `Backend` (the MCP client, one session, reconnecting, `result` and
-  `dataChanged` signals), `Assistant` (the agent beside the note since TICKET-025: a
-  headless `claude -p` over stream-json, one process per page, permissions answered from
-  the pane; the terminal tabs stay tmux terminals), and two small C++ classes registered
-  in the same QML module:
+  `dataChanged` signals), `Assistant` (the client of an agent session: the process itself
+  lives in a host of its own since TICKET-031, and this type attaches to it, replays the
+  conversation and writes the pane's messages, answers and control requests; one instance
+  per surface), `Agents` (the sessions on the machine, watched as the state directory
+  changes), and two small C++ classes registered in the same QML module:
   `MarkdownHighlighter` (a `QSyntaxHighlighter` whose spans come from the Rust tokenizer in
   `src/markdown.rs`) and `Tools` (`grabWindow`, for offscreen screenshots). QML pages parse
   the tool JSON themselves and match replies to their own request ids.
+- Agent sessions (2026-09-17, TICKET-031): a conversation with Claude Code is a session of
+  its own, not a child of the window. `rusty agent start` mints an id, writes an entry
+  under `~/.local/state/rusty/agents/` and runs `systemd-run --user --unit=rusty-agent-<id>
+  … rusty agent host --id <id>`: a transient user unit in `app.slice`, so the session is
+  in no cgroup the app can take down, has its own journal (`journalctl --user -u
+  rusty-agent-<id>`), is restarted after a crash and stays stopped after a stop. The host
+  (`src/agent/host.rs`) owns the one `claude -p` process over stream-json, appends every
+  line it forwards or receives to `<id>/events.jsonl`, and serves clients over
+  `$XDG_RUNTIME_DIR/rusty/agents/<id>.sock`: a client attaches with the sequence number it
+  has, the log after it is replayed, then the stream is live. Any number of clients may
+  attach, a client may leave while a turn runs, and the host raises a desktop notification
+  when a permission is asked or a turn ends with nobody watching. The process is respawned
+  with `--resume` on the next message after an exit, stopped when the session sits idle
+  (the note pane's sessions after ten minutes) and ended in order — interrupt, stdin
+  closed, SIGTERM, SIGKILL — when the session stops or the unit is told to. The deltas of
+  a block are broadcast but never logged: the `assistant` line that follows carries the
+  whole block, so a replay loses nothing. `rusty agent list|attach|stop|rm` is the same
+  client in a terminal. The terminal tabs stay tmux terminals.
 - The workspace (2026-09-02, TICKET-002): `qml/Main.qml` lays the window out as Obsidian
   does (ribbon, left sidebar with `Explorer`, `SearchPane` and `BookmarksPane`, tab strip and a stack of
   `TabHost`s, right sidebar `RightPane`, status bar) with `QuickSwitcher` and

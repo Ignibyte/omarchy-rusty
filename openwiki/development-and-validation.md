@@ -5,6 +5,10 @@ openwiki_generated: true
 sources:
   - id: openwiki-source-164e2da859b5277df81c7d94
     resource: repo://.github/workflows/ci.yml
+  - id: openwiki-source-99a6e48b7904a84607bbfebf
+    resource: repo://crates/rusty-app/src/agent/host.rs
+  - id: openwiki-source-c98365caf5b5f92dde34e1ad
+    resource: repo://crates/rusty-app/src/agent/launch.rs
   - id: openwiki-source-c8c0347aa7a687c601520d1a
     resource: repo://crates/rusty-app/src/main.rs
   - id: openwiki-source-188c50fac039d5c4d0e7eca9
@@ -23,10 +27,10 @@ sources:
     resource: repo://packaging/PKGBUILD
   - id: openwiki-source-d4dc2c7ea0d931bfc9466b41
     resource: repo://scripts/screenshot.sh
-generated: {by: "claude-code", at: "2026-09-05T14:39:51.324Z"}
+generated: {by: "claude-code", at: "2026-09-17T22:06:12.177Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-09-05T14:39:51.324Z
+    at: 2026-09-17T22:06:12.177Z
 ---
 
 # Development and validation
@@ -81,11 +85,23 @@ change, and the ways the machine's state is kept out of the record.
   ends it, where the script exited 0 and left the unit stopped. A test reads every file
   under `omarchy/` and `packaging/` and refuses the old invocations and any app-unit
   `ExecStart` other than `rusty session run`.
+- An agent session is a transient unit asked for at run time, not a unit file: nothing in
+  the installer or the package declares `rusty-agent-<id>.service`, and because the host
+  is started as `current_exe`, it is always the same build as the binary that started it
+  (a development binary under `target/debug` while working, `~/.local/bin/rusty`
+  installed, `/usr/bin/rusty` packaged). `systemctl --user list-units 'rusty-agent-*'`
+  and `journalctl --user -t rusty-agent` are how the sessions are seen; `rusty agent
+  list|stop|rm` is how they are managed. They sit in `app.slice`, so a compositor restart
+  leaves them running, and they are not lingering, so a logout stops each one through its
+  own stop sequence and the entries say `stopped` until something opens them again.
 - `omarchy/wayland-wm-oom.conf` is a drop-in for the compositor unit (`OOMScoreAdjust=100`)
   that the installer points at and never applies, being another program's unit; the
   earlyoom avoid line, which needs root, is documented in `omarchy/README.md`. No Wayland
-  client outlives its compositor: the next login starts the app unit, and the tmux
-  sessions and the state files under `~/.config/rusty/` reattach.
+  client outlives its compositor: the next login starts the app unit, and the agent
+  sessions, the tmux sessions and the state files under `~/.config/rusty/` reattach. The
+  tmux server behind the terminal tabs is started by the app and so lives in the app
+  unit's cgroup: it ends with a stop or a crash restart of that unit, which TICKET-034
+  takes.
 
 ## Testing
 
@@ -131,11 +147,17 @@ start on the offscreen platform. The images in `docs/screenshots/` come from it.
 
 `~/.rusty/`: `rusty.db`, `brain/` (a git repository the managers commit to),
 `notes/`, `skills/`, `.secret`. `~/.config/rusty/`: `tabs.json`, `workspace.json`,
-`color-schemes/`. Tests and the screenshot script never use these paths.
+`color-schemes/`. `~/.local/state/rusty/agents/`: one JSON entry per agent session beside
+a directory with its event log, for the user alone; `$XDG_RUNTIME_DIR/rusty/agents/`: the
+sessions' sockets. Tests and the screenshot script never use these paths:
+`RUSTY_AGENT_STATE_DIR` and `RUSTY_AGENT_RUN_DIR` point them at a scratch directory, as
+`RUSTY_TABS` and `RUSTY_STATE` do for the workspace's own.
 
 ## Primary sources
 
 - `bin/gate.sh`, `.github/workflows/ci.yml`, `omarchy/install.sh`, `packaging/PKGBUILD`
 - `crates/rusty-app/src/session.rs`, `omarchy/rusty-app.service`, `omarchy/rusty-mcp.service`,
   `omarchy/wayland-wm-oom.conf`
+- `crates/rusty-app/src/agent/launch.rs`, `crates/rusty-app/src/agent/host.rs`,
+  `scripts/screenshot.sh`, `scripts/probe-claude-wire.sh`
 - `crates/rusty-mcp/tests/smoke.rs`, `scripts/screenshot.sh`

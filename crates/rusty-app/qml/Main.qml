@@ -52,8 +52,10 @@ ApplicationWindow {
     }
     onWidthChanged: if (visible) win_settings.width = width
     onHeightChanged: if (visible) win_settings.height = height
-    // The agent beside the note (TICKET-025): one headless Claude Code the pane drives.
-    Assistant { id: assistant }
+    // The sessions on this machine (TICKET-031); each surface holds its own client.
+    // Named `registry` because `agents` is already the agent CLIs found on PATH.
+    Agents { id: agentRegistry }
+    readonly property var registry: agentRegistry
 
     QtObject {
         id: ui
@@ -494,6 +496,7 @@ ApplicationWindow {
         win.height = win_settings.height
         ui.load()
         theme.watch()
+        agentRegistry.watch()
         backend.start()
         agents = terminals.programs()
         rightPane.current = ui.rightPane
@@ -1204,7 +1207,8 @@ ApplicationWindow {
                     anchors.fill: parent
                     backend: win.backend
                     theme: win.theme
-                    assistant: assistant
+                    terminals: win.terminals
+                    agents: win.registry
                     sessions: ui.agentSessions
                     note: win.currentNote
                     titles: win.titles

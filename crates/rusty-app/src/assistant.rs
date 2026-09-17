@@ -1,20 +1,25 @@
-//! The `Assistant` QML type (TICKET-025): the agent beside a note as a headless
-//! `claude -p` over stream-json, long-lived and bidirectional. The process is spawned
-//! with the page's session resumed by id when there is one; its stdout is read line by
-//! line on a thread and parsed here into the events the pane renders; the pane's text
-//! goes in as `user` messages, and a permission prompt comes out as a `control_request`
-//! the pane answers with a `control_response`. Nothing here talks to the Claude API: it
-//! is Claude Code's own harness — skills, tools, MCP, the box's auth — without its
-//! terminal. The terminal tabs stay terminals.
+//! The `Assistant` QML type: a client of a session host (TICKET-031). The headless
+//! Claude Code of TICKET-025 is no longer the app's child: a host under its own user
+//! unit owns it (`agent::host`), and this type attaches to the host's socket, replays
+//! the conversation from the log, streams what follows, and writes the pane's messages,
+//! permission answers and control requests through the host. One instance per pane or
+//! tab; a page switch detaches and the turn goes on. Nothing here talks to the Claude
+//! API: it is Claude Code's own harness without its terminal.
 
 use core::pin::Pin;
-use std::io::{BufRead, BufReader, Read, Write};
-use std::path::{Path, PathBuf};
-use std::process::{Child, ChildStdin, Command, Stdio};
-use std::sync::{Arc, Mutex};
+use std::collections::BTreeSet;
+use std::time::Duration;
 
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::QString;
+use serde_json::Value;
+
+use crate::agent::client::{Connection, Incoming};
+use crate::agent::launch::{self, NewSession, Runner};
+use crate::agent::protocol::{ClientMsg, HostEvent, HostMsg, State};
+use crate::agent::spawn::{claude_binary, read_tools, SpawnOptions};
+use crate::agent::wire::{self, Event};
+use crate::agent::{paths, registry, SessionId};
 
 #[cxx_qt::bridge]
 mod qobject {
@@ -33,38 +38,74 @@ mod qobject {
         #[qproperty(bool, busy)]
         #[qproperty(QString, status)]
         #[qproperty(QString, session_id)]
+        #[qproperty(QString, claude_session_id)]
+        #[qproperty(QString, child_state)]
+        #[qproperty(QString, permission_mode)]
+        #[qproperty(QString, model)]
+        #[qproperty(i32, pending_count)]
+        #[qproperty(QString, attached_state)]
         type Assistant = super::AssistantRust;
 
-        /// Start (or restart) the process for a page: `resume` is a session id to
-        /// continue or empty for a fresh one, `system_prompt` is appended to Claude
-        /// Code's own, `mcp_url` is Rusty's server.
+        /// Start a new session from a JSON object `{cwd, title, page, permissionMode,
+        /// model, strictMcp, allowedTools: "reads"|"none", systemPrompt, mcpUrl,
+        /// idleTimeout, resume}`; `created` answers with the id or the error.
         #[qinvokable]
-        fn start(
-            self: Pin<&mut Assistant>,
-            cwd: &QString,
-            resume: &QString,
-            system_prompt: &QString,
-            mcp_url: &QString,
-        );
-        /// Send the user's text as one message; false when nothing is running.
+        fn create(self: Pin<&mut Assistant>, options_json: &QString);
+        /// Attach to a session's host, running it again first when it is down;
+        /// `attached` answers, the log is replayed, `replayDone` marks the catch-up.
+        #[qinvokable]
+        fn attach(self: Pin<&mut Assistant>, id: &QString);
+        /// Leave the host; the conversation goes on without a view.
+        #[qinvokable]
+        fn detach(self: Pin<&mut Assistant>);
+        /// Send the user's text as one message; false when nothing is attached.
         #[qinvokable]
         fn send(self: Pin<&mut Assistant>, text: &QString) -> bool;
-        /// Answer a permission request: allow with the input as given, or deny.
+        /// Answer a permission request: allow with the input as given (`extra_json` may
+        /// add `updatedPermissions`), or deny (`extra_json` may carry a `message`).
         #[qinvokable]
         fn answer(
             self: Pin<&mut Assistant>,
             request_id: &QString,
             allow: bool,
             input_json: &QString,
+            extra_json: &QString,
         ) -> bool;
         /// Ask the running turn to stop; the process stays.
         #[qinvokable]
         fn interrupt(self: Pin<&mut Assistant>) -> bool;
-        /// End the process.
+        /// Change the permission mode for the turns to come.
+        #[qinvokable]
+        fn change_mode(self: Pin<&mut Assistant>, mode: &QString) -> bool;
+        /// Change the model for the turns to come.
+        #[qinvokable]
+        fn change_model(self: Pin<&mut Assistant>, model: &QString) -> bool;
+        /// End the process and its host; the session stays and can be started again.
         #[qinvokable]
         fn stop(self: Pin<&mut Assistant>);
+        /// Stop the host and delete the session's entry and log.
+        #[qinvokable]
+        fn remove(self: Pin<&mut Assistant>);
+        /// The line diff between two texts, as JSON rows of kind `same`, `add` or `del`.
+        #[qinvokable]
+        fn diff(self: &Assistant, before: &QString, after: &QString) -> QString;
 
-        /// The process announced itself with its session id.
+        /// `create` finished: the new session's id, or an empty id and the error.
+        #[qsignal]
+        fn created(self: Pin<&mut Assistant>, id: QString, error: QString);
+        /// The host answered and the replay begins.
+        #[qsignal]
+        fn attached(self: Pin<&mut Assistant>, id: QString);
+        /// The replay is done; what follows is live.
+        #[qsignal]
+        fn replay_done(self: Pin<&mut Assistant>);
+        /// A host came up (`resumed` when it continued an existing log).
+        #[qsignal]
+        fn host_started(self: Pin<&mut Assistant>, resumed: bool);
+        /// The connection to the host ended.
+        #[qsignal]
+        fn host_exited(self: Pin<&mut Assistant>, message: QString);
+        /// A turn began; the process announced its session id.
         #[qsignal]
         fn started(self: Pin<&mut Assistant>, session_id: QString);
         /// A content block began: `text`, `tool_use` (with its name and id) or `thinking`.
@@ -76,13 +117,26 @@ mod qobject {
         /// The whole text of an assistant message, once it is complete.
         #[qsignal]
         fn text_final(self: Pin<&mut Assistant>, text: QString);
+        /// The model is thinking; the CLI's estimate of the tokens so far.
+        #[qsignal]
+        fn thinking_tokens(self: Pin<&mut Assistant>, estimated: i32);
+        /// A user message went in, live or replayed.
+        #[qsignal]
+        fn user_message(self: Pin<&mut Assistant>, text: QString);
+        /// A permission request was answered, live or replayed.
+        #[qsignal]
+        fn answered(self: Pin<&mut Assistant>, request_id: QString, allowed: bool);
+        /// A permission request can no longer be answered (the process went).
+        #[qsignal]
+        fn expired(self: Pin<&mut Assistant>, request_id: QString);
         /// A tool call's input, once the message that carries it is complete.
         #[qsignal]
         fn tool_input(self: Pin<&mut Assistant>, id: QString, name: QString, input_json: QString);
         /// What a tool answered.
         #[qsignal]
         fn tool_result(self: Pin<&mut Assistant>, id: QString, text: QString, is_error: bool);
-        /// The agent wants to use a tool that needs a decision.
+        /// The agent wants to use a tool that needs a decision; `meta_json` carries the
+        /// tool use id, the display name and the permission suggestions.
         #[qsignal]
         fn permission_asked(
             self: Pin<&mut Assistant>,
@@ -90,6 +144,7 @@ mod qobject {
             tool: QString,
             input_json: QString,
             description: QString,
+            meta_json: QString,
         );
         /// A turn ended, well or not.
         #[qsignal]
@@ -99,439 +154,126 @@ mod qobject {
             cost_usd: f64,
             num_turns: i32,
             text: QString,
+            duration_ms: i32,
         );
-        /// Something worth a line in the conversation (a denied permission, for one).
+        /// The permission mode in force changed.
+        #[qsignal]
+        fn mode_changed(self: Pin<&mut Assistant>, mode: QString);
+        /// Something worth a line in the conversation.
         #[qsignal]
         fn notice(self: Pin<&mut Assistant>, text: QString);
-        /// The process ended; `message` carries the tail of its stderr.
+        /// The process ended: `reason` is `exit`, `idle`, `stop` or `signal`, and
+        /// `message` says it in words with the tail of its stderr. An `idle` or `stop`
+        /// exit is the ordinary end of a session that is not being talked to.
         #[qsignal]
-        fn exited(self: Pin<&mut Assistant>, code: i32, message: QString);
+        fn exited(self: Pin<&mut Assistant>, code: i32, reason: QString, message: QString);
     }
 
     impl cxx_qt::Threading for Assistant {}
 }
 
-/// Rusty's tools the pane's agent may call without asking: the reads. A write prompts.
-pub const READ_TOOLS: &[&str] = &[
-    "brain_read_page",
-    "brain_search",
-    "brain_list_pages",
-    "brain_get_links",
-    "brain_tags",
-    "brain_tree",
-    "brain_render",
-    "brain_stats",
-    "brain_due",
-    "brain_get_timeline",
-    "brain_page_types",
-    "brain_resolve_slug",
-    "brain_unresolved",
-    "brain_graph",
-    "brain_semantic_status",
-    "brain_ask",
-    "list_tasks",
-    "list_task_groups",
-    "list_notes",
-    "read_note",
-    "list_memories",
-    "search_conversations",
-    "skill_list",
-    "skill_view",
-    "script_list",
-    "script_view",
-    "settings_list",
-    "setting_get",
-];
-
-/// The most of stderr kept for the exit message.
-const STDERR_TAIL: usize = 2000;
-
-/// What the process said, one line of stream-json at a time.
+/// What one line from the host means to the client.
 #[derive(Debug, Clone, PartialEq)]
-pub enum Event {
-    Init {
-        session_id: String,
-    },
-    BlockStart {
-        kind: String,
-        name: String,
-        id: String,
-    },
-    TextDelta(String),
-    TextFinal(String),
-    ToolInput {
-        id: String,
-        name: String,
-        input: String,
-    },
-    ToolResult {
-        id: String,
-        text: String,
-        is_error: bool,
-    },
-    Permission {
-        request_id: String,
-        tool: String,
-        input: String,
-        description: String,
-    },
-    TurnDone {
-        ok: bool,
-        cost_usd: f64,
-        num_turns: i64,
-        text: String,
-    },
-    Notice(String),
+pub enum ClientEvent {
+    Hello(State),
+    CaughtUp,
+    Wire(Event),
+    UserMessage(String),
+    Answered { request_id: String, allowed: bool },
+    Host(HostEvent),
+    Status(State),
+    Error(String),
 }
 
-/// What the reader hands back: a line of stdout, or the exit once stdout closes, with
-/// the tail of stderr.
-#[derive(Debug, Clone, PartialEq)]
-pub enum Output {
-    Line(String),
-    Exit(i32, String),
-}
-
-fn str_of(value: &serde_json::Value, key: &str) -> String {
-    value[key].as_str().unwrap_or("").to_string()
-}
-
-/// A tool result's content: a string, or text blocks joined.
-fn content_text(value: &serde_json::Value) -> String {
-    match value {
-        serde_json::Value::String(s) => s.clone(),
-        serde_json::Value::Array(items) => items
+/// The text of a user message line: its text blocks joined.
+fn user_text(line: &Value) -> String {
+    match &line["message"]["content"] {
+        Value::String(s) => s.clone(),
+        Value::Array(blocks) => blocks
             .iter()
+            .filter(|b| b["type"].as_str() == Some("text"))
             .filter_map(|b| b["text"].as_str())
             .collect::<Vec<_>>()
             .join("\n"),
-        serde_json::Value::Null => String::new(),
-        other => other.to_string(),
+        _ => String::new(),
     }
 }
 
-/// The events in one line of stream-json; a line that says nothing to the pane gives
-/// none, and a line that is not JSON gives none too.
-pub fn parse_line(line: &str) -> Vec<Event> {
-    let Ok(v) = serde_json::from_str::<serde_json::Value>(line) else {
-        return Vec::new();
-    };
-    let mut out = Vec::new();
-    match v["type"].as_str().unwrap_or("") {
-        "system" => match v["subtype"].as_str().unwrap_or("") {
-            "init" => out.push(Event::Init {
-                session_id: str_of(&v, "session_id"),
-            }),
-            "permission_denied" => {
-                let tool = str_of(&v, "tool_name");
-                out.push(Event::Notice(if tool.is_empty() {
-                    "A permission was denied.".to_string()
-                } else {
-                    format!("A permission for {tool} was denied.")
-                }));
+/// One host message as client events. A replay skips what only mattered live: the
+/// deltas, the thinking estimates, the request status.
+pub fn translate(msg: &HostMsg, replaying: bool) -> Vec<ClientEvent> {
+    match msg {
+        HostMsg::Hello { state, .. } => vec![ClientEvent::Hello(state.clone())],
+        HostMsg::CaughtUp { .. } => vec![ClientEvent::CaughtUp],
+        HostMsg::Claude { line, .. } => wire::parse_value(line)
+            .into_iter()
+            .filter(|event| {
+                !replaying
+                    || !matches!(
+                        event,
+                        Event::TextDelta(_) | Event::ThinkingTokens(_) | Event::Status(_)
+                    )
+            })
+            .map(ClientEvent::Wire)
+            .collect(),
+        HostMsg::Sent { line, .. } => match line["type"].as_str().unwrap_or("") {
+            "user" => vec![ClientEvent::UserMessage(user_text(line))],
+            "control_response" => {
+                let response = &line["response"];
+                vec![ClientEvent::Answered {
+                    request_id: response["request_id"].as_str().unwrap_or("").to_string(),
+                    allowed: response["response"]["behavior"].as_str() == Some("allow"),
+                }]
             }
-            _ => {}
+            _ => Vec::new(),
         },
-        "stream_event" => {
-            let event = &v["event"];
-            match event["type"].as_str().unwrap_or("") {
-                "content_block_start" => {
-                    let block = &event["content_block"];
-                    let kind = str_of(block, "type");
-                    if kind == "text" || kind == "tool_use" || kind == "thinking" {
-                        out.push(Event::BlockStart {
-                            kind,
-                            name: str_of(block, "name"),
-                            id: str_of(block, "id"),
-                        });
-                    }
-                }
-                "content_block_delta" if event["delta"]["type"].as_str() == Some("text_delta") => {
-                    out.push(Event::TextDelta(str_of(&event["delta"], "text")));
-                }
-                _ => {}
-            }
-        }
-        "assistant" => {
-            if let Some(blocks) = v["message"]["content"].as_array() {
-                for block in blocks {
-                    match block["type"].as_str().unwrap_or("") {
-                        "tool_use" => out.push(Event::ToolInput {
-                            id: str_of(block, "id"),
-                            name: str_of(block, "name"),
-                            input: block["input"].to_string(),
-                        }),
-                        "text" => out.push(Event::TextFinal(str_of(block, "text"))),
-                        _ => {}
-                    }
-                }
-            }
-        }
-        "user" => {
-            if let Some(blocks) = v["message"]["content"].as_array() {
-                for block in blocks {
-                    if block["type"].as_str() == Some("tool_result") {
-                        out.push(Event::ToolResult {
-                            id: str_of(block, "tool_use_id"),
-                            text: content_text(&block["content"]),
-                            is_error: block["is_error"].as_bool().unwrap_or(false),
-                        });
-                    }
-                }
-            }
-        }
-        "control_request" => {
-            let request = &v["request"];
-            if request["subtype"].as_str() == Some("can_use_tool") {
-                out.push(Event::Permission {
-                    request_id: str_of(&v, "request_id"),
-                    tool: str_of(request, "tool_name"),
-                    input: request["input"].to_string(),
-                    description: str_of(request, "description"),
-                });
-            }
-        }
-        "result" => {
-            let is_error = v["is_error"].as_bool().unwrap_or(false);
-            let subtype = v["subtype"].as_str().unwrap_or("");
-            let ok = !is_error && subtype == "success";
-            let text = if ok {
-                str_of(&v, "result")
-            } else {
-                let given = v["result"]
-                    .as_str()
-                    .or_else(|| v["error"].as_str())
-                    .unwrap_or("");
-                if given.is_empty() {
-                    format!("The turn ended with {subtype}.")
-                } else {
-                    given.to_string()
-                }
-            };
-            out.push(Event::TurnDone {
-                ok,
-                cost_usd: v["total_cost_usd"].as_f64().unwrap_or(0.0),
-                num_turns: v["num_turns"].as_i64().unwrap_or(0),
-                text,
-            });
-        }
-        _ => {}
+        HostMsg::Host { event, .. } => vec![ClientEvent::Host(event.clone())],
+        HostMsg::Status { state } => vec![ClientEvent::Status(state.clone())],
+        HostMsg::Error { message } => vec![ClientEvent::Error(message.clone())],
     }
-    out
 }
 
-/// One user message, as a line.
-pub fn user_message(text: &str) -> String {
-    serde_json::json!({
-        "type": "user",
-        "message": { "role": "user", "content": [{ "type": "text", "text": text }] }
-    })
-    .to_string()
-}
-
-/// The answer to a `can_use_tool` request: allow with the input as given, or deny.
-pub fn control_response(request_id: &str, allow: bool, input_json: &str) -> String {
-    let response = if allow {
-        let input = serde_json::from_str::<serde_json::Value>(input_json)
-            .unwrap_or_else(|_| serde_json::json!({}));
-        serde_json::json!({ "behavior": "allow", "updatedInput": input })
-    } else {
-        serde_json::json!({ "behavior": "deny", "message": "Declined in Rusty." })
+/// The request a QML `create` describes, from its JSON.
+fn parse_create(options_json: &str) -> Result<NewSession, String> {
+    let v: Value = serde_json::from_str(options_json).map_err(|e| format!("create: {e}"))?;
+    let str_of = |key: &str| v[key].as_str().unwrap_or("").trim().to_string();
+    let cwd = str_of("cwd");
+    if cwd.is_empty() {
+        return Err("create: a cwd is needed".into());
+    }
+    let allowed_tools = match v["allowedTools"].as_str().unwrap_or("none") {
+        "reads" => read_tools(),
+        _ => Vec::new(),
     };
-    serde_json::json!({
-        "type": "control_response",
-        "response": { "subtype": "success", "request_id": request_id, "response": response }
-    })
-    .to_string()
-}
-
-/// A request to stop the running turn.
-pub fn interrupt_request(n: u64) -> String {
-    serde_json::json!({
-        "type": "control_request",
-        "request_id": format!("rusty-interrupt-{n}"),
-        "request": { "subtype": "interrupt" }
-    })
-    .to_string()
-}
-
-/// The MCP configuration handed to the process: Rusty's server over HTTP.
-pub fn mcp_config(mcp_url: &str) -> String {
-    serde_json::json!({ "mcpServers": { "rusty": { "type": "http", "url": mcp_url } } }).to_string()
-}
-
-/// The arguments of the process: print mode over stream-json both ways with partial
-/// messages, permissions asked on stdout, Rusty's server alone, its reads pre-allowed,
-/// the page in the system prompt, and the session resumed when there is one.
-pub fn build_args(resume: Option<&str>, system_prompt: &str, mcp_url: &str) -> Vec<String> {
-    let allowed: Vec<String> = READ_TOOLS
-        .iter()
-        .map(|t| format!("mcp__rusty__{t}"))
-        .collect();
-    let mut args: Vec<String> = [
-        "-p",
-        "--input-format",
-        "stream-json",
-        "--output-format",
-        "stream-json",
-        "--include-partial-messages",
-        "--verbose",
-        "--permission-prompt-tool",
-        "stdio",
-        "--permission-mode",
-        "default",
-        "--strict-mcp-config",
-        "--mcp-config",
-    ]
-    .iter()
-    .map(|s| s.to_string())
-    .collect();
-    args.push(mcp_config(mcp_url));
-    args.push("--allowedTools".to_string());
-    args.push(allowed.join(","));
-    if !system_prompt.is_empty() {
-        args.push("--append-system-prompt".to_string());
-        args.push(system_prompt.to_string());
-    }
-    if let Some(id) = resume.filter(|id| !id.trim().is_empty()) {
-        args.push("--resume".to_string());
-        args.push(id.trim().to_string());
-    }
-    args
-}
-
-/// Where `claude` is: `RUSTY_CLAUDE_BIN` when set, else the first on `PATH`, else what
-/// a login shell knows (the app runs as a user service whose `PATH` may not carry the
-/// shims a shell adds).
-pub fn claude_binary() -> Option<PathBuf> {
-    if let Some(given) = std::env::var_os("RUSTY_CLAUDE_BIN").filter(|p| !p.is_empty()) {
-        let given = PathBuf::from(given);
-        return given.is_file().then_some(given);
-    }
-    if let Some(found) = std::env::var_os("PATH").and_then(|paths| {
-        std::env::split_paths(&paths)
-            .map(|dir| dir.join("claude"))
-            .find(|p| p.is_file())
-    }) {
-        return Some(found);
-    }
-    let out = Command::new("bash")
-        .args(["-lc", "command -v claude"])
-        .stdin(Stdio::null())
-        .stderr(Stdio::null())
-        .output()
-        .ok()?;
-    let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    (out.status.success() && !path.is_empty()).then(|| PathBuf::from(path))
-}
-
-/// A running process: the child behind a lock shared with the reader, and its stdin.
-pub struct Process {
-    child: Arc<Mutex<Child>>,
-    stdin: Mutex<Option<ChildStdin>>,
-}
-
-impl Process {
-    /// Write one line to the process; false when stdin is gone.
-    pub fn write_line(&self, line: &str) -> bool {
-        let Ok(mut guard) = self.stdin.lock() else {
-            return false;
-        };
-        let Some(stdin) = guard.as_mut() else {
-            return false;
-        };
-        let ok = stdin
-            .write_all(line.as_bytes())
-            .and_then(|_| stdin.write_all(b"\n"))
-            .and_then(|_| stdin.flush())
-            .is_ok();
-        if !ok {
-            *guard = None;
+    let title = {
+        let t = str_of("title");
+        if t.is_empty() {
+            std::path::Path::new(&cwd)
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_else(|| "agent".to_string())
+        } else {
+            t
         }
-        ok
-    }
-
-    /// End the process and wait for it.
-    pub fn kill(&self) {
-        if let Ok(mut guard) = self.stdin.lock() {
-            *guard = None;
-        }
-        if let Ok(mut child) = self.child.lock() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
-    }
-}
-
-/// Spawn `binary` with `args` in `cwd`, handing every stdout line and then the exit to
-/// `on_output` from a reader thread.
-pub fn spawn(
-    binary: &Path,
-    args: &[String],
-    cwd: &Path,
-    on_output: impl FnMut(Output) + Send + 'static,
-) -> Result<Process, String> {
-    let mut child = Command::new(binary)
-        .args(args)
-        .current_dir(cwd)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("{}: {e}", binary.display()))?;
-    let stdout = child.stdout.take().ok_or("the process has no stdout")?;
-    let stderr = child.stderr.take().ok_or("the process has no stderr")?;
-    let stdin = child.stdin.take();
-    let child = Arc::new(Mutex::new(child));
-    let tail: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
-    let tail_writer = Arc::clone(&tail);
-    std::thread::Builder::new()
-        .name("assistant-stderr".to_string())
-        .spawn(move || {
-            let mut reader = BufReader::new(stderr);
-            let mut buf = [0u8; 1024];
-            while let Ok(n) = reader.read(&mut buf) {
-                if n == 0 {
-                    break;
-                }
-                if let Ok(mut t) = tail_writer.lock() {
-                    t.push_str(&String::from_utf8_lossy(&buf[..n]));
-                    if t.len() > STDERR_TAIL {
-                        let cut = t.len() - STDERR_TAIL;
-                        let cut = t.floor_char_boundary(cut);
-                        t.drain(..cut);
-                    }
-                }
-            }
-        })
-        .map_err(|e| format!("stderr thread: {e}"))?;
-    let waiter = Arc::clone(&child);
-    std::thread::Builder::new()
-        .name("assistant-reader".to_string())
-        .spawn(move || {
-            let mut on_output = on_output;
-            for line in BufReader::new(stdout).lines() {
-                match line {
-                    Ok(l) => on_output(Output::Line(l)),
-                    Err(_) => break,
-                }
-            }
-            let code = waiter
-                .lock()
-                .ok()
-                .and_then(|mut c| c.wait().ok())
-                .and_then(|s| s.code())
-                .unwrap_or(-1);
-            let message = tail
-                .lock()
-                .map(|t| t.trim().to_string())
-                .unwrap_or_default();
-            on_output(Output::Exit(code, message));
-        })
-        .map_err(|e| format!("reader thread: {e}"))?;
-    Ok(Process {
-        child,
-        stdin: Mutex::new(stdin),
+    };
+    let optional = |key: &str| Some(str_of(key)).filter(|s| !s.is_empty());
+    let options = SpawnOptions {
+        permission_mode: optional("permissionMode").unwrap_or_else(|| "default".to_string()),
+        model: optional("model"),
+        strict_mcp: v["strictMcp"].as_bool().unwrap_or(false),
+        allowed_tools,
+        system_prompt: str_of("systemPrompt"),
+        mcp_url: optional("mcpUrl").unwrap_or_else(|| "http://127.0.0.1:4174/mcp".to_string()),
+        name: Some(title.clone()),
+        idle_timeout_secs: v["idleTimeout"].as_u64().unwrap_or(0),
+        resume: optional("resume"),
+    };
+    options.validate()?;
+    Ok(NewSession {
+        cwd,
+        title,
+        page: optional("page"),
+        options,
     })
 }
 
@@ -542,15 +284,26 @@ pub struct AssistantRust {
     busy: bool,
     status: QString,
     session_id: QString,
-    process: Option<Process>,
-    /// Lines from a process that was replaced are dropped by this.
+    claude_session_id: QString,
+    child_state: QString,
+    permission_mode: QString,
+    model: QString,
+    pending_count: i32,
+    attached_state: QString,
+    connection: Option<Connection>,
+    /// Lines from a connection that was replaced are dropped by this.
     generation: u64,
-    interrupts: u64,
+    replaying: bool,
+    /// Requests asked and not answered, as far as the log says.
+    pending: BTreeSet<String>,
+    /// What the host said was pending when the connection opened.
+    hello_pending: Vec<String>,
+    requests: u64,
 }
 
 impl Default for AssistantRust {
     fn default() -> Self {
-        let available = claude_binary().is_some();
+        let available = claude_binary().is_some() && Runner::from_env().available();
         Self {
             available,
             running: false,
@@ -561,68 +314,188 @@ impl Default for AssistantRust {
                 "Claude Code is not installed"
             }),
             session_id: QString::default(),
-            process: None,
+            claude_session_id: QString::default(),
+            child_state: QString::from("none"),
+            permission_mode: QString::from("default"),
+            model: QString::default(),
+            pending_count: 0,
+            attached_state: QString::from("detached"),
+            connection: None,
             generation: 0,
-            interrupts: 0,
+            replaying: false,
+            pending: BTreeSet::new(),
+            hello_pending: Vec::new(),
+            requests: 0,
         }
     }
 }
 
 impl qobject::Assistant {
     /// See the bridge.
-    pub fn start(
-        mut self: Pin<&mut Self>,
-        cwd: &QString,
-        resume: &QString,
-        system_prompt: &QString,
-        mcp_url: &QString,
-    ) {
-        self.as_mut().stop();
-        let Some(binary) = claude_binary() else {
-            self.as_mut().set_available(false);
-            self.as_mut()
-                .set_status(QString::from("Claude Code is not installed"));
-            return;
+    pub fn create(mut self: Pin<&mut Self>, options_json: &QString) {
+        let request = match parse_create(&options_json.to_string()) {
+            Ok(r) => r,
+            Err(e) => {
+                self.as_mut().created(QString::default(), QString::from(&e));
+                return;
+            }
         };
-        let generation = self.rust().generation + 1;
-        self.as_mut().rust_mut().generation = generation;
-        let resume = resume.to_string();
-        let args = build_args(
-            Some(resume.as_str()),
-            &system_prompt.to_string(),
-            &mcp_url.to_string(),
-        );
+        self.as_mut().set_status(QString::from("starting"));
         let qt = self.qt_thread();
-        let spawned = spawn(&binary, &args, Path::new(&cwd.to_string()), move |out| {
-            let _ = qt.queue(move |mut assistant| {
-                if assistant.rust().generation == generation {
-                    assistant.as_mut().handle(out);
+        std::thread::spawn(move || {
+            let result = launch::start_new(&Runner::from_env(), request);
+            let _ = qt.queue(move |mut assistant| match result {
+                Ok(id) => assistant
+                    .as_mut()
+                    .created(QString::from(id.as_str()), QString::default()),
+                Err(e) => {
+                    assistant.as_mut().set_status(QString::from(&e));
+                    assistant
+                        .as_mut()
+                        .created(QString::default(), QString::from(&e));
                 }
             });
         });
-        match spawned {
-            Ok(process) => {
-                self.as_mut().rust_mut().process = Some(process);
-                self.as_mut().set_running(true);
-                self.as_mut().set_busy(false);
-                self.as_mut().set_session_id(QString::from(&resume));
-                self.as_mut().set_status(QString::from("starting"));
-            }
+    }
+
+    /// See the bridge.
+    pub fn attach(mut self: Pin<&mut Self>, id: &QString) {
+        let id = match SessionId::parse(&id.to_string()) {
+            Ok(id) => id,
             Err(e) => {
-                self.as_mut().set_running(false);
-                self.as_mut().set_status(QString::from(&e));
-                self.as_mut().exited(-1, QString::from(&e));
+                self.as_mut().notice(QString::from(&e));
+                return;
             }
+        };
+        self.as_mut().detach();
+        let generation = self.rust().generation;
+        self.as_mut().set_session_id(QString::from(id.as_str()));
+        self.as_mut().set_attached_state(QString::from("attaching"));
+        self.as_mut().set_status(QString::from("attaching"));
+        self.as_mut().rust_mut().pending.clear();
+        self.as_mut().set_pending_count(0);
+        let qt = self.qt_thread();
+        std::thread::spawn(move || {
+            let socket = paths::socket_path(&id);
+            let connected = match Connection::connect(&socket) {
+                Ok(c) => Ok(c),
+                Err(_) => launch::start_existing(&Runner::from_env(), &id).and_then(|()| {
+                    Connection::connect_with_retry(&socket, Duration::from_secs(5))
+                        .map_err(|e| format!("connecting to the host: {e}"))
+                }),
+            };
+            let mut connection = match connected {
+                Ok(c) => c,
+                Err(e) => {
+                    let _ = qt.queue(move |mut assistant| {
+                        if assistant.rust().generation == generation {
+                            assistant
+                                .as_mut()
+                                .set_attached_state(QString::from("detached"));
+                            assistant.as_mut().set_status(QString::from("detached"));
+                            assistant.as_mut().host_exited(QString::from(&e));
+                        }
+                    });
+                    return;
+                }
+            };
+            let hello = match connection.read_line_timeout(Duration::from_secs(5)) {
+                Ok(Some(line)) => line,
+                _ => {
+                    let _ = qt.queue(move |mut assistant| {
+                        if assistant.rust().generation == generation {
+                            assistant
+                                .as_mut()
+                                .set_attached_state(QString::from("detached"));
+                            assistant
+                                .as_mut()
+                                .host_exited(QString::from("the host said nothing"));
+                        }
+                    });
+                    return;
+                }
+            };
+            if connection.send(&ClientMsg::Attach { since: 0 }).is_err() {
+                let _ = qt.queue(move |mut assistant| {
+                    if assistant.rust().generation == generation {
+                        assistant
+                            .as_mut()
+                            .set_attached_state(QString::from("detached"));
+                        assistant
+                            .as_mut()
+                            .host_exited(QString::from("the host took no attach"));
+                    }
+                });
+                return;
+            }
+            let reader_qt = qt.clone();
+            let spawned = connection.spawn_reader(move |incoming| {
+                let _ = reader_qt.queue(move |mut assistant| {
+                    if assistant.rust().generation == generation {
+                        assistant.as_mut().handle(incoming);
+                    }
+                });
+            });
+            let id_text = id.as_str().to_string();
+            let _ = qt.queue(move |mut assistant| {
+                if assistant.rust().generation != generation {
+                    connection.close();
+                    return;
+                }
+                match spawned {
+                    Ok(()) => {
+                        assistant.as_mut().rust_mut().connection = Some(connection);
+                        assistant.as_mut().rust_mut().replaying = true;
+                        assistant.as_mut().set_running(true);
+                        assistant
+                            .as_mut()
+                            .set_attached_state(QString::from("attached"));
+                        assistant.as_mut().set_status(QString::from("replaying"));
+                        assistant.as_mut().attached(QString::from(&id_text));
+                        assistant.as_mut().handle(Incoming::Line(hello));
+                    }
+                    Err(e) => {
+                        assistant
+                            .as_mut()
+                            .set_attached_state(QString::from("detached"));
+                        assistant
+                            .as_mut()
+                            .host_exited(QString::from(&e.to_string()));
+                    }
+                }
+            });
+        });
+    }
+
+    /// See the bridge.
+    pub fn detach(mut self: Pin<&mut Self>) {
+        let generation = self.rust().generation + 1;
+        self.as_mut().rust_mut().generation = generation;
+        if let Some(connection) = self.as_mut().rust_mut().connection.take() {
+            connection.close();
         }
+        self.as_mut().rust_mut().replaying = false;
+        self.as_mut().set_running(false);
+        self.as_mut().set_busy(false);
+        self.as_mut().set_attached_state(QString::from("detached"));
+        self.as_mut().set_status(QString::from("detached"));
+    }
+
+    fn write(mut self: Pin<&mut Self>, line: &str) -> bool {
+        let Ok(line) = serde_json::from_str::<Value>(line) else {
+            return false;
+        };
+        let mut rust = self.as_mut().rust_mut();
+        let Some(connection) = rust.connection.as_mut() else {
+            return false;
+        };
+        connection.send(&ClientMsg::Send { line }).is_ok()
     }
 
     /// See the bridge.
     pub fn send(mut self: Pin<&mut Self>, text: &QString) -> bool {
-        let line = user_message(&text.to_string());
-        let Some(process) = self.rust().process.as_ref() else {
-            return false;
-        };
-        if !process.write_line(&line) {
+        let line = wire::user_message(&text.to_string());
+        if !self.as_mut().write(&line) {
             return false;
         }
         self.as_mut().set_busy(true);
@@ -636,68 +509,281 @@ impl qobject::Assistant {
         request_id: &QString,
         allow: bool,
         input_json: &QString,
+        extra_json: &QString,
     ) -> bool {
-        let line = control_response(&request_id.to_string(), allow, &input_json.to_string());
-        let Some(process) = self.rust().process.as_ref() else {
-            return false;
-        };
-        let ok = process.write_line(&line);
+        let line = wire::control_response(
+            &request_id.to_string(),
+            allow,
+            &input_json.to_string(),
+            &extra_json.to_string(),
+        );
+        let ok = self.as_mut().write(&line);
         if ok {
+            let id = request_id.to_string();
+            self.as_mut().rust_mut().pending.remove(&id);
+            let count = self.rust().pending.len() as i32;
+            self.as_mut().set_pending_count(count);
             self.as_mut().set_status(QString::from("working"));
         }
         ok
     }
 
+    fn next_request(mut self: Pin<&mut Self>) -> u64 {
+        let n = self.rust().requests + 1;
+        self.as_mut().rust_mut().requests = n;
+        n
+    }
+
     /// See the bridge.
     pub fn interrupt(mut self: Pin<&mut Self>) -> bool {
-        let n = self.rust().interrupts + 1;
-        self.as_mut().rust_mut().interrupts = n;
-        let line = interrupt_request(n);
-        self.rust()
-            .process
-            .as_ref()
-            .is_some_and(|p| p.write_line(&line))
+        let n = self.as_mut().next_request();
+        self.write(&wire::interrupt_request(n))
+    }
+
+    /// See the bridge.
+    pub fn change_mode(mut self: Pin<&mut Self>, mode: &QString) -> bool {
+        let n = self.as_mut().next_request();
+        self.write(&wire::set_permission_mode_request(n, &mode.to_string()))
+    }
+
+    /// See the bridge.
+    pub fn change_model(mut self: Pin<&mut Self>, model: &QString) -> bool {
+        let n = self.as_mut().next_request();
+        self.write(&wire::set_model_request(n, &model.to_string()))
     }
 
     /// See the bridge.
     pub fn stop(mut self: Pin<&mut Self>) {
-        let generation = self.rust().generation + 1;
-        self.as_mut().rust_mut().generation = generation;
-        if let Some(process) = self.as_mut().rust_mut().process.take() {
-            process.kill();
+        let sent = {
+            let mut rust = self.as_mut().rust_mut();
+            rust.connection
+                .as_mut()
+                .is_some_and(|c| c.send(&ClientMsg::Stop).is_ok())
+        };
+        if sent {
+            self.as_mut().set_status(QString::from("stopping"));
         }
-        self.as_mut().set_running(false);
-        self.as_mut().set_busy(false);
-        self.as_mut().set_status(QString::from("stopped"));
     }
 
-    /// A line or the exit, on the Qt thread.
-    fn handle(mut self: Pin<&mut Self>, out: Output) {
-        match out {
-            Output::Line(line) => {
-                for event in parse_line(&line) {
+    /// See the bridge.
+    pub fn remove(mut self: Pin<&mut Self>) {
+        let id = self.rust().session_id.to_string();
+        self.as_mut().detach();
+        let Ok(id) = SessionId::parse(&id) else {
+            return;
+        };
+        let qt = self.qt_thread();
+        std::thread::spawn(move || {
+            let runner = Runner::from_env();
+            if registry::alive(&id) {
+                let _ = launch::stop(&runner, &id);
+            }
+            let result = registry::remove_in(&paths::state_dir(), &id);
+            let _ = qt.queue(move |mut assistant| {
+                if let Err(e) = result {
+                    assistant.as_mut().notice(QString::from(&format!(
+                        "The session could not be removed: {e}"
+                    )));
+                }
+            });
+        });
+    }
+
+    /// See the bridge.
+    pub fn diff(&self, before: &QString, after: &QString) -> QString {
+        QString::from(&crate::diff::to_json(&crate::diff::diff_lines(
+            &before.to_string(),
+            &after.to_string(),
+        )))
+    }
+
+    /// A line from the host or the end of the connection, on the Qt thread.
+    fn handle(mut self: Pin<&mut Self>, incoming: Incoming) {
+        match incoming {
+            Incoming::Line(line) => {
+                let Ok(msg) = serde_json::from_str::<HostMsg>(&line) else {
+                    return;
+                };
+                let replaying = self.rust().replaying;
+                for event in translate(&msg, replaying) {
                     self.as_mut().emit(event);
                 }
             }
-            Output::Exit(code, message) => {
-                self.as_mut().rust_mut().process = None;
+            Incoming::Closed(why) => {
+                self.as_mut().rust_mut().connection = None;
+                self.as_mut().rust_mut().replaying = false;
                 self.as_mut().set_running(false);
                 self.as_mut().set_busy(false);
-                self.as_mut().set_status(QString::from("stopped"));
-                self.as_mut().exited(code, QString::from(&message));
+                self.as_mut().set_attached_state(QString::from("detached"));
+                self.as_mut().set_status(QString::from("detached"));
+                self.as_mut().host_exited(QString::from(&why));
             }
         }
     }
 
-    fn emit(mut self: Pin<&mut Self>, event: Event) {
+    fn apply_state(mut self: Pin<&mut Self>, state: &State) {
+        self.as_mut().set_child_state(QString::from(&state.child));
+        self.as_mut().set_claude_session_id(QString::from(
+            state.claude_session_id.as_deref().unwrap_or(""),
+        ));
+        self.as_mut()
+            .set_permission_mode(QString::from(&state.permission_mode));
+        self.as_mut()
+            .set_model(QString::from(state.model.as_deref().unwrap_or("")));
+        self.as_mut().set_busy(state.child == "working");
+    }
+
+    fn expire_all(mut self: Pin<&mut Self>) {
+        let pending: Vec<String> = self.rust().pending.iter().cloned().collect();
+        self.as_mut().rust_mut().pending.clear();
+        self.as_mut().set_pending_count(0);
+        for id in pending {
+            self.as_mut().expired(QString::from(&id));
+        }
+    }
+
+    fn emit(mut self: Pin<&mut Self>, event: ClientEvent) {
         match event {
-            Event::Init { session_id } => {
-                self.as_mut().set_session_id(QString::from(&session_id));
-                self.as_mut().set_status(QString::from("ready"));
+            ClientEvent::Hello(state) => {
+                self.as_mut().rust_mut().hello_pending = state.pending.clone();
+                self.as_mut().apply_state(&state);
+            }
+            ClientEvent::CaughtUp => {
+                let live: Vec<String> = self.rust().hello_pending.clone();
+                let dead: Vec<String> = self
+                    .rust()
+                    .pending
+                    .iter()
+                    .filter(|id| !live.contains(id))
+                    .cloned()
+                    .collect();
+                for id in dead {
+                    self.as_mut().rust_mut().pending.remove(&id);
+                    self.as_mut().expired(QString::from(&id));
+                }
+                let count = self.rust().pending.len() as i32;
+                self.as_mut().set_pending_count(count);
+                self.as_mut().rust_mut().replaying = false;
+                let status = match self.rust().child_state.to_string().as_str() {
+                    "working" => "working",
+                    "none" => "sleeping",
+                    "stopping" => "stopping",
+                    _ if count > 0 => "asking",
+                    _ => "ready",
+                };
+                self.as_mut().set_status(QString::from(status));
+                self.as_mut().replay_done();
+            }
+            ClientEvent::Status(state) => self.as_mut().apply_state(&state),
+            ClientEvent::UserMessage(text) => {
+                if !self.rust().replaying {
+                    self.as_mut().set_busy(true);
+                    self.as_mut().set_status(QString::from("working"));
+                }
+                self.as_mut().user_message(QString::from(&text));
+            }
+            ClientEvent::Answered {
+                request_id,
+                allowed,
+            } => {
+                self.as_mut().rust_mut().pending.remove(&request_id);
+                let count = self.rust().pending.len() as i32;
+                self.as_mut().set_pending_count(count);
+                self.as_mut().answered(QString::from(&request_id), allowed);
+            }
+            ClientEvent::Host(event) => match event {
+                HostEvent::Started { resumed } => {
+                    self.as_mut().expire_all();
+                    self.as_mut().host_started(resumed);
+                }
+                HostEvent::ChildStarted { .. } => {
+                    self.as_mut().set_child_state(QString::from("ready"));
+                    if !self.rust().replaying {
+                        self.as_mut().set_status(QString::from("ready"));
+                    }
+                }
+                HostEvent::ChildExited {
+                    code,
+                    signal,
+                    reason,
+                    stderr,
+                } => {
+                    self.as_mut().expire_all();
+                    self.as_mut().set_child_state(QString::from("none"));
+                    self.as_mut().set_busy(false);
+                    if !self.rust().replaying {
+                        self.as_mut().set_status(QString::from("sleeping"));
+                    }
+                    let mut message = match (reason.as_str(), signal) {
+                        ("idle", _) => "stopped after sitting idle".to_string(),
+                        ("stop", _) => "stopped".to_string(),
+                        (_, Some(signal)) => format!("ended by signal {signal}"),
+                        _ => "exited".to_string(),
+                    };
+                    if !stderr.is_empty() {
+                        message.push_str(": ");
+                        message.push_str(&stderr);
+                    }
+                    self.as_mut().exited(
+                        code.unwrap_or(-1),
+                        QString::from(&reason),
+                        QString::from(&message),
+                    );
+                }
+                HostEvent::Stopping { .. } => {
+                    self.as_mut().set_status(QString::from("stopping"));
+                }
+                HostEvent::Note { text } => self.as_mut().notice(QString::from(&text)),
+            },
+            ClientEvent::Error(message) => {
+                self.as_mut()
+                    .notice(QString::from(&format!("The host answered: {message}")));
+            }
+            ClientEvent::Wire(event) => self.as_mut().emit_wire(event),
+        }
+    }
+
+    fn emit_wire(mut self: Pin<&mut Self>, event: Event) {
+        let replaying = self.rust().replaying;
+        match event {
+            Event::Init {
+                session_id,
+                model,
+                permission_mode,
+            } => {
+                self.as_mut()
+                    .set_claude_session_id(QString::from(&session_id));
+                if !model.is_empty() {
+                    self.as_mut().set_model(QString::from(&model));
+                }
+                if !permission_mode.is_empty() {
+                    self.as_mut()
+                        .set_permission_mode(QString::from(&permission_mode));
+                }
+                if !replaying {
+                    self.as_mut().set_busy(true);
+                    self.as_mut().set_status(QString::from("working"));
+                }
                 self.as_mut().started(QString::from(&session_id));
             }
+            Event::Status(status) => {
+                if !replaying {
+                    self.as_mut().set_status(QString::from(&status));
+                }
+            }
+            Event::ModeChanged(mode) => {
+                self.as_mut().set_permission_mode(QString::from(&mode));
+                self.as_mut().mode_changed(QString::from(&mode));
+            }
+            Event::ThinkingTokens(n) => {
+                if !replaying {
+                    self.as_mut().set_status(QString::from("thinking"));
+                }
+                self.as_mut()
+                    .thinking_tokens(i32::try_from(n).unwrap_or(i32::MAX));
+            }
             Event::BlockStart { kind, name, id } => {
-                if kind == "thinking" {
+                if kind == "thinking" && !replaying {
                     self.as_mut().set_status(QString::from("thinking"));
                 }
                 self.as_mut().block_started(
@@ -709,8 +795,10 @@ impl qobject::Assistant {
             Event::TextDelta(text) => self.as_mut().text_delta(QString::from(&text)),
             Event::TextFinal(text) => self.as_mut().text_final(QString::from(&text)),
             Event::ToolInput { id, name, input } => {
-                self.as_mut()
-                    .set_status(QString::from(&format!("running {name}")));
+                if !replaying {
+                    self.as_mut()
+                        .set_status(QString::from(&format!("running {name}")));
+                }
                 self.as_mut().tool_input(
                     QString::from(&id),
                     QString::from(&name),
@@ -726,31 +814,52 @@ impl qobject::Assistant {
                 tool,
                 input,
                 description,
+                meta,
             } => {
-                self.as_mut()
-                    .set_status(QString::from(&format!("asking to use {tool}")));
+                self.as_mut().rust_mut().pending.insert(request_id.clone());
+                let count = self.rust().pending.len() as i32;
+                self.as_mut().set_pending_count(count);
+                if !replaying {
+                    self.as_mut()
+                        .set_status(QString::from(&format!("asking to use {tool}")));
+                }
                 self.as_mut().permission_asked(
                     QString::from(&request_id),
                     QString::from(&tool),
                     QString::from(&input),
                     QString::from(&description),
+                    QString::from(&meta),
                 );
+            }
+            Event::ControlAck { ok, error, .. } => {
+                if !ok && !error.is_empty() {
+                    self.as_mut().notice(QString::from(&error));
+                }
             }
             Event::TurnDone {
                 ok,
                 cost_usd,
                 num_turns,
                 text,
+                duration_ms,
             } => {
-                self.as_mut().set_busy(false);
-                self.as_mut().set_status(QString::from(if ok {
-                    "ready"
-                } else {
-                    "the turn failed"
-                }));
-                self.as_mut()
-                    .turn_done(ok, cost_usd, num_turns as i32, QString::from(&text));
+                if !replaying {
+                    self.as_mut().set_busy(false);
+                    self.as_mut().set_status(QString::from(if ok {
+                        "ready"
+                    } else {
+                        "the turn failed"
+                    }));
+                }
+                self.as_mut().turn_done(
+                    ok,
+                    cost_usd,
+                    i32::try_from(num_turns).unwrap_or(i32::MAX),
+                    QString::from(&text),
+                    i32::try_from(duration_ms).unwrap_or(i32::MAX),
+                );
             }
+            Event::RateLimit { .. } => {}
             Event::Notice(text) => self.as_mut().notice(QString::from(&text)),
         }
     }
@@ -759,280 +868,131 @@ impl qobject::Assistant {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::agent::protocol::now;
+
+    fn parsed(line: &str) -> HostMsg {
+        serde_json::from_str(line).unwrap()
+    }
 
     #[test]
-    fn parse_line_reads_the_probe() {
-        // Lines as `claude` 2.1.260 wrote them on this box, trimmed to what matters.
-        assert_eq!(
-            parse_line(
-                r#"{"type":"system","subtype":"init","cwd":"/x","session_id":"62faa927","tools":["Bash"]}"#
-            ),
-            vec![Event::Init {
-                session_id: "62faa927".into()
-            }]
+    fn a_replay_skips_what_only_mattered_live() {
+        let delta = parsed(
+            r#"{"type":"claude","t":"t","line":{"type":"stream_event","event":{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"a"}}}}"#,
         );
         assert_eq!(
-            parse_line(
-                r#"{"type":"stream_event","event":{"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}},"session_id":"s"}"#
-            ),
-            vec![Event::BlockStart {
-                kind: "text".into(),
-                name: String::new(),
-                id: String::new()
-            }]
+            translate(&delta, false),
+            vec![ClientEvent::Wire(Event::TextDelta("a".into()))]
+        );
+        assert!(translate(&delta, true).is_empty());
+        let status = parsed(
+            r#"{"type":"claude","seq":3,"t":"t","line":{"type":"system","subtype":"status","status":"requesting"}}"#,
+        );
+        assert!(translate(&status, true).is_empty());
+        assert_eq!(
+            translate(&status, false),
+            vec![ClientEvent::Wire(Event::Status("requesting".into()))]
+        );
+        let text = parsed(
+            r#"{"type":"claude","seq":4,"t":"t","line":{"type":"assistant","message":{"content":[{"type":"text","text":"hello"}]}}}"#,
         );
         assert_eq!(
-            parse_line(
-                r#"{"type":"stream_event","event":{"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_1","name":"Write","input":{}}}}"#
-            ),
-            vec![Event::BlockStart {
-                kind: "tool_use".into(),
-                name: "Write".into(),
-                id: "toolu_1".into()
-            }]
+            translate(&text, true),
+            vec![ClientEvent::Wire(Event::TextFinal("hello".into()))]
+        );
+    }
+
+    #[test]
+    fn sent_lines_become_user_messages_and_answers() {
+        let user = parsed(
+            r#"{"type":"sent","seq":8,"t":"t","line":{"type":"user","message":{"role":"user","content":[{"type":"text","text":"What is this page about?"}]}}}"#,
         );
         assert_eq!(
-            parse_line(
-                r#"{"type":"stream_event","event":{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" from the probe"}}}"#
-            ),
-            vec![Event::TextDelta(" from the probe".into())]
+            translate(&user, true),
+            vec![ClientEvent::UserMessage("What is this page about?".into())]
         );
-        assert!(parse_line(r#"{"type":"stream_event","event":{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":""}}}"#).is_empty());
-        assert_eq!(
-            parse_line(
-                r#"{"type":"assistant","message":{"role":"assistant","content":[{"type":"thinking","thinking":""},{"type":"tool_use","id":"toolu_1","name":"Write","input":{"file_path":"probe.txt","content":"ok"}}]}}"#
-            ),
-            vec![Event::ToolInput {
-                id: "toolu_1".into(),
-                name: "Write".into(),
-                input: r#"{"content":"ok","file_path":"probe.txt"}"#.into()
-            }]
+        let allow = parsed(
+            r#"{"type":"sent","seq":30,"t":"t","line":{"type":"control_response","response":{"subtype":"success","request_id":"8366049a","response":{"behavior":"allow","updatedInput":{}}}}}"#,
         );
         assert_eq!(
-            parse_line(
-                r#"{"type":"assistant","message":{"content":[{"type":"text","text":"hello from the probe"}]}}"#
-            ),
-            vec![Event::TextFinal("hello from the probe".into())]
-        );
-        assert_eq!(
-            parse_line(
-                r#"{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":"probe-ok","is_error":false}]}}"#
-            ),
-            vec![Event::ToolResult {
-                id: "toolu_1".into(),
-                text: "probe-ok".into(),
-                is_error: false
-            }]
-        );
-        assert_eq!(
-            parse_line(
-                r#"{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"t","content":[{"type":"text","text":"a"},{"type":"text","text":"b"}],"is_error":true}]}}"#
-            ),
-            vec![Event::ToolResult {
-                id: "t".into(),
-                text: "a\nb".into(),
-                is_error: true
-            }]
-        );
-        assert_eq!(
-            parse_line(
-                r#"{"type":"control_request","request_id":"8366049a","request":{"subtype":"can_use_tool","tool_name":"Write","display_name":"Write","input":{"file_path":"probe.txt","content":"ok"},"description":"probe.txt","tool_use_id":"toolu_1"}}"#
-            ),
-            vec![Event::Permission {
+            translate(&allow, false),
+            vec![ClientEvent::Answered {
                 request_id: "8366049a".into(),
-                tool: "Write".into(),
-                input: r#"{"content":"ok","file_path":"probe.txt"}"#.into(),
-                description: "probe.txt".into()
+                allowed: true
             }]
         );
-        assert_eq!(
-            parse_line(
-                r#"{"type":"result","subtype":"success","is_error":false,"num_turns":2,"total_cost_usd":0.026,"result":"Done.","session_id":"s"}"#
-            ),
-            vec![Event::TurnDone {
-                ok: true,
-                cost_usd: 0.026,
-                num_turns: 2,
-                text: "Done.".into()
-            }]
+        let deny = parsed(
+            r#"{"type":"sent","seq":31,"t":"t","line":{"type":"control_response","response":{"subtype":"success","request_id":"r","response":{"behavior":"deny","message":"no"}}}}"#,
         );
-        assert_eq!(
-            parse_line(
-                r#"{"type":"result","subtype":"error_max_turns","is_error":true,"num_turns":25}"#
-            ),
-            vec![Event::TurnDone {
-                ok: false,
-                cost_usd: 0.0,
-                num_turns: 25,
-                text: "The turn ended with error_max_turns.".into()
-            }]
+        assert!(matches!(
+            translate(&deny, false)[0],
+            ClientEvent::Answered { allowed: false, .. }
+        ));
+        let interrupt = parsed(
+            r#"{"type":"sent","seq":32,"t":"t","line":{"type":"control_request","request_id":"rusty-interrupt-1","request":{"subtype":"interrupt"}}}"#,
         );
-        assert_eq!(
-            parse_line(r#"{"type":"system","subtype":"permission_denied","tool_name":"Write"}"#),
-            vec![Event::Notice("A permission for Write was denied.".into())]
-        );
-        assert!(parse_line(r#"{"type":"rate_limit_event","rate_limit_info":{}}"#).is_empty());
-        assert!(parse_line("not json").is_empty());
+        assert!(translate(&interrupt, false).is_empty());
     }
 
     #[test]
-    fn messages_out_match_the_probe() {
-        let user: serde_json::Value = serde_json::from_str(&user_message("hi there")).unwrap();
-        assert_eq!(user["type"], "user");
-        assert_eq!(user["message"]["role"], "user");
-        assert_eq!(user["message"]["content"][0]["text"], "hi there");
-        let allow: serde_json::Value =
-            serde_json::from_str(&control_response("r-1", true, r#"{"file_path":"a"}"#)).unwrap();
-        assert_eq!(allow["type"], "control_response");
-        assert_eq!(allow["response"]["subtype"], "success");
-        assert_eq!(allow["response"]["request_id"], "r-1");
-        assert_eq!(allow["response"]["response"]["behavior"], "allow");
+    fn host_lines_carry_their_events() {
+        let hello = parsed(
+            r#"{"type":"hello","protocol":1,"id":"x","seq":2,"state":{"child":"ready","pending":["p1"],"claude_session_id":null,"permission_mode":"default","model":null,"clients":1,"pid":1}}"#,
+        );
+        assert!(
+            matches!(translate(&hello, false)[0], ClientEvent::Hello(ref s) if s.pending == vec!["p1".to_string()])
+        );
+        let caught = parsed(r#"{"type":"caught_up","seq":2}"#);
+        assert_eq!(translate(&caught, true), vec![ClientEvent::CaughtUp]);
+        let exited = parsed(
+            r#"{"type":"host","seq":9,"t":"t","event":"child_exited","code":3,"signal":null,"reason":"exit","stderr":"oops"}"#,
+        );
         assert_eq!(
-            allow["response"]["response"]["updatedInput"]["file_path"],
-            "a"
+            translate(&exited, false),
+            vec![ClientEvent::Host(HostEvent::ChildExited {
+                code: Some(3),
+                signal: None,
+                reason: "exit".into(),
+                stderr: "oops".into()
+            })]
         );
-        let deny: serde_json::Value =
-            serde_json::from_str(&control_response("r-2", false, "nonsense")).unwrap();
-        assert_eq!(deny["response"]["response"]["behavior"], "deny");
-        assert!(deny["response"]["response"]["message"].as_str().is_some());
-        let stop: serde_json::Value = serde_json::from_str(&interrupt_request(4)).unwrap();
-        assert_eq!(stop["type"], "control_request");
-        assert_eq!(stop["request"]["subtype"], "interrupt");
-        assert_eq!(stop["request_id"], "rusty-interrupt-4");
-    }
-
-    #[test]
-    fn build_args_carry_the_wire() {
-        let args = build_args(None, "The page is x.", "http://127.0.0.1:4174/mcp");
-        let joined = args.join(" ");
-        for flag in [
-            "-p",
-            "--input-format stream-json",
-            "--output-format stream-json",
-            "--include-partial-messages",
-            "--permission-prompt-tool stdio",
-            "--permission-mode default",
-            "--strict-mcp-config",
-            "--append-system-prompt The page is x.",
-        ] {
-            assert!(joined.contains(flag), "{flag} in {joined}");
-        }
-        assert!(!joined.contains("--resume"));
-        let config = args
-            .iter()
-            .position(|a| a == "--mcp-config")
-            .map(|i| args[i + 1].clone())
-            .unwrap();
-        let config: serde_json::Value = serde_json::from_str(&config).unwrap();
-        assert_eq!(config["mcpServers"]["rusty"]["type"], "http");
+        let error = parsed(r#"{"type":"error","message":"no process to answer"}"#);
         assert_eq!(
-            config["mcpServers"]["rusty"]["url"],
-            "http://127.0.0.1:4174/mcp"
+            translate(&error, false),
+            vec![ClientEvent::Error("no process to answer".into())]
         );
-        let allowed = args
-            .iter()
-            .position(|a| a == "--allowedTools")
-            .map(|i| args[i + 1].clone())
-            .unwrap();
-        assert!(allowed.contains("mcp__rusty__brain_read_page"));
-        assert!(!allowed.contains("secret_reveal") && !allowed.contains("brain_delete"));
-        let resumed = build_args(Some(" abc-123 "), "", "http://x");
-        let joined = resumed.join(" ");
-        assert!(joined.ends_with("--resume abc-123"), "{joined}");
-        assert!(!joined.contains("--append-system-prompt"));
-        assert!(!build_args(Some("   "), "", "http://x")
-            .join(" ")
-            .contains("--resume"));
-    }
-
-    /// The spawn tests run one at a time: a script written by one test thread while
-    /// another forks to exec its own can answer `ETXTBSY` (the child holds the writer's
-    /// descriptor until the exec), so they take this lock.
-    static SPAWN: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-    fn fake(dir: &Path, body: &str) -> PathBuf {
-        let path = dir.join("claude-fake");
-        let staging = dir.join("claude-fake.tmp");
-        std::fs::write(&staging, format!("#!/usr/bin/env bash\n{body}")).unwrap();
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&staging, std::fs::Permissions::from_mode(0o755)).unwrap();
-        std::fs::rename(&staging, &path).unwrap();
-        path
+        let _ = now();
     }
 
     #[test]
-    fn spawn_reports_lines_then_the_exit() {
-        let _serial = SPAWN.lock().unwrap_or_else(|e| e.into_inner());
-        let dir = std::env::temp_dir().join(format!("rusty_assistant_{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap();
-        let script = fake(
-            &dir,
-            "echo '{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"s-1\"}'\nread -r line\ncase \"$line\" in *hello*) echo '{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"num_turns\":1,\"total_cost_usd\":0.01,\"result\":\"hi\"}';; esac\necho oops >&2\nexit 3\n",
-        );
-        let (tx, rx) = std::sync::mpsc::channel();
-        let process = spawn(&script, &[], &dir, move |out| {
-            let _ = tx.send(out);
-        })
-        .unwrap();
-        assert!(process.write_line(&user_message("hello")));
-        let mut got = Vec::new();
-        for _ in 0..3 {
-            got.push(
-                rx.recv_timeout(std::time::Duration::from_secs(10))
-                    .expect("an output"),
-            );
-        }
-        let events: Vec<Vec<Event>> = got
-            .iter()
-            .filter_map(|o| match o {
-                Output::Line(l) => Some(parse_line(l)),
-                Output::Exit(..) => None,
-            })
-            .collect();
-        assert_eq!(
-            events[0],
-            vec![Event::Init {
-                session_id: "s-1".into()
-            }]
-        );
-        assert!(matches!(events[1][0], Event::TurnDone { ok: true, .. }));
-        assert_eq!(got[2], Output::Exit(3, "oops".into()));
-        assert!(!process.write_line("late"), "stdin is gone after the exit");
-        let _ = std::fs::remove_dir_all(&dir);
+    fn create_options_come_from_the_pane_and_the_tab() {
+        let pane = parse_create(r#"{"cwd":"/home/x","title":"Orbit","page":"projects/orbit","permissionMode":"default","strictMcp":true,"allowedTools":"reads","systemPrompt":"The page.","mcpUrl":"http://127.0.0.1:4174/mcp","idleTimeout":600,"resume":""}"#).unwrap();
+        assert_eq!(pane.title, "Orbit");
+        assert_eq!(pane.page.as_deref(), Some("projects/orbit"));
+        assert!(pane.options.strict_mcp);
+        assert!(pane
+            .options
+            .allowed_tools
+            .contains(&"mcp__rusty__brain_read_page".to_string()));
+        assert_eq!(pane.options.idle_timeout_secs, 600);
+        assert!(pane.options.resume.is_none());
+        assert_eq!(pane.options.name.as_deref(), Some("Orbit"));
+        let tab = parse_create(r#"{"cwd":"/srv/stacks/rusty-v3","permissionMode":"acceptEdits","model":"sonnet","resume":"abc"}"#).unwrap();
+        assert_eq!(tab.title, "rusty-v3");
+        assert!(!tab.options.strict_mcp);
+        assert!(tab.options.allowed_tools.is_empty());
+        assert_eq!(tab.options.model.as_deref(), Some("sonnet"));
+        assert_eq!(tab.options.resume.as_deref(), Some("abc"));
+        assert_eq!(tab.options.mcp_url, "http://127.0.0.1:4174/mcp");
+        assert!(parse_create(r#"{"title":"no cwd"}"#).is_err());
+        assert!(parse_create(r#"{"cwd":"/x","permissionMode":"bogus"}"#).is_err());
+        assert!(parse_create("not json").is_err());
     }
 
     #[test]
-    fn spawn_refuses_a_missing_binary() {
-        let _serial = SPAWN.lock().unwrap_or_else(|e| e.into_inner());
-        let err = spawn(
-            Path::new("/nonexistent/claude"),
-            &[],
-            Path::new("/"),
-            |_| {},
-        )
-        .err()
-        .unwrap();
-        assert!(err.contains("/nonexistent/claude"), "{err}");
-    }
-
-    #[test]
-    fn kill_ends_a_waiting_process() {
-        let _serial = SPAWN.lock().unwrap_or_else(|e| e.into_inner());
-        let dir = std::env::temp_dir().join(format!("rusty_assistant_kill_{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap();
-        let script = fake(&dir, "while read -r line; do :; done\n");
-        let (tx, rx) = std::sync::mpsc::channel();
-        let process = spawn(&script, &[], &dir, move |out| {
-            let _ = tx.send(out);
-        })
-        .unwrap();
-        process.kill();
-        let out = rx
-            .recv_timeout(std::time::Duration::from_secs(10))
-            .expect("the exit");
-        assert!(matches!(out, Output::Exit(..)), "{out:?}");
-        let _ = std::fs::remove_dir_all(&dir);
+    fn user_text_joins_the_text_blocks() {
+        let line: Value = serde_json::from_str(r#"{"message":{"content":[{"type":"text","text":"a"},{"type":"image"},{"type":"text","text":"b"}]}}"#).unwrap();
+        assert_eq!(user_text(&line), "a\nb");
+        let plain: Value = serde_json::from_str(r#"{"message":{"content":"just text"}}"#).unwrap();
+        assert_eq!(user_text(&plain), "just text");
     }
 }

@@ -9,15 +9,20 @@ Item {
     id: pane
     required property var backend
     required property var theme
-    // The agent beside the note (TICKET-025): a headless Claude Code the window owns,
-    // and the session id per page it keeps.
-    required property var assistant
+    // The agent beside the note: a session of its own (TICKET-031), owned by a host
+    // under its own unit, so the conversation outlives the window. The pane attaches to
+    // the page's session and replays it; the first message on a page without one
+    // creates it. `sessions` is the {slug: id} map the window keeps.
+    required property var terminals
+    required property var agents
     property string sessions: "{}"
     property string agentSlug: ""
-    // Whether the running process announced itself; an exit before that with a session
-    // to resume means the session is gone, and it is forgotten so the next message
-    // starts afresh instead of failing the same way.
-    property bool sawInit: false
+    // What to send once the session this pane just created is attached.
+    property string pendingText: ""
+    // A conversation to carry into a new session: the id a page kept before this ticket
+    // is Claude Code's own, which no entry here knows, so it becomes the `resume` of the
+    // session the first message creates.
+    property string legacyResume: ""
     property var note: null
     property var titles: ({})
     // [{tag, count}] from brain_tags, sorted; rows carry the depth and the last segment.
@@ -34,6 +39,11 @@ Item {
     signal sessionStarted(string slug, string sessionId)
     signal forgetSession(string slug)
 
+    // This pane's own client; the process itself lives in the session's host.
+    // Referred to by its id, never through a property of the same name (a property
+    // shadows the id and binds to itself).
+    Assistant { id: assistant }
+
     function titleOf(slug) { return titles[slug] || slug.slice(slug.lastIndexOf("/") + 1) }
     function focusAgent() { if (current === "agent") chatInput.forceActiveFocus() }
 
@@ -45,44 +55,91 @@ Item {
     function lastOf(kind) { for (let i = chat.count - 1; i >= 0; i--) if (chat.get(i).kind === kind) return i; return -1 }
     function brief(s) { return s.length > 600 ? s.slice(0, 600) + "…" : s }
     function sessionFor(slug) { try { const m = JSON.parse(sessions || "{}"); return typeof m[slug] === "string" ? m[slug] : "" } catch (e) { return "" } }
+    function markAnswered(requestId, word) {
+        for (let i = chat.count - 1; i >= 0; i--) {
+            const it = chat.get(i)
+            if (it.kind === "permission" && it.extra === requestId && it.answered.length === 0) { chat.setProperty(i, "answered", word); return }
+        }
+    }
     function systemPromptFor(n) {
         return "You are the assistant beside a page in Rusty, a local-first knowledge workspace on this machine. The open page is `" + n.slug + "` (\"" + n.title + "\"). "
             + "Rusty's MCP tools (mcp__rusty__*) are the way to read and change pages, tasks, notes and memories; brain_read_page reads the open page by slug. Answer briefly."
     }
-    // One process per page: the same page keeps its process, another page stops it,
-    // clears the list and starts again with that page's session when there is one.
+    // One session per page, and it lives in its own host: opening a page attaches to
+    // its session and replays it; a page without one waits for the first message, so
+    // ten pages opened never start ten processes. Leaving a page only detaches — a turn
+    // in flight finishes and the host notifies when it does.
     function openAgent() {
         if (!assistant.available) return
         const slug = note ? note.slug : ""
-        if (slug === agentSlug && assistant.running) return
+        if (slug === agentSlug) return
         agentSlug = slug
+        pendingText = ""
         chat.clear()
-        if (slug.length === 0) { assistant.stop(); return }
-        const resume = sessionFor(slug)
-        if (resume.length > 0) push("notice", "", "Continuing this page's conversation.", "", "")
-        sawInit = false
-        assistant.start(theme.homeDir, resume, systemPromptFor(note), backend.url)
+        if (slug.length === 0) { assistant.detach(); return }
+        const id = sessionFor(slug)
+        legacyResume = ""
+        if (id.length > 0 && agents.exists(id)) { assistant.attach(id); return }
+        if (id.length > 0) { legacyResume = id; forgetSession(slug) }
+        assistant.detach()
     }
-    function newConversation() { if (!note) return; forgetSession(note.slug); agentSlug = ""; assistant.stop(); openAgent() }
+    function createSession(text) {
+        pendingText = text
+        assistant.create(JSON.stringify({
+            cwd: theme.homeDir,
+            title: note.title,
+            page: note.slug,
+            permissionMode: "default",
+            strictMcp: true,
+            allowedTools: "reads",
+            systemPrompt: systemPromptFor(note),
+            mcpUrl: backend.url,
+            idleTimeout: 600,
+            resume: legacyResume
+        }))
+    }
+    // New ends the page's session and unbinds it; the session's own log stays on the
+    // machine (`rusty agent list` still shows it), so nothing said is thrown away here.
+    function newConversation() {
+        if (!note) return
+        const slug = note.slug
+        assistant.stop()
+        assistant.detach()
+        forgetSession(slug)
+        agentSlug = ""
+        chat.clear()
+        openAgent()
+    }
     function sendMessage() {
         const text = chatInput.text.trim()
         if (text.length === 0 || !note) return
-        if (!assistant.running) { agentSlug = ""; openAgent() }
-        if (!assistant.send(text)) { push("notice", "", "The assistant is not running; press New to start it.", "", ""); return }
-        push("user", "", text, "", "")
         chatInput.text = ""
+        if (assistant.attachedState !== "attached") { createSession(text); return }
+        if (!assistant.send(text)) { push("notice", "", "The session's host did not take the message; press New to start another.", "", "") }
     }
     function askAgent(text) { chatInput.text = text; sendMessage() }
     function answerPermission(index, allow) {
         const item = chat.get(index)
         if (!item || item.answered.length > 0) return
-        if (assistant.answer(item.extra, allow, item.input)) chat.setProperty(index, "answered", allow ? "Allowed" : "Denied")
+        assistant.answer(item.extra, allow, item.input, "{}")
     }
     onCurrentChanged: if (current === "agent") openAgent()
     onNoteChanged: if (current === "agent") openAgent()
     Connections {
-        target: pane.assistant
-        function onStarted(sessionId) { pane.sawInit = true; if (pane.agentSlug.length > 0) pane.sessionStarted(pane.agentSlug, sessionId) }
+        target: assistant
+        function onCreated(id, error) {
+            if (id.length === 0) { pane.push("notice", "", "The session could not be started: " + error, "", ""); pane.pendingText = ""; return }
+            if (pane.note) pane.sessionStarted(pane.note.slug, id)
+            pane.agentSlug = pane.note ? pane.note.slug : ""
+            pane.legacyResume = ""
+            assistant.attach(id)
+        }
+        function onAttached(id) { if (pane.chat.count === 0 && pane.pendingText.length === 0) pane.push("notice", "", "Continuing this page's conversation.", "", "") }
+        function onReplayDone() {
+            if (pane.pendingText.length > 0) { const text = pane.pendingText; pane.pendingText = ""; assistant.send(text) }
+        }
+        function onUserMessage(text) { pane.push("user", "", text, "", "") }
+        function onStarted(sessionId) {}
         function onBlockStarted(kind, name, id) {
             if (kind === "text") pane.push("text", "", "", "", "")
             else if (kind === "tool_use") pane.push("tool", name, "", id, "")
@@ -94,15 +151,24 @@ Item {
             pane.push("tool", name, pane.brief(input), id, "")
         }
         function onToolResult(id, text, isError) { pane.push("result", isError ? "error" : "", pane.brief(text), id, "") }
-        function onPermissionAsked(requestId, tool, input, description) { pane.push("permission", tool, description.length > 0 ? description : pane.brief(input), requestId, input) }
-        function onTurnDone(ok, cost, turns, text) { if (!ok && text.length > 0) pane.push("notice", "", text, "", "") }
-        function onNotice(text) { pane.push("notice", "", text, "", "") }
-        function onExited(code, message) {
-            const stale = !pane.sawInit && pane.agentSlug.length > 0 && pane.sessionFor(pane.agentSlug).length > 0
-            if (stale) pane.forgetSession(pane.agentSlug)
-            pane.push("notice", "", "The assistant stopped" + (code !== 0 ? " (exit " + code + ")" : "") + (message.length > 0 ? ": " + message : "")
-                + (stale ? ". The earlier session could not be resumed; the next message starts a new one." : ". Send a message to start it again."), "", "")
+        function onPermissionAsked(requestId, tool, input, description, meta) {
+            pane.push("permission", tool, description.length > 0 ? description : pane.brief(input), requestId, input)
+            if (!pane.windowActive) pane.terminals.notify(pane.note ? pane.note.title : "Rusty", "Claude asks to use " + tool)
         }
+        function onAnswered(requestId, allowed) { pane.markAnswered(requestId, allowed ? "Allowed" : "Denied") }
+        function onExpired(requestId) { pane.markAnswered(requestId, "Expired") }
+        function onTurnDone(ok, cost, turns, text, durationMs) {
+            if (!ok && text.length > 0) pane.push("notice", "", text, "", "")
+            if (!pane.windowActive) pane.terminals.notify(pane.note ? pane.note.title : "Rusty", ok ? "The assistant finished" : "The turn failed")
+        }
+        function onNotice(text) { pane.push("notice", "", text, "", "") }
+        // An idle stop and a deliberate stop are how a session rests; only an exit
+        // nobody asked for is worth a line in the conversation.
+        function onExited(code, reason, message) {
+            if (reason === "idle" || reason === "stop") return
+            pane.push("notice", "", "Claude Code " + message + ". The next message starts it again.", "", "")
+        }
+        function onHostExited(message) { pane.push("notice", "", "The session's host is not reachable: " + message, "", "") }
     }
     function focusTags() { if (current === "tags") tagList.forceActiveFocus() }
 
@@ -120,7 +186,7 @@ Item {
             Text { visible: pane.current === "agent"; text: "✦"; color: pane.theme.accent; font.pixelSize: Math.round(15 * pane.theme.scale) }
             Text { text: pane.current === "agent" ? "Rusty / Assistant" : pane.current === "backlinks" ? "Backlinks" : pane.current === "outgoing" ? "Outgoing links" : pane.current === "outline" ? "Outline" : "Tags"; color: pane.theme.bright; font.pixelSize: Math.round(10 * pane.theme.scale); font.letterSpacing: 1.2; font.capitalization: Font.AllUppercase }
             Item { Layout.fillWidth: true }
-            Text { visible: pane.current === "agent"; text: "● " + (pane.assistant.running ? (pane.assistant.busy ? "Working" : "Ready") : "Idle"); color: pane.assistant.busy ? pane.theme.accent : pane.theme.alive; font.pixelSize: Math.round(9 * pane.theme.scale); font.letterSpacing: 1; font.capitalization: Font.AllUppercase }
+            Text { visible: pane.current === "agent"; text: "● " + (assistant.running ? (assistant.busy ? "Working" : "Ready") : "Idle"); color: assistant.busy ? pane.theme.accent : pane.theme.alive; font.pixelSize: Math.round(9 * pane.theme.scale); font.letterSpacing: 1; font.capitalization: Font.AllUppercase }
         }
         Rectangle { Layout.fillWidth: true; height: 1; color: pane.theme.line }
         RowLayout {
@@ -343,8 +409,8 @@ Item {
                 Layout.margins: 8
                 spacing: 6
                 Text { text: pane.note ? pane.note.title : "No page open"; color: pane.theme.foreground; font.pixelSize: Math.round(12 * pane.theme.scale); elide: Text.ElideRight; Layout.fillWidth: true }
-                Text { text: pane.assistant.status; color: pane.assistant.busy ? pane.theme.accent : pane.theme.faint; font.pixelSize: Math.round(10 * pane.theme.scale); elide: Text.ElideRight; Layout.maximumWidth: 150 }
-                Button { flat: true; text: "New"; visible: pane.assistant.available && pane.note !== null; ToolTip.text: "Start a new conversation for this page"; ToolTip.visible: hovered; ToolTip.delay: 600; onClicked: pane.newConversation() }
+                Text { text: assistant.status; color: assistant.busy ? pane.theme.accent : pane.theme.faint; font.pixelSize: Math.round(10 * pane.theme.scale); elide: Text.ElideRight; Layout.maximumWidth: 150 }
+                Button { flat: true; text: "New"; visible: assistant.available && pane.note !== null; ToolTip.text: "End this page's session and start another"; ToolTip.visible: hovered; ToolTip.delay: 600; onClicked: pane.newConversation() }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: pane.theme.line }
             ListView {
@@ -413,14 +479,14 @@ Item {
                     }
                 }
             }
-            Text { visible: chat.count === 0 && pane.assistant.available; text: pane.note ? "Ask about " + pane.note.title + ". Claude Code answers here with Rusty's tools; a write asks first." : "Open a page to talk about it."; color: pane.theme.faint; font.pixelSize: Math.round(12 * pane.theme.scale); wrapMode: Text.Wrap; Layout.fillWidth: true; Layout.margins: 12 }
-            Text { visible: !pane.assistant.available; text: "Claude Code is not installed: the pane needs `claude` on PATH. The terminal tabs still run any agent on the machine."; color: pane.theme.muted; font.pixelSize: Math.round(12 * pane.theme.scale); wrapMode: Text.Wrap; Layout.fillWidth: true; Layout.margins: 12 }
+            Text { visible: chat.count === 0 && assistant.available; text: pane.note ? "Ask about " + pane.note.title + ". Claude Code answers here with Rusty's tools; a write asks first, and the conversation keeps running when Rusty is closed." : "Open a page to talk about it."; color: pane.theme.faint; font.pixelSize: Math.round(12 * pane.theme.scale); wrapMode: Text.Wrap; Layout.fillWidth: true; Layout.margins: 12 }
+            Text { visible: !assistant.available; text: "Claude Code is not installed, or systemd-run is missing: the pane needs both on PATH. The terminal tabs still run any agent on the machine."; color: pane.theme.muted; font.pixelSize: Math.round(12 * pane.theme.scale); wrapMode: Text.Wrap; Layout.fillWidth: true; Layout.margins: 12 }
             Rectangle { Layout.fillWidth: true; height: 1; color: pane.theme.line }
             RowLayout {
                 Layout.fillWidth: true
                 Layout.margins: 8
                 spacing: 6
-                visible: pane.assistant.available
+                visible: assistant.available
                 ScrollView {
                     Layout.fillWidth: true
                     Layout.maximumHeight: 120
@@ -435,7 +501,7 @@ Item {
                         }
                     }
                 }
-                Button { text: pane.assistant.busy ? "Stop" : "Send"; enabled: pane.note !== null && (pane.assistant.busy || chatInput.text.trim().length > 0); onClicked: pane.assistant.busy ? pane.assistant.interrupt() : pane.sendMessage() }
+                Button { text: assistant.busy ? "Stop" : "Send"; enabled: pane.note !== null && (assistant.busy || chatInput.text.trim().length > 0); onClicked: assistant.busy ? assistant.interrupt() : pane.sendMessage() }
             }
         }
     }
