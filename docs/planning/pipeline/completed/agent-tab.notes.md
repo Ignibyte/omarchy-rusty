@@ -122,6 +122,7 @@ passed.
 | 11 | keyboard, empty states | Every state was re-read: no `claude` or no `systemd-run` (the composer says so and hides its field), a tab with no session (the empty line says what it will cost), a detached session (Start and Reconnect), a failed turn (the red footer), the back end down (`renderRow` returns and the text stays plain). | — | No finding. |
 | 12 | data safety | Nothing new is written: the tab holds no store, the render call is the one the file tab makes, and the only new state is `agentPrefs` in the workspace JSON. | — | No finding. |
 
+| 13 | portability (found by CI after delivery, 2026-09-17) | `AgentToolCard` had `readonly property string short`. `short` is a reserved word: Qt 6.11's `qmlcachegen` on this box compiled it, and the runner's Qt refused it — "Expected token `identifier'" — so the whole build failed there while every local gate was green. | high | Fixed: the property is `toolLabel`, and `theme::tests::qml_property_names_avoid_reserved_words` scans every QML property name against the reserved and future-reserved words, so the next card cannot repeat it on a Qt that happens to be lenient. The test was proved by putting the old name back: it failed, naming the file and line. |
 - Post-implementation CodeGraph: the Rust surface is unchanged but for one test, so the
   blast radius recorded at TICKET-031 stands; the QML was read directly, which is what the
   constitution asks for QML.
@@ -159,6 +160,9 @@ passed.
     as a card, the footer, and the mode and model chips in a sidebar width.
   - Every scene's log was read for `TypeError`, `ReferenceError` and "is not a function";
     the two that appeared are findings 1 and 2 of the ledger, and the logs are clean now.
+- After delivery: the first CI run failed where every local gate had passed (ledger entry
+  13, a reserved word as a property name). Fixed and pushed as a follow-up commit with the
+  scan that makes the rule executable.
 - Skips or pre-existing failures: none. A pointer walk (dragging, clicking each chip) and
   the tab against a real `claude` are Chad's, as every UI ticket here has left them.
 

@@ -69,6 +69,10 @@ submitted: 2026-09-17
   was moving fast; inspect took them out. The first draft of a surface accretes that.
 - The Shift+N key set a property the card used for something else, so it did nothing
   visible. A key is not wired until the thing it should open has opened.
+- The first CI run failed on something no local gate could see: `property string short`
+  compiles under Qt 6.11 here and is refused by the runner's Qt as a reserved word, so a
+  green `--diff` receipt sat beside a broken build. The lesson is not "run CI first" but
+  "make the rule executable here": a scan over QML property names now fails on this box.
 - The thinking line counted the words of a token estimate ("Thought · 4 words"), which is
   the kind of small lie a surface tells when a label is written before the data is known.
 
@@ -91,6 +95,9 @@ submitted: 2026-09-17
 - `PR-rusty-render-at-the-end-of-a-block-001`: rich text is laid out on every set, so a
   streamed answer stays plain until its block ends and is rendered by the card as it is
   built — a replay then renders what is read, not all of it.
+- `PR-rusty-qml-reserved-property-names-001`: a QML property named with a reserved word
+  builds on one Qt and fails on another; a scan in the app's tests refuses the whole list
+  here, where it is cheap to find.
 - `AD-rusty-agent-tab-is-a-client-surface-001`: the decision itself.
 - Standing: photograph new chrome (TICKET-022), and read the file you are editing before
   calling a method you remember rather than one you have seen.

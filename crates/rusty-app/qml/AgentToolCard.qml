@@ -24,7 +24,7 @@ Item {
     readonly property var args: { try { return JSON.parse(card.input || "{}") } catch (e) { return {} } }
     readonly property var info: { try { return JSON.parse(card.meta || "{}") } catch (e) { return {} } }
     readonly property bool pending: state === "pending"
-    readonly property string short: {
+    readonly property string toolLabel: {
         const n = card.name
         if (n.startsWith("mcp__")) { const p = n.split("__"); return p.length > 2 ? p[1] + " · " + p.slice(2).join("__") : n }
         return n
@@ -79,7 +79,7 @@ Item {
                     font.pixelSize: Math.round(10 * card.theme.scale)
                 }
                 Text {
-                    text: card.short
+                    text: card.toolLabel
                     color: card.pending ? card.theme.gold : card.theme.muted
                     font.family: card.theme.termFont
                     font.pixelSize: Math.round(10 * card.theme.scale)

@@ -469,6 +469,89 @@ mod tests {
         assert!((scale_for(18) - 1.5).abs() < f64::EPSILON);
     }
 
+    /// A property named with a word the language reserves compiles here and fails where
+    /// the wiki's CI builds: Qt 6.11's `qmlcachegen` took `property string short`, Qt 6.4
+    /// refused it with "Expected token `identifier'"'"'". The list is ECMAScript'"'"'s reserved
+    /// and future-reserved words that are not already QML keywords.
+    #[test]
+    fn qml_property_names_avoid_reserved_words() {
+        const RESERVED: &[&str] = &[
+            "short",
+            "long",
+            "char",
+            "int",
+            "byte",
+            "final",
+            "native",
+            "synchronized",
+            "throws",
+            "transient",
+            "volatile",
+            "boolean",
+            "double",
+            "float",
+            "goto",
+            "abstract",
+            "implements",
+            "package",
+            "private",
+            "protected",
+            "public",
+            "static",
+            "interface",
+            "enum",
+            "export",
+            "extends",
+            "super",
+            "class",
+            "const",
+            "let",
+            "yield",
+            "await",
+            "new",
+            "delete",
+            "typeof",
+            "void",
+            "with",
+        ];
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("qml");
+        let mut found = Vec::new();
+        for entry in std::fs::read_dir(&dir).expect("qml dir") {
+            let path = entry.expect("entry").path();
+            if path.extension().is_none_or(|e| e != "qml") {
+                continue;
+            }
+            let name = path.file_name().unwrap().to_string_lossy().to_string();
+            let text = std::fs::read_to_string(&path).expect("qml file");
+            for (i, line) in text.lines().enumerate() {
+                let trimmed = line.trim();
+                let Some(rest) = trimmed.strip_prefix("property ").or_else(|| {
+                    trimmed
+                        .strip_prefix("readonly property ")
+                        .or_else(|| trimmed.strip_prefix("required property "))
+                }) else {
+                    continue;
+                };
+                // `<type> <name>:` — the name is the word before the colon.
+                let Some(declared) = rest
+                    .split(':')
+                    .next()
+                    .and_then(|d| d.split_whitespace().last())
+                else {
+                    continue;
+                };
+                if RESERVED.contains(&declared) {
+                    found.push(format!("{name}:{}: property named `{declared}`", i + 1));
+                }
+            }
+        }
+        assert!(
+            found.is_empty(),
+            "QML properties named with reserved words (they build on some Qt versions and not others):\n{}",
+            found.join("\n")
+        );
+    }
+
     /// A QML file the module does not carry loads as nothing at run time and shows as an
     /// empty pane, which no test of the Rust side would notice.
     #[test]
