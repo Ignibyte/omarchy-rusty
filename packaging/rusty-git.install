@@ -1,0 +1,11 @@
+post_install() {
+  cat <<'MSG'
+  Rusty: start the back end:
+      systemctl --user enable --now rusty-mcp
+  Agents: add {"rusty": {"type": "stdio", "command": "rusty-mcp"}} to your MCP config
+  (see /usr/share/rusty/mcp-config.json).
+MSG
+}
+post_upgrade() {
+  systemctl --user try-restart rusty-mcp 2>/dev/null || true
+}

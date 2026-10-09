@@ -1,0 +1,17 @@
+[package]
+name = "rusty-cmd"
+description = "The rusty command: the back end's session verbs and store scripts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "rusty_cmd"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rusty"
+path = "src/main.rs"
+
+[dependencies]

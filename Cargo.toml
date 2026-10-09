@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = ["crates/rusty-core", "crates/rusty-mcp", "crates/rusty-cli",
+    "crates/rusty-cmd"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Ignibyte/omarchy-rusty"

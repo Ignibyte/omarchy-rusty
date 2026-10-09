@@ -1,0 +1,25 @@
+# Rusty's back end as a user service: Streamable HTTP on localhost for Marley and any
+# other HTTP client. Agents keep using stdio through their own mcpServers entry.
+#
+#   install -Dm644 omarchy/rusty-mcp.service ~/.config/systemd/user/rusty-mcp.service
+#   systemctl --user daemon-reload && systemctl --user enable --now rusty-mcp
+#   journalctl --user -u rusty-mcp -f
+#
+# Restart=always: a session teardown or earlyoom sends SIGTERM, which on-failure treats
+# as a clean exit and leaves the service down; only `systemctl --user stop` keeps it
+# stopped. OOMScoreAdjust=100 is the lowest a user unit can set (the user manager's own
+# score); the session's apps sit at 200, so the store's server is among the last to go.
+[Unit]
+Description=Rusty MCP back end (Streamable HTTP on 127.0.0.1:4174)
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/rusty-mcp --http 127.0.0.1:4174
+Restart=always
+RestartSec=2
+OOMScoreAdjust=100
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=default.target

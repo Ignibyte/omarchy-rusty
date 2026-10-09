@@ -1,0 +1,18 @@
+.codegraph/
+.dev/
+# The maintainers' work record: a private checkout of its own (see AGENTS.md).
+/docs/planning/
+openwiki/_plan.md
+openwiki/_skeleton.md
+dist
+.env
+.env.*
+node_modules
+packaging/pkg/
+packaging/*.pkg.tar.zst
+packaging/src/
+packaging/rusty/
+/prototype/__pycache__
+*.pyc
+/target
+.venv

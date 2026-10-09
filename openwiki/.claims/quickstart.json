@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:297e1fb17f59ed17c18b53c3827d615653a4b5cad68d1f507b87968ada5cb1c6",
+  "claims": [
+    {
+      "id": "claim_59796b5c11f0472b80b11dd59e8b5070",
+      "statement": "`rusty session start` starts `rusty-mcp.service` (nothing happens when it runs already) and prints the status; `rusty session status` reports the unit's state and whether the back end answers an MCP `initialize` on 127.0.0.1:4174. These are verbs of the `rusty` command (`crates/rusty-cmd`), which links no Qt and has no dependencies; `stop` and `run`, which drove the app unit, are unknown verbs since the app retired.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-cmd/src/session.rs#L21-L28",
+          "version": "repo-lines-v1:sha256:a01905572656e5f350b32e373678ee5bfcf1304d0c76e0ed99412fb02c375fa0:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQxNzEyYjA1MTc1OTQ5NmIzNGFkZWZlMzQyZmEwMDhjYmQxZWEwNWIyZTgwMWE4ZGZkNDFjMmIxMDhiYzk5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWJlYmQyNDVmMGQzY2EzMTk5OWJjYmM1MDgxMWExNzdmZjVjMGMxOGVmYmYzMDBhNGM1NjQ3YzYwNzAxYjJkNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODUzZDQzMzVhZmIyMmE0YTI2ZDE5MDY4NzAwMzZjNjE5NTYwMzE5NmYyZmMxODhkZTc2YzM1NWFmYjc3ZjQyNyJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-cmd/src/session.rs#L52-L67",
+          "version": "repo-lines-v1:sha256:96fb5b75949e06fd10247676d320cfca748abc1bed31a9c42ed1f179a7fb2388:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjZTFmNmMzZmI0N2VlMjExM2IxYzNiODI4M2RjYzA0ODE2YTg0ZGI4NGMzYmUxMTgzNmYxMjUzZTFmZjJjOGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3YmI5ZjU3MzdjNzE1M2QyMzQ3ZTI4ZjRlOTY3MzZiMmEyZDliZWQ0NDM5MzgyOWY5OTc0OTAwMzhlMWExMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjZWI1NjQ2NjBhMzIwNzFhZjZjMzllYzczOWViMDBlMGJmNmNmN2JmNzhlNTUxMzNjMTc0NDc5ZTM3OTVmMmMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cmd/src/session.rs#L69-L89",
+          "version": "repo-lines-v1:sha256:a0fc305d4bd3b6a873f118c2fe3e42bacbb914dfc44ab1a269008e10aad92be3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzOWRjYTViOWY5MGU0NDI4N2M2OGFiODdlMmI3YWNjMmJiOTM0OGM3MjczODEwNjI4YzJjYWFhOGQzODA0NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllYWE0YTIxMWE1MTllYWJlNDI3ZGMwOTg3YjY4NzdkMDAwZGMyNmI1YTI4YzBjZGNhNmMzODAxYTVkY2VlNjgifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cmd/src/main.rs#L54-L81",
+          "version": "repo-lines-v1:sha256:5c9f5c73c02beeea05ea7eae48bee813d3600414d394f17d452ad2c20acfb468:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYjllZWU5MWJjMGIxYTc3YjVmMjI0ZmQ2OTQ1ZjNkZWMyMzRlNTU5NmI5NDc1YzkwYzVhZWM5ZTZhZTIwYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1Yjg4NzAzOTY1M2EwMmY0ZmM1YWMyMWU3NTVhNTdkZjk1OGE0YjA3M2ExYzAxYjhiM2RkNGZjYmI1MjU1YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cmd/Cargo.toml",
+          "version": "repo-file-v1:sha256:42e56b84144755ff44bbb3bc0fedd1601efabe21840e18c4b74b4df1a9e8b357"
+        }
+      ]
+    },
+    {
+      "id": "claim_a1d34f3cf85f4e0fb92589f9dec44a97",
+      "statement": "`rusty` with no argument prints the usage and exits 0, as `rusty help` does; a dash-prefixed argument other than `-h` or `--help`, a retired session verb, or a word that is neither a noun nor a store script prints the usage on standard error and exits 2 without calling systemctl.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-cmd/src/session.rs#L52-L67",
+          "version": "repo-lines-v1:sha256:96fb5b75949e06fd10247676d320cfca748abc1bed31a9c42ed1f179a7fb2388:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjZTFmNmMzZmI0N2VlMjExM2IxYzNiODI4M2RjYzA0ODE2YTg0ZGI4NGMzYmUxMTgzNmYxMjUzZTFmZjJjOGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3YmI5ZjU3MzdjNzE1M2QyMzQ3ZTI4ZjRlOTY3MzZiMmEyZDliZWQ0NDM5MzgyOWY5OTc0OTAwMzhlMWExMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjZWI1NjQ2NjBhMzIwNzFhZjZjMzllYzczOWViMDBlMGJmNmNmN2JmNzhlNTUxMzNjMTc0NDc5ZTM3OTVmMmMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cmd/src/main.rs#L54-L81",
+          "version": "repo-lines-v1:sha256:5c9f5c73c02beeea05ea7eae48bee813d3600414d394f17d452ad2c20acfb468:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYjllZWU5MWJjMGIxYTc3YjVmMjI0ZmQ2OTQ1ZjNkZWMyMzRlNTU5NmI5NDc1YzkwYzVhZWM5ZTZhZTIwYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1Yjg4NzAzOTY1M2EwMmY0ZmM1YWMyMWU3NTVhNTdkZjk1OGE0YjA3M2ExYzAxYjhiM2RkNGZjYmI1MjU1YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cmd/tests/command.rs#L83-L121",
+          "version": "repo-lines-v1:sha256:e9e9aabd018ce04ac59cf1ad45199773ccf3c0af0c758e0cfed7f7b7e7f4070e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyY2Q0ZGI0OGEzNTBlOGYwYjQ3OTQ0YzQ2ZTNmZmRiYmExMzJkMjI5MGE5MWQ3MDEyYjU2ZWI0NmM4YWI0ZjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxNDI1MjZmNmI3ZDExZDIzY2JkMjM1NDI2OTk2ZGFiYTAzNTQxYjgwZTAzNGU1MzZkMmZiYTIwZDZiYjM4ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_761014d7fcf34862b19399a9da562bbe",
+      "statement": "The workspace has four crates, rusty-core, rusty-mcp, rusty-cli and rusty-cmd, none of them linking Qt.",
+      "evidence": [
+        {
+          "resource": "repo://Cargo.toml#L1-L4",
+          "version": "repo-lines-v1:sha256:1a4624f7ed97a70c723a85ba28683688c39e1c00dbde0b75aee69f0a43300e52:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDM0ZTEwMmM4NjFmOTk0ZDJhYWNlOTExNGQzOTJkYmMxNjIxOTBlMDBiZThmZTM1N2Q0NzIxNTBjYTQzOTYxNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmQ4ODhmMWFhMmIyZjMyZjljOGQxODFkODc2MTdlNTU3M2U5M2Q3MDdmNGY3YmY0OWJkMmIzMGQyYzNhZjk2ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDM0MTJlMmMxMGVlZGFlZGRkM2E3MmRjMjNlYjE5Y2Q5MDY5Y2E5ZDVlN2U1YzYyMTdhNDVmN2NjMWMwZGIyMCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.3.3",
+    "at": "2026-10-09T17:29:16.068Z"
+  }
+}

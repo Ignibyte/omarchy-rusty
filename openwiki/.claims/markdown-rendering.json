@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:083c74c061d092acc07c20f37baefc08704a9bdad62a91f4c7ec689e8679e31b",
+  "claims": [
+    {
+      "id": "claim_22450b6b90104af6bdb4515cac214f43",
+      "statement": "The renderer turns Obsidian-flavoured markdown into Qt rich text with colours and fonts inlined from a `Style` whose fields all have defaults.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L196-L230",
+          "version": "repo-lines-v1:sha256:167c1ada4fc80e9cd768ac049d33067bbf37d1c77ee528a2413a611c171167db:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhZDFjZDczMmI1M2RjMzU5ZWI5MTA3NzdkMzg4MjExNThhMTJmOGY2YjQyOGVmODBkOWYwNDJkMjAyOTZmNDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNGIwYzk1NDQ2ZmI4ZDI1NmE4ZjdhOWU5Mzg5YmNlYjk5ZGJhMWY0MDhiYjA1YWMxM2I1NTBmZjEzNDBlZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQxZmQ1NzdhM2UwYTc1MDlmMzRjODFjNjYyNTg1YmMzNjZjYTFlZmRhYTcwODYyMjNmZDhjMzZhMjhiYzNlODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZlYjU4MmFjZGJmZmE0NmNlMjdkOWQ1Zjc1NWY5NjM3MTlmYTExNDcyMzZkYWEwZWRjNThmMzVjYzc2MmEzZGYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L23-L79",
+          "version": "repo-lines-v1:sha256:68c8cffb1efd7b0038c9e820e50e2c31029442c1de65fb8f923c3db93d46df69:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMjlmN2M2N2NmYmI5NWE0OWI4NDZhZjExYzM1MjZiYWYxMWU0Njc3YmIwOTQ1NDVmMDVlODJkMmYxODhhODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2NDU3MjU4NjhiZWRmOGQ3NTgxZTBkNjE3MmQ1YmE3YTJjYzY5MTYwMmZmNGFjMDk0NzhlNDhmOThjODRjZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhMmI3NjVkNDAyYjQ4Mzg1ZjFlNTkyMmVkODJhMjI4N2VhZTZlMjY2YjZkNGFiODNhNmYyNjVhODUwYWQ4ZDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_470e1e2efc1d414e8b83ff2f896d9ea0",
+      "statement": "Callout heads are rewritten with private-use markers before parsing, because pulldown-cmark splits `[!kind]` into several text events.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L312-L345",
+          "version": "repo-lines-v1:sha256:7fbcd794512acb0a3d694b868778b4fc64ae76219f0d50c2ad1bd5ba94702488:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYTUxNmJkMTFjOTM1MWQ4ZTc1NmU3NzllYzUzNmMyN2MyMmE2N2UxNjIyMDQwMDVhYjhmN2QwOTcyZGZkMjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3YjUzNmM4NjQ5ZWQxNDYwZDU3MjE3ZTVjYzBiMmVkNjEyNDdmMmUwMDE0MjI2NGZhN2EwMjFiY2Q4MDU5OGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjZDQxNzg4NTUyYWFjYmVhMGQ3YjhhYTEwYjZhMTVkOTA5YTZjZDg1NmI4MTgwMDJmMjVkYzAxNjYzOTg1YjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkYjBiYjY3OTc5MDIzY2QwNjY2MjE0NDc3MDExMTcxMzM1OWVlNjkzN2I1MWEwNzE3OGNmYWY1MzhlMWE5NjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ab6c9878dc7243e1abc08b54961896c2",
+      "statement": "Task boxes render as `rusty:task/<n>` links numbered in source order, so a client toggles the n-th task item in the raw source.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L680-L701",
+          "version": "repo-lines-v1:sha256:4748e791de1b816d4cd8da5ab8052ca7e2b2b7ff596c2ac9e9c8847cb73b5915:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYjMzOWMxN2Q0Y2M1NGU3MGM0ZmNmZWNiNjExYmI5ZTdkMzYzZjI1YjE4ZTA5MjNhMWQzMDZjYzk1OTI0ZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjMDcxN2JlNmEyZWUxMDg3NThlZDFlZDhhNjY2Y2Q0ZTliNzZjYTU2MTE2ODA0OTMxYmExYTk4NjJiMmFmZGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjZThkMTM3ZmE0NGFjNjY0OGIzYTRhNmY1NmY1MGJhYmE2NzczNDE0NWQwNDc0YTRlNTU1Njk3ZmQyNmJlYzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_36ffe8016c7d4b8891dd012d978c160a",
+      "statement": "With `marks` on, a heading carries a `#` per level in the accent before its text and a section title a rule beneath, callout labels are uppercase and small, and task boxes take the line colour open and the alive colour done; with `code_head`, a fenced block gets a header strip naming its language.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L768-L793",
+          "version": "repo-lines-v1:sha256:10f426b344b42dbd8b7ff8748d7e349fd90a6c25058db35bd41780a27a2e1c63:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiZjJhMWQwZWMxOGE5M2RlOWMyMjhhYTFiOGI4NTI4YzY5ZGFmODA4Mzg1ZGFmN2JkNzcyMjkwNmJlZTc0MjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhN2Y4OWNjYzhkYjk3NWQ0YzgyM2YwZDA2MGE1MzhiMzBlMDVjOGM1MDFlNDg3OTE5YmI0MzFmMGY1ZmNkNGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyMmM2MDc5ZjdmOWNmNTllMWRiMmEyYTA4ZDlhNWI1ZmY3MmIxMDllNDc4YTE2NThhMTRjZDI2MzdmOGYzOWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlM2YzNzg2ZjdjYjA1N2VkMTYzMzI4NTM4YzA2ZGNhNDRmNjc2YzE5YWVlYzBmMTI5OTZiYjUxODdiODRlYTkifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L958-L964",
+          "version": "repo-lines-v1:sha256:ca958f0d8661b4af0f94acc421fbcd57aeff2b84ff186c34dbba706cf5cb0093:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzYwOGNkZTIxYjc2OWI3OWRjNWQ3YzA4NGM3ZDVhMzBiMmU4ZTQ5ZGRmMTRlNGZlOTJlMWMzMGE0ZmJkNTZiOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDYxMmJjMDEyZWMwOGU5MDk2YmM5ODUyOWVlYmQ1MzI5NGNmOGNlYmJkNmVlNjY2ZWY2NzAwZGMwZTY5MWY2NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODE5MjJiZWI5YzU1NGZlODFjMzFiNTdhYjc3YjE5MjRmNGZmOTIyMjQwYjM3OTZiNzQxNWM4ODdlYTA4MTFkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDJiNDE0NzRkZWVkOTIxMGJjMmE3MjdkOGY2YWFjMjQ1OWJhNDM0MTFkOGVmNTk2MGI5N2RmMDYyMWI4NTg5NiJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L717-L742",
+          "version": "repo-lines-v1:sha256:e9c7aed034245af408d51e8e0b1bf819f2eb0e04c8cd58869901f83b24c1a93e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MjNkYjBhOWY4MzI1YThkNzlhNGJiNmJhZjM2MTZjYmMwMWI1MDM1NzllOGVhNGUxYjNlMDQ3Yzk1MGYwMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NWFmNWU0OTZmZDYxNWJkNDdmNzE5MDE3ZDk1OTY1ZDE0OThkOWY0ZDAzZmZiNTQyNmVhMzVmNTEyMDViMGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2NjQwYWYwNGNhMjEzZTVjOTYxNTU5MDcxZDY4MzI2NWI5YzY0NTRhMTM2NjhiNGQxZjgyMTAyMzRmOWRiNWIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/render.rs#L1415-L1445",
+          "version": "repo-lines-v1:sha256:2c9467737dda1a0e72975ac6a8ebd02d37e528a2709324d91a200809033305f8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkOWE4YjU3MDk5ZTFiZTEyYzhjOTJjODlkYjZlNzRlOWIwNGRhYjlmOGRlMTZiOWIzZTBkYjllOTZlYzI3ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzODA2ZTc5OWFhNDliYTdiM2MwY2NmNWVlYjdlOGZiNDRmYTQ2OWM3ZDhjMzAwOTkwNTJmOTA0MzczODI5ZGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwMGRiMDQwZjI5MDliZjk3OGZmMGE5NTZhNTVlODNjNjUzNDE4ZGU2YmI2OGY4MDQxZGE5NzZmOGQzZDIyNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4ZjU0M2FlODJkNGE5N2YyNTQzOWI4ZGUwZjE2Y2Y4MWM0NjllYjY2NzQwODdiM2E2YTg4MzhiYmZkMDIyNDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a55c18b8af764a7d8c5dc643c3487360",
+      "statement": "Beside the HTML, `brain/blocks.rs` builds the body as typed blocks with the same parser and options, over a copy masked byte for byte (a comment blanked to spaces of its length, a callout's `[!` and `]` swapped for two-byte and one-byte markers), so every block's range is an offset into the page's own body and a top-level heading block starts at each heading line outside fenced code; the HTML writer is not touched.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/blocks.rs#L1-L60",
+          "version": "repo-lines-v1:sha256:9706f0cfa54d17a1bcda72b0bcb7ca49f4d01ad692b15a5049a9dd120081d9dd:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYzMxNzVjN2ZiZjAwMjQ3NDI4NzdhYTYwMDQ4NjYwZGI1YjA5ODM3ZGExYTM0ZmVlODEwNWY0N2Y0NWYyY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhNWNhMTg1M2Y2NTc1YjBlNWNiYWE0MWE0Mjc1ZGQ3Y2UzMzhlZDAyYmE1YWEzZTZhN2MxYTQxZTI3ZDU3ZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3YWU2NjA1NTVlZjQ4OGQzM2MyMjhlYTQxMTNjMzUwYTE3YmYwZTVlOTNkMDJhZTQ1NDNmZTNiNjc5Zjc3NjAifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/blocks.rs#L240-L320",
+          "version": "repo-lines-v1:sha256:373bb427c0991276804931e197f3d2e105f1385b6841a0f9a57c3d9bf5faf14b:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0MmE3ZjM0MDFhNzQ4MWM5YjcxYWQ2MDA3YWZkYTkwMDYxOTZiM2JmYjI3ZjZjNWVlYTEwYmFlM2FlNmJmMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmNDI1OTFkNTE2YTEzMDAwMjc4YmI5ODAwYmFiN2FkMWQxZDRlZDNmZGMwY2ViNmU5NjIwMjA4YWY3YjJmMDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2Yjg5NzQxNjM1OTJjY2E1MTgzNmVmOWEwYWJmYjMyZWFhMDQxMjVjNzRmODJiOTdhNzcyMGQxOTljNDNjZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2MTY5YzdkOTEwOTI2ZjUwNTc4OTBhMjhmYmFlMTUyOWM0MTUzMDc4MDUwMjM4NzhjMmI1MmYwZTkyYmE3NDYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/blocks.rs#L1388-L1394",
+          "version": "repo-lines-v1:sha256:ae1e9542411cd49ad05970cd50fa4d59867801042b3820e62f9b9f730a34c827:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTVjODlkZjg2OGUwYzQ0ZTcyODBiM2Q2MzIzMDNjZTg4NzI4ZGVhNmQ4NjU4MzQ1MmU3NGE2Mjk2N2I4NmRjNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjE1NTVkMTU3MWFlY2QyM2RmNDM0N2YwZjczZGM5OWE1YzdlYTJhNmQxOTA0MDhjNGU0ZjNiM2Q0ZWNkOWNkMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzNkYzY0MmMwYWE0Nzk5MTNlMTY3NTlmMTNiZTc5ODQ4YWNmMjgyNGNhYTJiNGRmOGZlYTVkZjkwMWE3MThiZSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.3.3",
+    "at": "2026-10-09T17:29:16.068Z"
+  }
+}

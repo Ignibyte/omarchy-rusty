@@ -1,0 +1,29 @@
+[package]
+name = "rusty-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Rusty's manager layer: tasks, notes, memories, the brain vault, skills, secrets"
+
+[lib]
+name = "rusty_core"
+
+[dependencies]
+chrono = "0.4"
+dirs = "6"
+notify = "6"
+pulldown-cmark = { version = "0.13", default-features = false }
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+regex = "1"
+sha2 = "0.10"
+sqlite-vec = "0.1"
+tokio = { version = "1", features = ["full"] }
+ureq = { version = "3", features = ["json"] }
+uuid = { version = "1", features = ["v4"] }
+argon2 = "0.5"
+rand_core = { version = "0.6", features = ["getrandom"] }
+zip = { version = "9", default-features = false, features = ["deflate-flate2-zlib-rs"] }

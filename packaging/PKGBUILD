@@ -1,0 +1,58 @@
+# Maintainer: Chad Peppers <chad@ignibyte.com>
+# Rusty: a local-first AI personal assistant for Omarchy. Builds the MCP back end, the CLI
+# and the `rusty` command from the main branch. Not yet submitted to the AUR.
+pkgname=rusty-git
+pkgver=r25.d5c4186
+pkgrel=1
+pkgdesc="Local-first memory and knowledge store for AI agents: an MCP server over a markdown vault, tasks, memories and skills, with a CLI"
+arch=('x86_64')
+# makepkg's default LTO compiles the bundled SQLite and ring C code into GCC bitcode, which
+# Rust's linker cannot use; build them plainly.
+options=('!lto')
+url="https://github.com/Ignibyte/omarchy-rusty"
+license=('MIT')
+depends=('gcc-libs' 'glibc' 'git')
+optdepends=('ollama: local embeddings for semantic search'
+            'poppler: capture PDFs as sources')
+makedepends=('git' 'cargo' 'rust' 'clang')
+provides=('rusty')
+conflicts=('rusty')
+source=("rusty::git+https://github.com/Ignibyte/omarchy-rusty.git")
+install=rusty-git.install
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/rusty"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd "$srcdir/rusty"
+  export CARGO_HOME="$srcdir/cargo-home"
+  export CARGO_TARGET_DIR="$srcdir/target"
+  cargo build --release --locked -p rusty-mcp -p rusty-cli -p rusty-cmd
+}
+
+check() {
+  cd "$srcdir/rusty"
+  export CARGO_HOME="$srcdir/cargo-home"
+  export CARGO_TARGET_DIR="$srcdir/target"
+  # The smoke test spawns the built server in a scratch HOME of its own; the vault it makes
+  # there commits to git, so give git an identity when the builder has none.
+  git config --global user.name >/dev/null 2>&1 || export GIT_AUTHOR_NAME=makepkg GIT_COMMITTER_NAME=makepkg GIT_AUTHOR_EMAIL=makepkg@localhost GIT_COMMITTER_EMAIL=makepkg@localhost
+  cargo test --release --locked -p rusty-core -p rusty-mcp -p rusty-cmd
+}
+
+package() {
+  cd "$srcdir/rusty"
+  install -Dm755 "$srcdir/target/release/rusty-mcp" "$pkgdir/usr/bin/rusty-mcp"
+  install -Dm755 "$srcdir/target/release/rusty-cli" "$pkgdir/usr/bin/rusty-cli"
+  install -Dm755 "$srcdir/target/release/rusty" "$pkgdir/usr/bin/rusty"
+  # The user unit as shipped points at ~/.local/bin; the package puts the binary on PATH.
+  sed 's|%h/.local/bin/rusty-mcp|/usr/bin/rusty-mcp|' omarchy/rusty-mcp.service \
+    | install -Dm644 /dev/stdin "$pkgdir/usr/lib/systemd/user/rusty-mcp.service"
+  install -Dm644 omarchy/wayland-wm-oom.conf "$pkgdir/usr/share/rusty/wayland-wm-oom.conf"
+  install -Dm644 omarchy/mcp-config.json "$pkgdir/usr/share/rusty/mcp-config.json"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

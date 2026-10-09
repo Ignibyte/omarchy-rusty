@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:c578ea5941237694ae6fcbd342aa1913bf44b12c5131660eb601e5f7048903f5",
+  "claims": [
+    {
+      "id": "claim_e4bb6ffa79714c618526d83ff2b26969",
+      "statement": "`rusty-cli export <file.zip>` writes the whole store into one zip: `manifest.json`, the database as a `VACUUM INTO` snapshot (consistent while a server writes), the brain vault and the skills store with `.git`, empty folders and file modes, and the notes folder only when it lies outside the vault; the zip is written as `<dest>.partial` with mode 0600 and renamed into place when complete.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L1-L11",
+          "version": "repo-lines-v1:sha256:a30b4c85df7931c9b851374e2d5aea4447ff6cd1b5bacf15390752ca73ae0190:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkYTJjN2ZmZjNiYmFiMWQ3ZWViOTNmY2UzNDc0M2U4OTBkZmRkMmZjYjM0NWIwZWY5ZmI4YjM3MGQwYmNkMjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjZDcxMDQ0Zjg3YWNhYzcwYWQyOTQ0NjU5MDNhMzhjMzZmYzllOWVlZTZkMmRiMDc3NzkxZTkwNzdjYWUxMzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY5OTAxZWI1MDZmMDg5ODBiNTdjMjZjZThmMGJjY2M5MDE5Zjk0NzgyMzU5ODQyNmUyMjE0NzFiMjk5MzVhZTQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L163-L215",
+          "version": "repo-lines-v1:sha256:44f0853f031a7bb2d85122352917645655a1fa03aa51eeb74914ffaa39082e5c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4YmY4MGE2NGFmMGJhM2I1YzE0YzRlYjI1ZDZhZDBhYjA1MGFiODU4MjFjNzNhNThiMDE5NmNiMDU5MzU3NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk2MWY3YmFjNjNkNTA1ODlmMGViYmIxNWIwMGRmMjhmZWFjMzkyODk3NTE1YzVlYzMxN2UxOGMxOGQxNmFhYjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIzNWUyYzI1NjdiOTU3ZDc3Y2Y3YTZjMDkwMGZkMmIxZGRiNTIzMDU3NWUyYjllZDRlYzFjNzdmYTMyOGE5YjYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L217-L286",
+          "version": "repo-lines-v1:sha256:ef6295d4c6f7ab2099cf5e9e3d4fae43c25d2cbae63b88fed8ef6c0dc6c8148e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5YWFlODJjZmI1ZGE2MDRmNTYyM2FjOGU3M2E1ZTJkMTc5ZjAyNTU3MjkzMTJlYzJhOTc5ZDlhYjMwNGZhZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwNjNjNGQxYWY4Y2Q4OWJiMGJkZDc2NTdmZmNiZjY4MDZhNjEwZDc5ZDZjOGQ0YzMwN2MyNDFkZjM5MDA1MjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjMDg4MThiN2ZkMjA1NzExYWMxYTMxMDY4ZTc4MDMzZGIwZDAwYmFkMTIzNzk4NzZhOTYyY2YxN2I0NDEzZjEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e45a1070f5cf4c14b79a77f2afbd2ee4",
+      "statement": "The secrets file and the PIN go into an export only with `--include-secrets`; an import writes them, and the database, with mode 0600, and the new home with 0700.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L143-L150",
+          "version": "repo-lines-v1:sha256:b86da3343a80ab647968d3cf80533c75bc56f8385e3a38c6d08e1a968c4f1df7:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGVmY2U5YjFlMGU4ZjM4N2VlMGIyNjlmODJhODU5MTY4NDQ1ZTg0NTUwYThiYjgxOTc3NDQ1OTZhNmE5MDliOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzIyOWJlNTNjNDRkOWM2OTFkMWMxNmU5MmE1YWQ2ODI3ODU4ZjkyN2NlZGI5NjEzOGViNzQxOWEyODFhYTZhYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjgwMzRiMjZiMDVmZDBlNTA3Njg3YmY5NTQxMDc5MWZjMjJkMGIwNzI2ZDFjOTYxOWU5ZGUxNjRkY2UxNTYxMyJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L244-L252",
+          "version": "repo-lines-v1:sha256:d4ceb7191725aff3a652421c293da3a0bb86ccc1e3c3acadc6e321d7391dcb75:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjg2OTI3ZjJlM2Y5ZmU0ZDA3MTcyMjY0NjgwMjZmZjYxMTJmZjA3ZjU1ZjUyNWY0YzMzZjJlNzdkY2Y2MGNkYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDI2NzcyZWJiNmQwZWFmMmRhMzUxNmJlNzMyNjBiOGQ0YzlkMjIwZTBiOWI5ZDMxZTNiMjM3NDZlMTg1MzI1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjc1N2UyNWMyYTlmMjBmMTYxYzk3NjNmZmZhMWJmZTdhZThkMDlkODgzZjE5YzBlNzFmMjQ4ZDljYzkwODM0ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjQ0ZmFiMTk0NjFhZGE0MGZlYmNmMWZjZGNiYjQxYmU3NTBkODFkZjk1MzNiOTFjODYxMDZlNDY2OTYyY2M5YiJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L585-L626",
+          "version": "repo-lines-v1:sha256:cbadc21774b5f93151e0424aee05dc55911447f3f556f8d50c55806212a80c75:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExYWNlMDU0MDAwOWMwZTgwY2UwZDZlZjkyM2RiNTdkYjQ1OWYzMzIyOWY0N2NhZGY5MWM1Mjg0NTcyOTUyMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4NjcyYTJiZTE4MDY1NDJmZmE4MDJiMmNiNGFjYjEyNjVhMTU5ZmVjMTQ2YjBlMjk3NzYwYjRmMzg1NWU5NjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzNjY4ZTM2NTVjODg0ZjRkNDZmYjkzMjQ4ZDA4NDkwMGE2ZTVmNzk4NTRkOGZjNmNlZTRkODc0MzU5MjMzNjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2135f8a5b27544eebc0522fa47d18683",
+      "statement": "An export refuses a destination that exists or lies inside the vault, the skills store or the notes folder, and leaves out symbolic links, git lock files and names that are not UTF-8, listing each in the manifest's `skipped`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L173-L190",
+          "version": "repo-lines-v1:sha256:5b2c5dacf6f70fae57474567dd9727a8ca8364bbdbe803e295ab88cee4253393:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3NTM0NDY1Zjc2YTRlN2VjMTVhYzIyYjRjM2U1MWZiNjllYTNhOGNiNjQ4Y2NmYWNiZWVhNzJhYzNjMmRiMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1Y2E3NjhmZDJkMmY4MmM3ZGRjOWQxZTI2NTI2Y2RiZDE0NjFlMTQ2NTg3ODc1NGNkNTkwZDA4NjZlMDQ1MmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0Y2Y2ZTBkOTM4ODQ3OTM2N2U5MjI5ZDhmOGJhNGYwODU5OWRlMzhmZjNjY2M3YmI1MWJhODNjMzFhZTE3ZmUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L337-L400",
+          "version": "repo-lines-v1:sha256:20e6a61583efb9671ad569666a676a166b359aedb82a9fb7c0bf5da32d5760fb:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxNzI5NGM5ZWFiNjRiNThiYTEyMWJlZDYwNzA4Njg2MGYyMzQ2MTVjODgyM2FjZDA4MTY3NThlNzgxMzljMzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4ZjYyYzQ3NmJlMWZhNWE2MjdhOTljNTMwNzczNzQxMGY2ZDYyYTRhNzkyYzc3MDBiNTI4YTFlMWQyZmQ3ZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlNDQ5MDdlM2VlNDllMTYyY2Y1NTVkNzc4ZjYwM2E5M2NjY2E4NjhkZjQ1NGNjMzI1MTQxYTAyY2ZlZjVjOGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d705780e137b4431b0b2e768ca0bd73e",
+      "statement": "An import checks every entry before it writes anything: a manifest of format `rusty-export` and no newer version, no symbolic link, no path that escapes the store, and only the known folders and files (`db/rusty.db`, `brain/`, `skills/`, `notes/`, `secrets/.secret`, `secrets/.pin`).",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L436-L488",
+          "version": "repo-lines-v1:sha256:56833ec19e2a775bfb86df030a928e14f3a8f8348877c4b562573c7574acf02a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0ZDAwMzBkYmIzOWQxODRiNmUyNzVlM2Y4NDE4MjgxNDc5YWY2MjVkYWEyZTI5YWE4NTZlY2M3ZWJjMTJlZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiODc5NjZhNTIwZDZmYzhiMDVjMGNhZTZhMmM4MjVmZThlZWJiMDliNzMwMmQwYTM3MDk5NmE4ZTVlODYyYjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM3Yjg4ZWU1MTNlMzcyNzE0ZWVmNDg1MWNhZTkzNjFmNzc4OGFkOWRmNmZlMGMyZDIwZDMxZWM0NTFjYTIyYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZlOTFiN2ZkMzUxYjkyOTgzODQwYjc5Mzg4NWYyYjM2ZTgzZGJjOTk0ZDlkMDM1ODY2YWJiMzIyYmZlZmYxMzUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L490-L516",
+          "version": "repo-lines-v1:sha256:f87ee80410b19be5b6444c27d6375c5ef4d875c27e9b36dc185f753dfdd09b7f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhMTllYzA3NTI4YzRhNDM1MGU5OGJhMDc4M2UyZTY5OTgxZmQzNTYyMjk2NGJhMGZlN2Q2ZjY0YTdhNGVlYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmYTQ2OWYzNjM0N2ZjZGFhOWE0MzA3OTllNjY5MjEyZjY0OGZiMzcwZWViNWVjN2NhOTU3ZjhmMTRjOGRkYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlhYmI3YjY0NGQ3NThhMzU2NzhmOTg5NGQwZTg3ODFiYzcwYzE1Yzg5ZmYyOWNlMDcxMjJmZmQ1ZTI3ZjBkOGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_400e777b2c8f47a8aa5828d86ca286bb",
+      "statement": "An import refuses a home that already holds a store unless told to replace it; it builds the store in a staging folder beside the home, renames an existing home to `<home>.before-import-<time>` (never deleting it) and copies its `hooks/` across, then renames the staged store in, putting the old home back if that rename fails; a dry run reports the plan and writes nothing.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L516-L583",
+          "version": "repo-lines-v1:sha256:0d04eb22b285e94c29c5f191f89e768f2c96b8313782097580bf9f1ab45e4e66:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3ZTU5NDhhMzZjNGYzZjY0YjRlZGFiN2JhNDJkNDQ4NWE0MzQ3ZWZkM2U2YjFhOGU0NGVlMzkxMWE2NGUxNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0NTgxMTU5NTg2NDRiYzMyOWMzNGZhMmI3MWJkZTE0NWNkYzkzZTZiODVhMzk5MTU5OTYzNWViMTc1NTIwNDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bbcd1ab59f6a4b95babdb57d9738b9d6",
+      "statement": "The import rewrites the path settings in the imported database for the new layout: `brain_vault_path` and `skills_path` are removed so the defaults under the new home apply, and `notes_path` is removed when notes sat in the vault's `notes` folder, else set to where they landed.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L626-L676",
+          "version": "repo-lines-v1:sha256:d51392a534bfca46167bbbfec372710792c8a5c301731daa2ba5330bac231cff:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU1YWI3YjZkOWI2ZTE5NTY1M2ZjOGI1NWY2M2YzNjQ2MDY4NTVjNDU0ZmM1NjU4NTFmMzFhMmYwOTQ1ZGE3NDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YjM1NzZhYzQ1YWQyNGU4OGQwYmM1MmM4ZTJjZjdiZTVmZGIxYjJiMTNhZGE3ZmFjNDJkNGY2MjYxOWM2YTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_03789980dcf14b9bac183774ba0fe714",
+      "statement": "`rusty-cli import` refuses while a `rusty-mcp` process holds the target store's database open, found through `/proc/<pid>/fd`, because that server would keep writing to the store being replaced.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-cli/src/main.rs#L1062-L1080",
+          "version": "repo-lines-v1:sha256:4d0afa9c640a67d33078ab651b94b9646ea6f529e679a88deb93609011a650be:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkNGFiMGM0MThjYzM4ZmYyZjJjZThiMmNlYTY1Y2E2OGExM2U1ZjhhMGVlMzkzOWJlYzM1ZTY2NjY4MTA1MTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkNmNlZWFlODJkODk0MDAwOGIwNmFiNzZjZDJlOGFiYjNhOTNhYjljNzAwMzY1N2ZmOWFjZWRkMjlmOWE5MTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2YTYwMWQ1Njc3NTcyZTM2ZjdhYWNmMDI4ZTJjN2IwM2FlZmE5YjI2OTU2MzBlMTk1YzU2MGM4YTEzNWRhMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1MDU4ZmU1NGEzMDFjODlmMzA3NjFlZDBiNzI5ODA3NDE4MWMwYzdjOTUxZmZlNTU5ZDM1Mzg5OTQyNTVkMmEifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cli/src/main.rs#L1145-L1172",
+          "version": "repo-lines-v1:sha256:9837d1594c48697a4ec56c0110c94fd9bbe1a574d62fc21d2393f5e8413390ad:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4ODAwYWQ5NDU5MWNjZjVhYWRlZDc0YjE2MjIzYzE4ZTI3YWMwODRjNDBhZmFiMTAxYWMzMGUyYmIyOWIyZGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2MjAzYjU1YWIxZjBhNzc4N2U3NDYxMGJkNzg1YmIxYjJjMWM0OTNiNmUxMDU1NTg0NDk1ZWMxYTc2MjUwYjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4b4ecac4e44a4c1794f01883aee7dfd3",
+      "statement": "`StoreLocation::resolve` is the one place the store's parts are found, used by `Core::init` and the export alike: the vault from `brain_vault_path`, the notes from `notes_path` (by default `notes` inside the vault), the skills from `RUSTY_SKILLS` or `skills_path`, else the defaults under `~/.rusty`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L54-L104",
+          "version": "repo-lines-v1:sha256:07cc0d4ece0c8fd1fce5b67fca3b46b6d39fbd9ede0333b6412dfcd8ca130af8:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxMjFhMDZlZDc0OGU3MDk2Yzc2YTRiMGQxOWQ1ODdjZTVlYTczZjIwMmY0YTA4Mjc3YThjNmQ1YWQ2M2MyYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkZjBmYjIwMDcwMmIyZDkxNDcwOTViMWI5NmNlZDcyYjk3ZTE2ODdlYmE3MWFjNDIwYmNhYWU1YzZjZDgzZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiYTI0YWMxYWVlZGVhMTAzOWYxOGYzYWRkMzc3OWE0Njg3YTE2MWRmMTg2ODg0MTJhM2M5MjgxNjA1MTYyM2IifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/core.rs#L66-L76",
+          "version": "repo-lines-v1:sha256:d838e5def7ba09dc3f7704ef2a670626ecf6892abc619663f4d74fca54c33bf8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5ODM4NWViYjY1MmVlMTQ4MDhkMDE1YTM0NTYyZDlhYzJmOTJkNjJlMGNjZTJjMmE3ZGE3NWJlN2UwODYwYWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMDFhYjBkMjdkNzZjODYwYmQwZjkzNzE5NmQ1Yzk3MTgwNmRlYmJmNzk4Y2U1YWNhZGEwNWQyMWYwYjVmOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUxODA5MjBjMTAxOGUzMmYwYzk1NGNjZTQ1MjE4MzJhMmNhOGQyZDI1NGVkMzMyODYwOTc4MGMwNmRmY2NkN2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzMTdmNzFmN2U0ZDdmNjgyODZiZThkOTk0ZGUwZDlkNmYwNDA0NWUwODVjNDFiNGRiZWEyMTQ5MDYzZjk4MWUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/mod.rs#L375-L397",
+          "version": "repo-lines-v1:sha256:442bcb24e603d1718b80788fcd56ad5b265afeb905a5c5ffebc7f5ae20a30426:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkODM0OTAzNTIxN2EyNGU0NGIwMDBkNDVmZjI0OGRmNDM2NGY0ZGRhNDRjNmE2NWRmYjYzMWM3YjA0ODMyYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNDM2NWI2ZDk5MGUyMzM1NWQ2M2U1ODY1OTljYmE4YmJjZjA2NzJkOTQwOWMyN2M3N2Y2MjZmMGY2OTNiYzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmNzRmMGUxNmY5NzNiNTYwMDIwNDE4Nzk2MGQzNDJlNWJmNWExZDUyMGYwMzg1Y2Q0OGZiZDk4NWI1ZTRhNzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4MWRjMDEwMDMyZWYyM2RjY2JmNDFjZmFjMmUwODllNGZlOTVmZWZhODRjMjQwZGVhMzMxZDIxNDBmMTNlNTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_981984834a3142a1b211b9a7c5c75a5a",
+      "statement": "Six tests cover the round trip (files, modes, empty folders, git lock files and symbolic links skipped, the page count leaving out templates and the root's archive, tasks, memories, settings rewritten), secrets on request, replacement and refusal, unsafe zips, refused destinations, and notes outside the vault.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L755-L1131",
+          "version": "repo-lines-v1:sha256:381e2de23a7afcbaf04ecf2bdc8d942d8c0b75a59158cfb550dbf5ebbfd851d4:eyJzZWxlY3RlZExpbmVDb3VudCI6Mzc3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyNWNmNWZjMjNmMmE2ZDIzYzNlYTUxZTcyZjVlODk2Yzc1NTVmYmFhMDVjZDViMWVhMTgyYmY5NjE4YThlODFiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzZTEyY2IyODM0MDFiOWZjMmQyODQ2NjBkYWEwYzY1YzJiMDU4NzI2NDFlNDgzMTFlY2QxOGU5ZDBkM2JiY2IxIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_7155c6d5c6404c93b13808f30159a70e",
+      "statement": "The manifest's page count is the markdown the brain would index: files under the vault outside its dot-folders (`.git`, `.templates`, `.obsidian`) and the root's `archive/`, decided by the vault's own `hidden` rule, so it matches `brain stats`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L236-L243",
+          "version": "repo-lines-v1:sha256:b4a0990ffe538006a6b20be3310841fbd1a5aadd6dfc5a33810eb20689d07da8:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWVmYTMzY2VkODhhZmQxYWM4NzgyMjNkNzExZmFiYjM4YWM0NGJmZDI1NTk1MjljNTI4Y2VhMjIwMjg4ZTQ4ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU4ZDNmNjZkYmNlMGRkOGM5ZjRiYjJhMzdmYzk3YjIxNzkxNThhZDBkNjRlNzRlOTg1ZDkzNGJmNDNlMWExOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjU3MTc2N2MzN2JlMWU2NGFlM2VjNjc3YjFmZDYwOTdiMTQ3YjQ0Zjc0ZDUyMTBjYzE4YmM1ZWRmNGNkNTQ2NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjBjM2FjNDVhZDYyMDIzNmU1MWMxYzhlMTk2MzRkOGFiNTQ4NzJmNjY0NjljOGZlNjMyNzhmMTZiYjljMTYwNCJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L366-L392",
+          "version": "repo-lines-v1:sha256:a29793ad95aaa564a67bf50c2feadf5d2a2104bde15974f75257bf8bb08399fb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmMmZiYjkwY2U2OWI5YjkwZjk4MTUyMmNiNDFkNjNjMGJhY2QzZWY2ZThiYzY5ODU4YzNhMmRlODE1YmNhNmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjZGY3NjhmY2MyMDM1Y2QyMzkwYWUyNmJjNmJjOGMwNjFiZmUzNDA5NzdjZDhkZTU1MzVhZjkzNmRlZWVkMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiZWQ4MjJjMDBlNDBiZTA3YzQ0ZTI2YjZmMjUwYjE5YzU0OWQwZmMxNzQwODVmMjFkYzdlYWE1NDg3NzVlMDAifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/vault.rs#L14-L19",
+          "version": "repo-lines-v1:sha256:624098439a2167d0f0b846dc3fb75451f4b405480393789386055c4f39fba8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWQ3MWNlM2I3MmY2ZGY0ODJmNGY4ZTk0NzFmNDFhNWRkZGFiN2ViZjBkMTIzZDYxNTg0ZjE1MzllNTRkYjE0NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODY4NGU1YmM5MTkyZDk0MTdlNjQyNTk4MDg2NDZhNzkzN2U1NjQ1ZmZiNzdmNzE0YTU2Y2M2MDkwMWRhNGY5NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjdjYmRiNzZlNjk3MjRkYzAwYzRjZWIxYzQ1MmEwOGNiNzRjMDEzOWEyYTYwOGUxZTUzY2ZhMzFlZmQwMDRmYSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.3.3",
+    "at": "2026-10-09T17:42:25.313Z"
+  }
+}

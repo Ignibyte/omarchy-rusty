@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:0620f4ed793718cd962fe0f14f1d6bbf8727bd8d2730432c73240a5b30465605",
+  "claims": [
+    {
+      "id": "claim_ba5269afe6054bbbaef8c6effa948261",
+      "statement": "The gate runs fmt, clippy with warnings as errors and the tests one after another, and on green writes a receipt whose fingerprint covers HEAD and every gated file.",
+      "evidence": [
+        {
+          "resource": "repo://bin/gate.sh#L76-L90",
+          "version": "repo-lines-v1:sha256:20e05a336d707f090d14ccbd569da19f1271f879a4aff83ac8914daceb03527d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2MTE2MzQwNmM2MDc4YWY2NmI4ZmYwNTQzMzFkZTcwZWFhYjE5ZmYwYTJiOTczN2U1NDQyNmY2ZGEzMGViYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4YTUyYmUxZTZmMTkzMDIxY2E1ZGQxOWQwYWJiNjMyYzJiY2E3MGVjYzk5OWNkOWIwZTUwZDJhZjY2YjBhNTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkNzJiZDkxNDQwMzA4ZTgzYjg1ZWE0MmRiMTEyYjNkNThkY2IyZjg1NGZhYTBjNDIwOGYyZDkwZWY5YjVmZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://bin/lib-gate.sh#L58-L84",
+          "version": "repo-lines-v1:sha256:02de63b5d861e8591302f10d992a1e87cffbbadc7a710c48cb883df9d32a7391:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBhZDEzNGE2NmViODJlNjZhMjg1Mzk0YmM3ODQ3ODJiMDJiNGJkMWJjNjllMmVlNGExNDI1NTI4NGQzOWZjNjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1MGVhZmQ2N2Y2YzE1NTcwYWE0ZTExNzkzZDBiNmZmMDhjZDUzNWM0YTNiN2Q0MjM2ZmQyMjgxOGQxODc4ZTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b5929af1ce44530bab3d1d6e5a21d77",
+      "statement": "A public commit that carries any file while the work record holds a completed spec it has not committed yet delivers that pipeline, and needs a matching OpenWiki completion receipt unless a waiver is in force; a commit aimed at the record itself (`git -C docs/planning commit`, or run from inside it) is exempt.",
+      "evidence": [
+        {
+          "resource": "repo://.claude/hooks/enforce-commit-gate.sh#L20-L52",
+          "version": "repo-lines-v1:sha256:e093162ddc50e30492ddc35f76bc71e325e92cd821bcdf4c8e8aabad82d83cc0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3Y2M5ZjA5YTkyOTVkYTVkZDk0MmI1MGE3NGY0ZTg1ZGYzZWUwZTQxOTU1NDg0YTg3YWE3NjQ2MGFiZTIxOTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4ZDNiOWU4ODBhNzc5NzU0OTNkYzdlMzU5MTQ0YzAyOTVhNGY2OTRjZmUwYWY0ZjkyOGMyMjMwN2JjNWMzMjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlYmIzMDRiZTgwM2E0NzNlYWE2NGU3YzY5ZTQyNTY4NjE5ZGY4ZTg2YzRmYzc2MDAxZDU5ZDk5ZjM4ZjFjNzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://bin/lib-gate.sh#L34-L43",
+          "version": "repo-lines-v1:sha256:83e1d5462b8717e90f1f44a4c757d8abb9b1efe596c34d2d02c3d3427bc09d9a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxMTIzMzE1YjlhMjAwYzcwMzJjZDVkMWJkMTI3NjZhMjYyYWY3NDI4ZDE3MzYyM2M5NmQ2Mjk2N2RiOGQ0M2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjMzU0YTY1M2Y1NTYyM2NhMDAzOTZhMDFmZTA2N2UxYWYyOTFjNWZhZmJhZDQ1NTI2Mzc4NDY5YTU2OWIwZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhZTA0ZDY1ODE4YWM4NDllY2U0YjExZmNjMzFiNWY0MTQ1ZTk0NDg5NWViYTc5M2IxYTY1Y2U1NDI1M2I1NjcifQ"
+        },
+        {
+          "resource": "repo://bin/lib-gate.sh#L114-L128",
+          "version": "repo-lines-v1:sha256:4f790a2e26b47c7a1adf98a5ed9cf7bf1d649db2a1b9e4d86a61881d42c82f80:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5NGY4YzE3OTE0Nzc2NGU3MDZkYjk3MWNlYjQxMDk0NmE1ZDFhOGIyMDNmOWMyODgyZTdiN2VkMjFhOTExNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiNzkwZTM5NmVjMGU4ZDNiMmZkZmMyODY5ODY2MGQ1YmEyMDNjODk5NTU2NjlkMmRmZGE5NjA0ZGI1MGE1N2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_962c34f7ef834dc4bffeddef57061b10",
+      "statement": "The completion receipt is written by the PostToolUse hook only when `openwiki_finish` returned `complete`.",
+      "evidence": [
+        {
+          "resource": "repo://.claude/hooks/record-pipeline-tool-use.sh#L15-L37",
+          "version": "repo-lines-v1:sha256:9e49a42387367f79798911b042dd89715db466113498111bf81227bb2c909df6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmYTE5ZGQzODkwNGMxOGI5YmYxZjZjNmIzZGEwNDEwNTNjMTM4MzQ2Mzk1YTc0NmUxN2Q2Njc4YjRmMTZmNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxNzZkNTIxOWZmMjM5Yzk1YjIzYjkzMWNjN2JlNjM2ZWM5ZWFmMTNiMmQ2NTIyZjIzOGE0MWY3OWViYzMzN2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlMmI2ZjMzM2I3OGUzMzM1YmE5MzViMzdhMGE5OGI1NDNkYzM0NmNkOTgwMmZjYTY5ZWMxMjRlOTUyOGY4ZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3b457e63227a48ccab70b3d4283fd284",
+      "statement": "OpenWiki is pinned to one commit and built from its frozen lockfile with a pnpm verified by SHA-512.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib-openwiki.sh#L12-L20",
+          "version": "repo-lines-v1:sha256:e895958071ccbf2d0187fa68dd39f947b9beb044e658e1dbb7542838d829e632:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmVlYWNiM2Q0YWZkM2UwMGM1YmM2NGY3ZTMyYTcyMDBiMzRiYWEwNTljODU0N2VmNTUyZDIxOWMxN2IzYzAxZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTFhYjRkZGI4MmJjODQ2YWMwMWYwZWQyMDZmN2RmZmQwMWI3NzE4OGZjMDg1MzE1NTMwNmQwY2M3NGQ0YTdlNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODZlNDdiYjU1OTk3YzRhOTEwYTdiNTE2Mzg1ZTVkYzBhYjg1MmQzMzMzYTYxNTRmOGM0YzAzNGJiNTI1NjFlYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmI0NDRiNDU3NjQzOGU4ZjY0ZWVjNWE3OTMxNDZjYjk1ZDA5NTIxNzRlNTViOTRlZDg3ODA1YmQ3OTE3N2VhYSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7deb11bb36054dddaa972213c7c36033",
+      "statement": "Two Claude Code hooks for the brain loop ship inside `rusty-cli` and are installed by `rusty-cli hooks install` (scripts to `~/.rusty/hooks/`, entries added to `~/.claude/settings.json` idempotently with every other entry kept; `status` and `uninstall` exist): in a working directory whose `.mcp.json` names a rusty server, the PreToolUse hook blocks a Write or Edit under that directory until the transcript holds a `mcp__rusty__brain_ask` tool use whose result was not an error, and the Stop hook refuses a stop once (`stop_hook_active` passes the retry) when files were written and no non-error `brain_decide` or `brain_no_decision` follows; both fail open without jq or a readable transcript; a corpus test runs the shipped scripts.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-cli/hooks/brain-ask-before-write.sh",
+          "version": "repo-file-v1:sha256:4a871a6d7743a518fb6f4e46acfa6001252d61e7e5c09847f513596c4be45ced"
+        },
+        {
+          "resource": "repo://crates/rusty-cli/hooks/brain-decide-before-stop.sh",
+          "version": "repo-file-v1:sha256:dc2dd6dd4e2fec6711a051e3a98a346ce8a053d7a92daa434a2550c3e1f57c21"
+        },
+        {
+          "resource": "repo://crates/rusty-cli/src/hooks.rs#L101-L180",
+          "version": "repo-lines-v1:sha256:83996f6ee39e8d1037f74c21e3ebe0cd798d1fdce2a0b683bd3fb9c02c188bfb:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2NWI4YzAwMDlhYTZhOGQ4NDIxODFlZTI2NGY4NzBlMTdhNDllMjMyNDZlM2ZhM2I4YTMwNGZjOGFlMzU3YTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlMGFmM2ZkNGE0YzNhMWQ0N2M3ZjQ3MGVkMGQ4NmQ5MGQ5ZGUyMTBhNWViMTQ1NWZiZDk0NDgyYTQ3NjViNzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkMGY5YjViNjhjZTE2MWFiNDBlMTg3NzM1ODFmYzg3YzU3M2JlYWYzNmRmYmY5NjA2MDRkZmFiZmJlMmJmNjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0ZGU2YTJlMzQ4ZjA1ZWU2YzEwMzQ5NTlhOWQwNTI4NDM0MWJkZGQ2MTVhZDA1NGYxZjVkM2U0ZTY4ZDM4NGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c08ae42baa3e49989b842d650c76d017",
+      "statement": "The work record lives at `docs/planning`, a private checkout of its own that the public repository ignores; without it the phase gate allows every edit and `scripts/check-pipeline.sh` checks only the tools, while the gate receipt rule for gated files still applies at commit.",
+      "evidence": [
+        {
+          "resource": "repo://.gitignore#L1-L5",
+          "version": "repo-lines-v1:sha256:92399dff6c034399df063113557a133e604b74b553c1c7002585eee7c103b226:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDUzYTQ2OTFkODVmNDk3NDg1YmJhZjY4MGVmMTE0YmNmMzBjMTY0NzBkZGVjMTJhZDAyNDIzMmM5ZjU3YTE4ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjBlNTY0MDMyYzI0ODdiYzYxMDQ3YzQ1ZWY3NTJhNDZmNjBkZjE0ZTJkMmQ2Nzc2MWJjNTNiNDI3ZGQyYTk3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmJlZjczYWU4NjIxZmMxNjZmOTRjMTMzMjExYjkyNTA0YzdkOTg3MDUyY2RmMTgwYTNkYTFlODE0NzU1MDc3YSJ9"
+        },
+        {
+          "resource": "repo://bin/lib-gate.sh#L19-L32",
+          "version": "repo-lines-v1:sha256:348b67be6f560441caa73a88a98d19a7aa0026f11d019a9f2698619dc11ddecf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5ZDBiYTZjODI4M2Q0YmNiMzdjM2M2ZjVhOGZlODRlM2UxNDdmYTJjMjBjZjJhMDEyY2JiY2E5ZTM0MDMyN2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiZjEzYmRjODllZGJiMGI2NzE1MDY0NzA2ZTU0MzJmMjlhMjFmNDJlMTdmMGVmYjkyNWU0YmM3ZjE5MTk5OTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyMDE5N2ZkZWY2MmEzY2JmMjZhZGU4OGQxMTU0NzQ2MmIyMmQ4YWUzZDA5ZWM5YzEyOWVhNTA3NGMyNWY4NjgifQ"
+        },
+        {
+          "resource": "repo://.claude/hooks/enforce-phase-gate.sh#L14-L20",
+          "version": "repo-lines-v1:sha256:980fa2ae91e328e34519620eb817593b4a2094e36a9f090af5e3f4b7857cd310:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWRlODBmMzFmZjBlMGFiZTI5ZTFhZmE4YTQyZmJiYjI4NzQzZjFlZTQzYzEwNTlmNWZkMGU4M2VlMjgxNWY4MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzhmM2EzMDljYTZiMTZlYTA2MDkxZDExNDkwNjVhNjFhOGM3NjhhNzhhNGZlNjk2NmRhNGQwZTc0NjQxMDczMSJ9"
+        },
+        {
+          "resource": "repo://scripts/check-pipeline.sh#L25-L39",
+          "version": "repo-lines-v1:sha256:39eeb30fee9296a3170f1d7004b131dec9c9b1a3b55810e40f6e79259788d150:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyYTdiNDA4YTdmOTc3NTM0ZWJkMzQ5YmI3ZDc1NDU4MDQ2YzE3NTQ5YjYzNzZkYTUxZGIxM2JhZDdlY2E3MGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMTdmYTAwNmJhOTIwODUwMGIyOTMwY2U2OWNiZGU0MzZjNjQ3YWZhOTE3Y2I3Mzk2YTliYzkxMTFhNDZkZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmY2ZiNTViYmUwMGYxZWY2ZGRmYTQ5ZTdkMTU4YTBjNmMwZjQ3ODk1YmNiMWE5ZjFjYmExNDUwYTVmODliMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJhYTc1NjJmODUzYzQzZjk4YjI0MjFjNTk0ZjlhNjRkZTdiOWQ4YjNlZDM2ODZjM2UwMzVkY2ZiMjg2OWE0NmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_514bcd5143824e1a8624faf6e76be6a7",
+      "statement": "The gate library and the scripts resolve the repository from their own file's location rather than the current directory, because inside the nested record git would answer for the record's checkout.",
+      "evidence": [
+        {
+          "resource": "repo://bin/lib-gate.sh#L14-L18",
+          "version": "repo-lines-v1:sha256:d2ebede85477e43d9b146ed56faae18a07a7ec525c091403f6ca7c4f8f7619c7:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmU5NmUzMWM1NmQxNTUyMjk1N2ExYjdhOWRmMzU2OGIwNzIxYjU5MWY5ODk5MDQ4NzI2ODBiNzFmYmUxMTZlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTgzOTgzNjMzOGM2ZmMwNmE1M2VjZGI5ODkzY2NkODQ4ZjRlMDg2ZmEzZjkwMDQxZDA5ODZmYjU0NGViODVlOCJ9"
+        },
+        {
+          "resource": "repo://bin/lib-gate.sh#L44-L56",
+          "version": "repo-lines-v1:sha256:e449c7c72f3eecdd971b1142c44c21b142ffabea232709b98992ef79dd742381:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNDUzM2M1ODhiNDcwN2Y1Mjg3MzllYTQ3YTA0OTMxZTcxNDM3NjlkNjdiZDIzNzlhOTJlNDYyNGVjMDFjNWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4MzBkMjA0NTgxMWRhNWYyYzQzNTQxZDBjNTlhNGFkNGQ3YmE3ZjMxMjRlY2U3MWM3OTE3OWZiODYzYTVhNjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFmNjk1MTZhM2I3NTczNjM0YWIwODRlM2E0NzdlOWVjZmQwYmIzNjA1MzQzMzQ0MzA5ZWJmMzFlNzNhYmEzOTcifQ"
+        },
+        {
+          "resource": "repo://scripts/check-pipeline.sh#L7-L10",
+          "version": "repo-lines-v1:sha256:5bca110098c25b219235ecd5a8fed061a54fe55d4899512ef848ef1829aa2fe7:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODY2NWE0ZDkzMjI0NWM3MmRjYTE1YzMwNzhkNjRkOTdiNWY2MmU0YTg0NzZmNzJiZjQ0NjEwYTllMjkzNWY3YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWNlODAzNDQ0MzA4MTBlYWFiYzdlZTdmZTIzZWEyNThiYmE4YWI5MjUwMWEwNThkNzgwYzZiMGQ3MjkxMWQxOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWYzOGQzYTlkYjAyODM3MTM5YTY4ODMxMDk2ZmQ1MGVmZDRiOTM3OTc5NGJiNGU0OGQ0ZDE3YWU0ZjAwYWFmYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjVhNGJkNWNhMjgwMDU5NTRjOWE3OWFmOTkxN2UzODYxODRhY2FkODlmYWQyMmRlNjA0YzMyZTg4MGZiMzYyYyJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.3.3",
+    "at": "2026-10-09T16:52:40.059Z"
+  }
+}

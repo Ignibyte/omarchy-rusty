@@ -1,0 +1,32 @@
+# Maintainer: Chad Peppers <chad@ignibyte.com>
+# Rusty from a release's prebuilt binaries. After a release is tagged and published: set
+# pkgver, run `updpkgsums`, then `makepkg -si` to test before submitting to the AUR.
+pkgname=rusty-bin
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Local-first memory and knowledge store for AI agents: an MCP server over a markdown vault, tasks, memories and skills, with a CLI"
+arch=('x86_64')
+url="https://github.com/Ignibyte/omarchy-rusty"
+license=('MIT')
+depends=('gcc-libs' 'glibc' 'git')
+optdepends=('ollama: local embeddings for semantic search'
+            'poppler: capture PDFs as sources')
+provides=('rusty')
+conflicts=('rusty' 'rusty-git')
+source=("https://github.com/Ignibyte/omarchy-rusty/releases/download/v$pkgver/rusty-$pkgver-x86_64-linux.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  cd "rusty-$pkgver-x86_64-linux"
+  install -Dm755 bin/rusty-mcp "$pkgdir/usr/bin/rusty-mcp"
+  install -Dm755 bin/rusty-cli "$pkgdir/usr/bin/rusty-cli"
+  install -Dm755 bin/rusty "$pkgdir/usr/bin/rusty"
+  # The user unit as shipped points at ~/.local/bin; the package puts the binary on PATH.
+  sed 's|%h/.local/bin/rusty-mcp|/usr/bin/rusty-mcp|' omarchy/rusty-mcp.service \
+    | install -Dm644 /dev/stdin "$pkgdir/usr/lib/systemd/user/rusty-mcp.service"
+  install -Dm644 omarchy/wayland-wm-oom.conf "$pkgdir/usr/share/rusty/wayland-wm-oom.conf"
+  install -Dm644 omarchy/mcp-config.json "$pkgdir/usr/share/rusty/mcp-config.json"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+  install -Dm644 CHANGELOG.md "$pkgdir/usr/share/doc/$pkgname/CHANGELOG.md"
+}

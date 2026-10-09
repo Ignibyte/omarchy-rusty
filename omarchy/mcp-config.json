@@ -1,0 +1,13 @@
+{
+  "_comment": "Two ways to reach Rusty. Claude Code and Codex read the stdio form from a project's .mcp.json or the user config; the http form shares the always-on user service with Marley and other HTTP clients.",
+  "mcpServers": {
+    "rusty": {
+      "type": "stdio",
+      "command": "rusty-mcp"
+    },
+    "rusty-http": {
+      "type": "http",
+      "url": "http://127.0.0.1:4174/mcp"
+    }
+  }
+}

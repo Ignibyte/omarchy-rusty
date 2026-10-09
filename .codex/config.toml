@@ -1,0 +1,14 @@
+# Project MCP servers for Codex. Same three as .mcp.json (Claude Code).
+[mcp_servers.rusty]
+command = "rusty-mcp"
+
+[mcp_servers.codegraph]
+command = "bash"
+args = ["scripts/mcp-codegraph.sh"]
+
+[mcp_servers.openwiki]
+command = "bash"
+args = ["scripts/mcp-openwiki.sh"]
+
+[mcp_servers.openwiki.env]
+OPENWIKI_HOST = "codex"

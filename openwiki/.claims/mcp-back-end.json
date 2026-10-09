@@ -1,0 +1,552 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:749b343a34ce71cef2ee7b5d67f12700e54fbb2551caa0e94b56b940aab3bc7c",
+  "claims": [
+    {
+      "id": "claim_7741605b75254aa6a8c8a6c539a41310",
+      "statement": "Writes go through `mutate()`, which emits `DataChanged` on success; the change notifier forwards it to every connected client as `resources/list_changed`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L608-L617",
+          "version": "repo-lines-v1:sha256:10f3b0de4fde7810d54fdd886433fdc7ca048eda79a7b22acb6c223453b866a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1YjliNTNkZDYxN2Q0MDhkZWQ2MTU3NTQ3MzdmMTg2NTY1OTc0ZmMwODNkYjYxMjkwNzkyZTBjYWFiNDZmZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyZmM4YTBkODQyOWM3MGNmY2M0ZTg4ZGE4NjJjMzJiOGE5NDMxMWMxYjE3MWFiMTIyNzk5NDRjNzE2NDAyZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyYTc5ZDlmMGMyMjExMDE4YjA0Mjk3YTM4Yzg5OGI4NGJhNGMyNDU4NzQ0MmVmNzViMGY5ODg2ZWM0OWNjNWUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1608-L1632",
+          "version": "repo-lines-v1:sha256:9a1979b241a3f0a8cd87d08948bf3d189e972dd84548d6474dde443c8151e7d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwMzI5YzAyOGE1OGUyNTZjOGJmYjcyZjdjNGNkMTlkOWUzZGZhOWVmZDAyZDJjYjY3Y2Q5ZjIyMmJhOGVhZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiZGJjNzU5ZTdlNzg5YzViOWY5NGVmOWYzZjVlZDdiYTdjY2JiMmUyOTgwZDA0MjQyMmQwNDkwYTU4YWVhMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU1OTUyOGJlMzg0NTY5NGM5NGUwNjE4NmM1MmZkNDIzOGUzMzBiNGRhMmFiOTk1ODM2MTVlMTU0ZGE3NmJjNjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d869d33cf9e54b2fba295f1e96728ce7",
+      "statement": "The indexer loop runs `sync_all` after every burst of file changes (or every ten minutes), commits the edits made outside the tools, then embeds stale pages when an embedder is configured; it stops when the event bus closes.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L2150-L2205",
+          "version": "repo-lines-v1:sha256:bbe05114c871426ec47783edb6788b78a26d01fd0e65f4e6350cd9d2524cfe34:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzNjZkOTRiMmNiOGVkODRkM2VmM2YxZGNlN2NmMzNkYjM1YjFmMzNhYmUyZGRmZGI1NzA2ZjgxNWUxOWEyNzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1MTc5NTJiMTYyNGQ0Y2VmOTQ4NWNiYjhkMjI0Mjk2ODQ1MjY3MDhiODdlZmNkZmFjMmZiNDU1OTU2ZGM2ZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_96e45d261d5046f28bd0419d51232e97",
+      "statement": "The server serves stdio by default and Streamable HTTP under `/mcp` with `--http`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1634-L1672",
+          "version": "repo-lines-v1:sha256:52b983ae9b79788ef1622aa9c376cb65086d1a76909cdbafff7381001a93436e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkMWE3M2FkMWQ0NmRjYmFlYzAwZDA2ODMxMDc4N2UyODg4NmRjOWM2MTdjODAwMWM3NzNlZTgwNDJiMGIyOWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxYWIwMjJlYTY3ZTk4YzVkMzc5YzdkZjdlMDg3ZDM5MTJiMTBmZmM4YThkYmZmMjRhNTUyY2FjNWJhNDBiYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiYzk4ZDZiMGRjNDkyYzUwMTZkZjEwODA1YTNhNTRlYjljMTg0YTVhNjEzN2U3ZjRiZWNmYTBjMjIwNTUwZDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77815dbc961049e1a2bd4c2f6ced98a1",
+      "statement": "The router test lists every tool by name, and the smoke test drives the built binary over stdio in a scratch HOME.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1987-L1995",
+          "version": "repo-lines-v1:sha256:fed0680f5b29ff1d4b79db55925b0916be9d5a0885e83c712b42bae42876b45f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWE1YTNlM2RhNjIxYjEwYjNkZGE5ZmU2Yjc3MjE3MmQyMDUxYmQwMmE3NzYwYTdiNzM3MGM4YWMyMDdkZWUyNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWZmNWE5N2U3NWJhZjNiNmU5ZDU0YjQyMDcyMDM3MmQ5ZTg0NGU5ZmFkN2YzOTVmMzYxMGQ4YmM0YzI2OTljZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzVjMThmYjY2YjBmODY1Njk0ZTZjNzE4ZWNlMjNkZDJmNGRiODc0OGI5ZGJhZmM0ODQwNzdmM2Q0M2NiOTBiOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDRiY2E5MmVlZWMwNDU5Y2QyMTQ4MmZlYjJhNzk4NzBmZDQyNDc5ZjYwMWNiNWRhZTM4YjAxNTVmY2JjZWNhMiJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L1-L14",
+          "version": "repo-lines-v1:sha256:b77270d077e493ce7971dea70f368cdb410516c2ff1477a23a8d2b9b159c9fc5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmNzFkZjk3M2RmMDM0Yzc5MmE1ZWE3Zjc1NmQ1ZTA1ZTlmOTkwZjE0NjNhNzc4MjFjNGY3ZTVlZGEyOGMxYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkZDgwODdkZjBiOTUxNWZmZDJkY2IxYmNjZTBlNzViOTRhY2QwZDVjYjU1N2JjOTVhMmFiNmY1ZmI0NTI2ZDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlMDUwNzIyMjJhMWZiODE2ZTUyOTJlNGVjNDUxZjQwOTE3MzNlODYzOWU4YWMzMGM0NzU0MjhmMDY2OWQ2Y2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f55b8eb48ad4488389a51573ca5dc586",
+      "statement": "The workspace tools `brain_tags`, `brain_set_property` and `brain_remove_property` are thin wrappers over the brain manager: every tag with its count, and one typed frontmatter key set or removed with the body untouched.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1538-L1567",
+          "version": "repo-lines-v1:sha256:c01d946c8b6cbbc1c10cdf343ac85b49ba7f1df1b729de1655696b1b48eb010a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMmIwYjA5YTk2MzVkZTNlN2NlZDkyYmYxNzdlNWJlMzM3MzRiMTgyNGZmMDkxN2Y0MTc0YjY4Y2UxYzg1YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0Yjc1NTEwYzllZGI1OTRlYzNhZGI2YmI5MTM5MWUxZTVmMTNhNjRhNDRlMDYxN2FjN2U3NmQzNmNmN2M4NzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4MTA2NDJjNDA2ZDdiOTY5NzBmMzE2ZWQ4OTVhMGNkYjRjMmY4M2Q3Zjc5Yjc2ZjY3YjllZDE5ZjE1OTc4YzEifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L2279-L2370",
+          "version": "repo-lines-v1:sha256:03f943f75f670d8344dd5881d2f1c724d64f3223f2ea3db8d2445ff4e548c8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NWQ5YTVmYmE1ZDlhYzQ0YWY4M2M3ZjEwMDc3MzA3OTAzNzEzY2VhOGI2MDAwMTc0YzRjNzhlOTZiNGU3YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NTkyODBmNjE1NmMxZjY1MWI1MjJiMWIxODYxNjNiNjZkYjQ1YWRiZmE5YmM2NzFiZWQwNzM1MjllZWMxZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwZjI2NTEzZWYzZjNlMzMxZmM2NTUyM2FlYTM4MjJmYmVmMmY1YTQ4MGYyYzhiNzZmODVjYzcwNjM5YjVlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWZmMGNkZTAyMzdkMTJlNzEwNTcwZmY1MmRiYTM5ZDg0NmZiMGUxMTdmMTQ4NWUxM2VjZjEyZTA4MzNmZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a2c3c3d9fbdd4c15873a2b605a743665",
+      "statement": "`brain_graph` returns page nodes (title, type, folder, tags) and edges from resolved links, each edge carrying a `kind` (`link`, or a decision's `consulted`, `supersedes`, `follows_up` read from its frontmatter and pushed before the plain links so they win the dedup), adds tag and unresolved-target nodes on request, and with `around` and `depth` limits the result to one page's neighbourhood by a breadth-first walk.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L883-L1000",
+          "version": "repo-lines-v1:sha256:824ad5a4e4f1c110b49c69a69c9601d3fd291373e3f642dbaa573ddee7ddf3ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0MjAzMGQ1MWY2MGZjNDM0NDdiZjcwOTBlZTExYTk0ZTlmYzFmNGRlYzE5YzdkNjFiNzgxYzc1MDdlZDJmMzk2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkMDUzYjVmMWFiYTA5MTQ2NzA1ZTcwNGZlNzVhZmE0MTNhYTUyMmYwNDYyMWVkNWUyODI2M2NiMjQ4MzkzMmQwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzNTQ1MzIwZjU1NjgyNmU2YWIxZDZmNmY0M2JhZWZmYzU3NDEzNTNlZDdjMWFmOWE5Mzc2NGJiZDhlYzlkNTA2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyNWM3MjFlMDUzYjNhMWQ0Njg5MGUxN2Y5YzQ2M2EzMzY4OWQ1NDNlMjI4MmNlMGM2MmQ0ZTEzMDdkZGQ3NDQ4In0"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/decisions.rs#L450-L472",
+          "version": "repo-lines-v1:sha256:edc69e8fa846df663474eb1af6b14b5d80b1d60b69866e14fa2b40678ebc7080:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4OTlkNDQwYWM4NjI0NDA4N2Q5YTRlYmUwZDA0NTRkMGVmNjkyODFmN2Y0ZDhlN2Q2NDU2NWNmNzBmNDM3MDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiZjQ3N2JlNTk3ODJhMGY5MjFkYTViYmU4ZWY2NGMyZDNiNWYzMDEyOGZjZTE2MDMzNWFhYWI5ODRjYjE4YzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1MjE2MDRiMzVmYzQwYWYwMGNiYTRlZWEyZmQ1ZTJjM2FmMTg2M2IzOTExODVkN2JmNGJiMDllNzJkMGM4YjMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L263-L276",
+          "version": "repo-lines-v1:sha256:c8dcd162b23cf4da731e44c6a6f81d83fa9112ab60f5c110b3033ff3fb128d33:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2OTY0YTg4NmM5YjFmZjQzZjNiODc3ZTE2ZWNjMmFmNjUxOGYzMmQ2N2JiMGJmYTk4NjQ2MWM1YjllYWZkYjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNDhhZjA1NzczYzNlMDRkZTUyMDZjZDBlNTgwNDk3ZWRhMjAxNjI2OWJhYWEwOWZkMmIxZDk5ZjEwZDU3MTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3ODI4MGUzZTVkYWUzMDliMmY4NjQ0ZjBiMmQyMzRjOWVhY2QyYzkyODBmYmUyMzk1Y2NjODNhMWE2NjNjYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5OGY5M2ZlNmY3YTRjYTgwOGYyMzhjYmI5OGVkNWUwYzFlMWM4YjcwMjQyZDRlN2IwODMzNWMyZjFmZDcwYjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_616d64fad6774a3997a604fb7f9cc6b4",
+      "statement": "`brain_search` takes the query operators as typed and `case_sensitive` and `regex` as optional parameters, routing to the hybrid search when an embedder exists and to the text search otherwise; calls without the new parameters keep their meaning.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L78-L90",
+          "version": "repo-lines-v1:sha256:d48f168b26a406cdcdc5ff0198e9a0df81256b9a5f87dfab6c3a864053a1d517:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkY2Q0ZjZmMDFjM2EyMTk5ZjBiMWQ3NjBjY2E5NTU1NGVlN2IxYmIyNThkM2VjOTQyMWM4ZWQ5NDVjYzEwMGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkMTEyZjFkOGE2Mjk4MGY0Mzc5MjUzN2Q2NmFjMzA5ZjM0ZmMzODAwNmU4ODIzZDczMmY4YTllZDdiZTk1YWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxZDM4YWQzMmFjOTI2OTQyZTMxN2QxZjgzZDAxNWZhZThlMTFkZmM1MWJkZmEzNTgzNDVhMjE5ZmIzZTA5NjUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L834-L860",
+          "version": "repo-lines-v1:sha256:858eabc19d8a54a5d71fe7049dffc9d79a42b1ac02a9e14dbe692c80d2c45f02:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxNzMxMzkwNTFiOGZmOTc0NzU5ZjNiNjQ0MmM0OTFiODkzYmYxZWMxYjZkZGEzZjU4MTVmNGYwNzdlODJlYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxNmQ4MTdhNjk4ZWY5ZTg5YmFiN2FlMDk5ZTBmOTRlNmIzYWVjZDc4MzQ1MThmYWI2NmRlYTAxYTFhMjhiNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkwMmZmNWU4NDBlMDdmY2E5MDI0MTVhZjA1NDI4YzU1YjFjOGJjOTNlYjcyMTQ5MGFhYTA2YTUxOTVkMzU3ZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2ZGFiNjRjZTY0ODA2YmZmYzkzNmQwMzdjN2VlNDUxYWI4YjU3ZTNhZDMwYWE2ZmUzZWU5NDVkYTQ5M2NhNGQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L222-L236",
+          "version": "repo-lines-v1:sha256:6a37613032a52312133b8fcb13f08c49e559ae218285b56fc8550049d415387e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZTQyMDhjZDZmZmI4YzRhMzU0N2IyZjU0YWRhMTk5NzhjM2YzNjVlNzhmOTUwMmVmNTE0NWNkZDJhYTg1NDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiNjVlZTIyYjZjY2E1MzkyNmZhOWY5ZjI0MTAxMTNhYzk3YTAwODAxZjM2Yzk3NmI2MDk4ZjlkZmQyZTU1MmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5MDE0MjRhM2VkNWUwYTA5ZTFhMzg5MDFhNDJjM2U0NDMwYTMwMGM2MWFlNjUwMjk5MGNiM2IxZDFmZGU5NDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFjN2Q0NWMxMWJhMTBjODRmODI0YzVlM2FkMDcwMzQ4ZDNjM2ZmOTJiYzBhYmIwNmU5OTY2OTNhOWMxZjYyZjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_be12997cd4334bfa846aa3750017a280",
+      "statement": "The server carries no Obsidian bridge: the tool list holds no `obsidian_*` name, `rusty_core` has no `obsidian` module, and links, unresolved targets and renames are answered by `brain_get_links`, `brain_unresolved` and `brain_rename`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L2279-L2370",
+          "version": "repo-lines-v1:sha256:03f943f75f670d8344dd5881d2f1c724d64f3223f2ea3db8d2445ff4e548c8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NWQ5YTVmYmE1ZDlhYzQ0YWY4M2M3ZjEwMDc3MzA3OTAzNzEzY2VhOGI2MDAwMTc0YzRjNzhlOTZiNGU3YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NTkyODBmNjE1NmMxZjY1MWI1MjJiMWIxODYxNjNiNjZkYjQ1YWRiZmE5YmM2NzFiZWQwNzM1MjllZWMxZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwZjI2NTEzZWYzZjNlMzMxZmM2NTUyM2FlYTM4MjJmYmVmMmY1YTQ4MGYyYzhiNzZmODVjYzcwNjM5YjVlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWZmMGNkZTAyMzdkMTJlNzEwNTcwZmY1MmRiYTM5ZDg0NmZiMGUxMTdmMTQ4NWUxM2VjZjEyZTA4MzNmZjIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/lib.rs#L1-L21",
+          "version": "repo-lines-v1:sha256:6717c4414a435c80b2da4e957cdfd39a5de15bbedddf5f19e6f6b690b5d88c06:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMTYwYmJiNmM0ZTM0YzYyMWJiZTdkNmFhMjIzMDJjNDllMWU2YzlmNTQxNGRlNDMzN2UyM2U5Mzc3NTBmNDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExMzY2NjBlOTY5ZmNkMWViMjNhYWIyMTBjZmIyODU5YWVhYzgyMDJhNDE3M2UxMWNjZDMzNDJlNGM2MTQyYTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjNzgyMmIxZDcwZWNhNjQ1ZDJiODIzNTkwZTViYjYyMjJkOTllZjdmMGFhYWMxN2JjMGRmNWRlMmFiODRhN2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_38f7291f88f344c8acb12f65e68f0455",
+      "statement": "`rusty-mcp.service` is wanted by `default.target`, so it serves whether or not a desktop is up; it restarts two seconds after any exit but an operator's stop (`Restart=always`) and carries `OOMScoreAdjust=100`, the lowest score a user unit can set.",
+      "evidence": [
+        {
+          "resource": "repo://omarchy/rusty-mcp.service#L12-L25",
+          "version": "repo-lines-v1:sha256:e9b5790d07b3f7ddb6adb21ae68c6f82ddd5b50a7aedba4301987a5f7628ea16:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNmM2M2NmZjMzYmNmYTNiNmEyZDZkMGM5ZGQxOTUyMWRlZGFhMzUxMTQ2YjFhNjQyZDJiZmM5Y2Y1YTFlMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjZDA3MzdjOTE4ZjRhYzIyMTdmZWQzNGQzOTRlZWY4M2ZiN2FlZDVhYTRkZTg0YTg2ZGYxNWU5OTdhMjUxYjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1ZDM2YzhlMDM4NTZhZTc2ZWIzZmQxYjc0MmRlODEzZDdlYmJmODg2Njg1NDU2MGJhOWM3ODIwZTE5NWQ2YWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ba1b1cec512547fbb5650e411391ed63",
+      "statement": "The notes folder defaults to `<vault>/notes` (an explicit `notes_path` setting still wins), so a note is also a page of type `note` once the index syncs; the watcher skips a separate notes watch when the folder lies inside the vault; `rusty-cli notes adopt` moves an older folder in once, refusing and moving nothing when any destination exists, deleting nothing, leaving a README behind, and pointing `notes_path` at the new folder.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/core.rs#L66-L76",
+          "version": "repo-lines-v1:sha256:d838e5def7ba09dc3f7704ef2a670626ecf6892abc619663f4d74fca54c33bf8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5ODM4NWViYjY1MmVlMTQ4MDhkMDE1YTM0NTYyZDlhYzJmOTJkNjJlMGNjZTJjMmE3ZGE3NWJlN2UwODYwYWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMDFhYjBkMjdkNzZjODYwYmQwZjkzNzE5NmQ1Yzk3MTgwNmRlYmJmNzk4Y2U1YWNhZGEwNWQyMWYwYjVmOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUxODA5MjBjMTAxOGUzMmYwYzk1NGNjZTQ1MjE4MzJhMmNhOGQyZDI1NGVkMzMyODYwOTc4MGMwNmRmY2NkN2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzMTdmNzFmN2U0ZDdmNjgyODZiZThkOTk0ZGUwZDlkNmYwNDA0NWUwODVjNDFiNGRiZWEyMTQ5MDYzZjk4MWUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/transfer.rs#L76-L98",
+          "version": "repo-lines-v1:sha256:6a194f1e2e7d06339aaff559c040f06a534f4f75e55d9654ef5cc2f004db37f3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhNzQzNDYyNGZiNjdmMjQ1MGEzMjFkZjhlMDI5MDg4YmYyNzZhODNhMjMyZTQ1NjJiNjJmMmRmMTIwYmRkZWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlZGY2OGVlZGMxZmFiMzZjYjk3NjJiYTAyMjhiMzA2NzQ1YTJmOWYxMDIyZTk5MjQ0ZWE5YmRmYjFmODVkNTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxOWRkOGVlNjhjNzQyMmI1MmFjOTAwZWY0MmYxZTk0YzA5ZTVjOGFlYzI0OGUwZGJjZmE1NTI0ZDUwMzUwMTQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/notes/mod.rs#L272-L362",
+          "version": "repo-lines-v1:sha256:2faeee77791e8d9875103114e16369fa6b68939b2a925a69b55d021a905e0609:eyJzZWxlY3RlZExpbmVDb3VudCI6OTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxYjU1NTg3ZTk5NWZlYjhmMzViOGY2NjY0NTJiOGI3ZDIzN2E3MmU2NDUxMDc4MTEzYjMzNDM5ZTdjMjU4YzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNjE4YzQ3YWRlNWU2NjNiY2U1NzE2YjRmNzUxMmYxZjZhYjI1NmExYjJlYTMwYjdjY2E2YjNmODZhZDU4MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1MDk5MjQ4YWNhMjVjZDEyMDA0YmU1MDk4YjFlNDU4MTA2NGUyZWY4YTkyMTM4OGY3OWNiM2M5NTJlMWU0OGMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/lib.rs#L46-L62",
+          "version": "repo-lines-v1:sha256:a623c078743d96471d20b3ad2cdf2c89f7a97a4a44c16425ca8062f3b565a1ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlNzVjNzBkOTQ2MzYyNWUxMDc5ZmQ4ZmM4ZWU2MmFkMmU5MmM0MmJlYWFiZmQ4NWI3OGQ4ZTBhNDk3OWI5NGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRiNWY5ODNmYjAyOWU3OWE0OWViNjFiNGY5NmQ4NmJiMTQxYWJmYWY4ZTkyMTI1MTMxOWNmN2ExNTUxYzA3YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhODQyYTE5ZjA2NDFhZmQ3ZDI0Y2Y4NzU4ZTQ0M2RmY2U5N2VlNjE4OTY3NWUxMGM0OTViYzkwZDUxYjMzNjUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cli/src/main.rs#L205-L252",
+          "version": "repo-lines-v1:sha256:0c545a57a3a39049d9dcbe830d2e4521ae31eb3a66c0ceee75e2d2d7ac289d03:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwOTI5Y2MzZDllMWY3Y2ZjZjE1OWViN2NhMjkyZGFmMTFmMDhmZWY5NzkyZGIxMWExZjFkMTFhOGJkYzc5YzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1NzUyYmRkYTVlMWQxZGNmZTE4NmFiNTJkZGU2ZjYwMDNiNTcyNDc3ZjkwZTE0YjgxNjVmN2EyNjI3OTA5Y2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ca6a60d23bff4661b4dd68f5ac68a283",
+      "statement": "The PIN behind the Secrets tab is owned by the server: `PinLock` keeps an argon2id hash at `~/.rusty/.pin` (mode 0600) and one in-memory token per process; `secret_unlock` verifies the PIN, counts five wrong tries in a row into a one-minute lockout, and returns a token good for `pin_timeout_minutes` (default five); `secret_reveal` and `secret_update` require the live token, which `secret_lock`, a new unlock and a server restart end; `secret_pin_set` needs the token once a PIN exists; `secret_list` stays name-only; nothing logs a PIN, a token or a value.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/pin_lock.rs#L78-L194",
+          "version": "repo-lines-v1:sha256:ad6ccbe12fd0e69d340fe85005f7701a133f1b6215b8713b0c135b2a7a6dbc44:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxNTJjYjJiYjZhZjkzMmJiMTU1ZGYyOTU2Y2ZkZjczNTk2MzMwYjYzNzg3YWY2N2YzNGE1YWNmZTMwNDU4ZTYxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4YjU5MDdiM2Q0ODM3NzBlOGE5NTI0ZmI5NDJlY2NlOTdjOGI3ZmVjOTgzZTg0MGM3YmMxZDI5Zjk5Y2Q5YjQ3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZTRjMTdhZTBmNDI1YzY5ZmUxZmEzNWZjM2UxNTBiNDNjOTQyZjU3NzYzM2RjMWFkZjg0YmM4Nzk2MGZkOWFhIn0"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1861-L1981",
+          "version": "repo-lines-v1:sha256:b1d41a83b26d7bd7c3c7a38f0f71f5e145349f4ccceaf641bd7c5c28e3faa782:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4ZDUzYzI3NzYzMWY5ZDM1MTU5YzQ2MDhjZjgyMWUyZTVkZDAzMjgzMmM0MWZhNDA2MDQ0MTUxYjdhZWI2YzVlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2ODk4Mjg2MjRiYWE4YzQ5ZjMxZDg2ZGFhYzkzOWQ5MDAwYTZiMjg3NGNhNzRlYzA3N2NiMjExMGVkYzAzMDAzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhOWQyNGI0NzM1NDQ2ZjMxNDQ4ZmEwNjJjMTBiYzUwMmU4OGFjNGZkZTIxZjA2ZTc2ZTZhYTNhYzg4OWMxODVhIn0"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/core.rs#L94-L97",
+          "version": "repo-lines-v1:sha256:f2165e06961971d1badfbbfc4e80aa828e6ee6439360f7cfb55781e17caefeba:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTQyNDZjNmQ1NWRmNTQ3OTY0ZDA2YmU0OTQ2Zjc5NTY3NDBjNzIxNTJjZjAxOGM1MmE1NTExMzFlODI1MmY2MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTlhNmMzZGM4NjMzNzZiMGZmNmZjYzgzOGZjYWU0NTJjZGU2ZmMzMmYxODg4OTY5ZjEzYzAzYjhmN2VlMjIwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDM4MTI1NjkyM2M5MTY0NzY2YWNiZTczM2MzMjk2OGVlM2U5NGY5NTcyNWI3M2JhNjhkNTMyZTU1NTNhZGIzZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d09d066b537463daf44e067f0bb716c",
+      "statement": "`brain_render` given `markdown` renders that text with the page renderer instead of a page (links resolve against the vault as in a page, the slug and `file` are empty), which is how a markdown file from a folder root is shown; without it the tool renders the page named by `slug`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L581-L604",
+          "version": "repo-lines-v1:sha256:8c945050833a95bcf94aefd55bc0147aae301d9842637446d741fef5cb842416:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjZTQ5NmE5ZTc2OWYyYzY0YTBmMjQ5M2Q0MmVjZGY2ZDU1YjE5MGI4MTQ1N2Q2NTQ1YjljNGNlN2U5NGU5ODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxZDQ5NzMyM2Y0MmE0MmIyMjNmMGI1YTdjMjA1YTdhN2NlZDFkNDhlZDQ3YWJjMGQwMTVlZDA2MTZlNzI4NDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3MGU3YjE4NGU4ZThhZDYxZTg4ZjJkODFjMjc2M2E3OTgyNjM0YzRkMzRkNzZiNGUyOGVhYzZhOWUxYWI4YjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4NGM4M2ZhNDdiMjIyMmIyODUwZmNmMTNlMzdmM2MyOGJjZWI5ZWJjODI4ZjA3ZmQ2Y2I1ZWI3MjU2ZjNlNjcifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1266-L1298",
+          "version": "repo-lines-v1:sha256:217eadfcf800ced0c9782cd6e78f5d03acf7dcfebacd25f814a5ed17fdc35c4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjNTQ1ODAxYzZhZTI4OTY2OThiYWNmYjVkNWQwYzdiMGVlY2E4YmM1M2U1MmFhMGI0YjY3Mjc2NmZmZWE4YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlY2UyNzE1MTdiNDRhODUyN2RmMTQzMjliOTQ1YWNlN2M2MDIyN2VmMmQ0MTQwODY1OGNhNzFlMDRmYmMzMzQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L2479-L2560",
+          "version": "repo-lines-v1:sha256:fdc517eca836ee1f146a468e2037a428777e46bafc3f6e6e966071684001becf:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiYjAzMTRjZmQ2ZTJjOGExYmNkYWRjNzNkYTYxNDY4Y2ZmMDIxY2VlYzYwYzBjMDVkOWQ2YTY4MGFiNjc0YjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQyMWNmMGExOTM0ZjdkZWIyZDE3NjhlZmI3YmJjMGNlNzMwNDZkNzEyMmNiMTY3NjRkZGY2NmNiNTczZDdmY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3YTIwYzg2YjgzMTk1NTlkZjA3ZjllM2VmNGQwZjIwNDhkMGE1NmI5NTZkY2JmMzlhNDE3NWNmNDRmMTYzZjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c10fc4e6e1af4b728a90fe17990b5b65",
+      "statement": "The brain loop: `brain_ask` runs the hybrid search (text alone without a provider), lists the decisions touching the question with their status and the follow-ups due, and records a consultation (`brain_consultations`: id, question, hits, outcome) whose id `brain_decide` needs; `brain_decide` writes a `decision` page under `decisions/` (question, choice, rationale, alternatives, a wikilink per consulted page, `status: decided`, `decided`, `follow_up_by`, `consulted`, `supersedes`), adds a timeline entry to every consulted page, marks a superseded decision, and sets the consultation's outcome; `brain_follow_up` appends a dated outcome, records the day as `followed_up` and sets kept, revised or superseded (with the successor); `brain_no_decision` records the reason; `brain_due` lists the follow-ups due within `days` and every decision, each summary carrying `followed_up` (falling back to the last follow-up heading on older pages) and `superseded_by`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/decisions.rs",
+          "version": "repo-file-v1:sha256:5d0076c55619785d7229bbdcf32f27dfcb9efa421edfbc3327dbfc182dbd4b9f"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L349-L415",
+          "version": "repo-lines-v1:sha256:bbdda820921a4f6632b848dcb6a8e49a28ccecb3259e266b6c3feb5bfc7a141d:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMWE1NDJkZWQ1YWMxNzJmMzQ2ZDRkNmRjMjFmMTRlOTQ2ZDhhZDdiYTRkM2RlNzkwY2M2OGNiODQ2YzVlNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlZjdjMjFjMGE5NGY3OWQyZTcwNjFlMGExMzFiZDUyMjEwMzhjNTU0NDNiMDU4ZmJjMDNhODcxZTc2ZDI3NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0MjFiMjYyNjgyOGZkODI5MmIxMjI1ODYyYWEyMmU4ZTZlNzM4NzUwYjkyNzc2YTFiM2M1MGZhOTViODE3M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2MzY4M2MzMTQ3YTFiZDY3ZjE1N2ZjYzc5NTM1NzhkYTZjOTJjN2QyM2RlNjlmYzRjY2M4MzVjMzQ2MzNiNDMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1126-L1210",
+          "version": "repo-lines-v1:sha256:84579da119c0d6dba63c62e582fb20b24e917d72135243bd79001f66a36e08f9:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNDY2NDE5ZDdiMmY2MTE0ODBmNTNiZjllZDU5NDI4MjRiM2U0ZmZiYmRhNDE1ZGUyNjMxMWFmZmU4NTI5YmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ZWUwOWI2MjE3NjcwOTliNzUwZmRiN2E3MWU3ZTkzNWM5YjYzOWRlODFiZjc0MThiYTQ3M2I3NDk2NWQ1ZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlOTA2YzE4Yzc2NzQ0YjBiZmZlNzBiMzUxNDAwZmY0ZWVjYWU1ZmY3YWEyYmEwNzZmMmY1ZDQzMTE2ZGU3ZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIwODM2ZTU1ZjhkZDBiOWU2YjQwZmIxODhkMGU0MTU3M2NhNDBmZDM4ZjUyMWJkZWIyNWE1MmZiNDdjODliMTcifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L247-L253",
+          "version": "repo-lines-v1:sha256:07f199994b37952c7c4a59d81a02f4368098d7769cc7473e8407fe0d9d4ed044:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTYwZDFhY2U1ZjYzZmIxN2ExNjEwODgzNWNiNmVhZDliNDEwYjM1MzM1NmE0ZTRmZWM2YjE0ZmU2YTU4NmQxNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBlMGExYjA2NDNiYTA4NTI3YjExODM2ODMxMDI4NmQwN2FkZmY4ZDk0MmE1Njc5YzJmZGM4OGMzOWI3YzhkOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGM0ODk3YWZkNTNlMDhhYzczMmFkZDljMDgzMDUwNjgyNTk1MGM1YjNiMGMxYzdmNmZmNjg3Yzg0MGQxMTE1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjI4YThhMWYwZjkyM2I5NmQ3YjY1NmI0YmY5NmUzYTYzMThhYTIxYTVkZmQyM2E0NDBkMWUwNTMxNGM1YzQ2YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1ef8f06dba5b400abad7b2f4acd7ec4b",
+      "statement": "A script is a `*.sh` file inside a skill directory rather than an object of its own, so it inherits that skill's approval state; `resolve_script` finds it by basename without the extension and disambiguates a shared basename as `skill/name`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/skills/scripts.rs#L120-L168",
+          "version": "repo-lines-v1:sha256:5ad8bb6a9a75a5251d2b24721852c85bda7abc2733241f96552e41a42db2e7c8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4N2QxOGZjMDAwMjczZTA1OWRiMGYxYzhkYmVhNzNlOTM5YTE4ZjJmNWJhODE2ODFiZTIwZTkxMDFjMWI3MDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjODYxMzA4YmY5MWVhOTI5ZjNmMGU3YzZkZjQwMDI0YzYxY2UyM2MyZmMwZWNhMWJkYWI3NGEzYTNmMTdjNWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5MWJmYjJmODI2ZjY2YWU3OTRmMTk5NmE4MDA1YjI5ZWI5NGNlZWY1YTFhMjMwNDcxZTZiOTAzZTk4NGM4MTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0NTdiYmZmNTkwYTQ3ODI2ZjUzMmVhYTRkMDNkYTc3ODYzY2QxOTIxOTQwN2Q0YTUyMzkxMzk1Zjg0M2RlMTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e5780521baa428d8f98127aabd5624b",
+      "statement": "Both execution paths refuse a script whose skill is still pending, so approving the skill is the only way to make its script runnable.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/skills/scripts.rs#L243-L256",
+          "version": "repo-lines-v1:sha256:2afb6dae1c5eb934efd2e6dca21e7bc261ed36a7738c1e7ce490430906e1591f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmMjhlMGE1MTk1ZmIxNGQ2M2MzYzYzODQwZDRiODJlYjM2ZDFkYmQ2NjRiZDllMDcxNDliYTYzNGMxMDIyZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiMmY0MzM5ZWU2OWJjNDE0M2MxMDEyNmJhZjhiZDAzM2FjOGMwZTgwMGQ4YWVlODJiZGViYmY3MGJiODE1ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjZTJhNmZjNWExYzc5OWYxNjYwYjZkYTZlOGE2NmEyNzczOTgwY2QwZWUwYTNmMTRhZTg1OWVhYzY0MjJmNjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0ZGFhMmIwZWY0YTZjNjVlNGQ5NGU1MjBkNjU0NGY4OGM4MDYwNWJkYzE1OWE0NDZjNTQ4MmIwZTljM2JjMTYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/scripts.rs#L299-L312",
+          "version": "repo-lines-v1:sha256:2c6602a237f5676877181db237c26f2f7a4c0f1d0c2c0ab1877bfe3b46b2a82f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3NjgzNjA5NDczNGIwZWRhNGRkYTI3MDk3NzU2YzcwZTZjOTIzNjY2MDA0YTM0NzE3MTVjY2JmYzJlMmFhNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0MmJkOGQwNjVlYTYwMmUzYTQ2YjY3MTdkMWZiZDI1MGFjMThiYzA5YWM1MDQzYjFiZjZiYTAwYjkwMjljMTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiYzk4ZDZiMGRjNDkyYzUwMTZkZjEwODA1YTNhNTRlYjljMTg0YTVhNjEzN2U3ZjRiZWNmYTBjMjIwNTUwZDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_87d0445a104f43d7a6cbabca068ad6e4",
+      "statement": "`run_script` runs a script under `bash` with stdin closed, polls for exit, kills the child at a caller-supplied cap and reports status 124 with a `timed_out` flag, and keeps at most 64 KiB of each stream; `exec_script` instead replaces the current process and returns only on failure.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/skills/scripts.rs#L14-L18",
+          "version": "repo-lines-v1:sha256:ba12b602fa728980020d59780484b002c05d458cca63fa7181484151b89910b7:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWNmMzFjODM5ZDU4NGRjZTE1ZTJkNWNlN2M2NWQzMTlkZDM0YWE1NmNjNTM3NzdlZTNkNzFlOTE2MjA5NTE1ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTIzMDdkMTAzM2YxODU2OGIwZmFiZTRkZWM5MGE4ODllYzM4YTA4ZWRiNmU5M2FmNDcyNTkwMWQwOTI2MzU0NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjVmNDhmNzNiMWIyY2I4OTdkNjNlNjkxZDFiODNlZmVmYmY2MzEyMmZkZjdkZTBmOTA0ZDAyNjUxOTQzMzc3ZSJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/scripts.rs#L243-L296",
+          "version": "repo-lines-v1:sha256:1b62a8aa96a7d89162551ac2109fe8a5e6bc4a490cdd5d39734d0accf2bc1a70:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmMjhlMGE1MTk1ZmIxNGQ2M2MzYzYzODQwZDRiODJlYjM2ZDFkYmQ2NjRiZDllMDcxNDliYTYzNGMxMDIyZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjZTJhNmZjNWExYzc5OWYxNjYwYjZkYTZlOGE2NmEyNzczOTgwY2QwZWUwYTNmMTRhZTg1OWVhYzY0MjJmNjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0OTdmNzU0YjIxNmIzNDc1NmVlNGEzNWIzYWIxYjcwMjdlYmMxMzY0Y2Y0M2RkY2Y3NDIyYjlmZmVjNzVjZTEifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/scripts.rs#L298-L313",
+          "version": "repo-lines-v1:sha256:d0fa740f4bf6497e57c6b3676fdd973cfc61971069971bcb39288b4bce557a7b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkMjdkZTg1ZTNmMTQxNTQ5ZTk5YzRkMjUyMDhmYTJjNTQ1M2RiMGQ1NzU1YmRmZGM0Mzg1NWM4N2UzZmRjMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViOWEwOGJjMjlmNmViZWJlOWE1ZjAxOTAzZDk4NDVkYmNiNTg0MmE0NTVmMDdkNWY0MDAyZGFjMzJhNWM2MDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxMzYwZTc4OTM3Mjc0OTA3NjlhYzM4ZTYxMjRhNzZhMGIyOGZkZGJiZjFlYTM1ZDJiOTk4MDYzMjNiMWZjODUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d2c5b3ef5cc4481880e8f6d22d8f128c",
+      "statement": "Four tools carry scripts on the MCP surface — `script_list`, `script_view`, `script_update` and `script_run` — and `script_run` is the only one that executes, which is why it is restricted to approved scripts.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1119-L1178",
+          "version": "repo-lines-v1:sha256:18f9488b8605810197ea3326884cedc1b00e5f847c23ffb881041ecf347a2808:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhOWJlOWRhZjY0NGU4NjA3Yjg4YzE1ZWI5NWQyNzU1ZDY1YjljMDM1MGMyNmEzOTYxZjBhNjkxNWU0MGZkMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyNzYyNjYxZjUxNWYxZjYyMjY4YTZlMzM0YjJkMzZiOGI2NDQ1YmIwMDY4OGFjMTcxMzM5YzJiYTVjNDc2MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5OTExMjViYWI4OWQzYjMyZjQxZDc1NDk3YjhhYzlmNzZlMTA0ODQyZmI0ZGFmNDk1NGMxNGM1ZGY3OGEyMTcifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L2279-L2370",
+          "version": "repo-lines-v1:sha256:03f943f75f670d8344dd5881d2f1c724d64f3223f2ea3db8d2445ff4e548c8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NWQ5YTVmYmE1ZDlhYzQ0YWY4M2M3ZjEwMDc3MzA3OTAzNzEzY2VhOGI2MDAwMTc0YzRjNzhlOTZiNGU3YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NTkyODBmNjE1NmMxZjY1MWI1MjJiMWIxODYxNjNiNjZkYjQ1YWRiZmE5YmM2NzFiZWQwNzM1MjllZWMxZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwZjI2NTEzZWYzZjNlMzMxZmM2NTUyM2FlYTM4MjJmYmVmMmY1YTQ4MGYyYzhiNzZmODVjYzcwNjM5YjVlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWZmMGNkZTAyMzdkMTJlNzEwNTcwZmY1MmRiYTM5ZDg0NmZiMGUxMTdmMTQ4NWUxM2VjZjEyZTA4MzNmZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bcb0648731d649cfa795f1359bdb26cc",
+      "statement": "Two tools carry the Obsidian import: `brain_import_plan` (read-only, the plan for a vault path) and `brain_import` (the import, through `mutate` so clients see `DataChanged`); both take the vault folder's path and never write the source; `rusty-cli brain import <vault> [--dry-run]` reaches the same two methods.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1434-L1461",
+          "version": "repo-lines-v1:sha256:b8c7e8a118fbc30ea4a4b647a0106d8e9927254d258e9c688f67221ea299ad57:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkNGMzOGE0MDkzYTYwNzg2NDhiMGZjNTRiODI0MTlhMDE3ZGZjZWIzMGFjNjYxYzMwODEwZDcwZmE2YWQ1OGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlOTM5NTMwNDFhNTkwMDc3MGNkNzc3Mjk4NThmZmRmYTVhYTY1YmZlM2NjZjMzMDMwZmFhOTBjZWU0NmEyN2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzMmI4ZTMwMzc3ZmY0YTVkOGE1OWViMmNlNTZkOGM3NTM0YzI4M2UwMDA3NzNjMjYwNzliZmUwMThlNTk0MDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiNGQyNTkxNmU4MmY0YWM4NmFmMDQ0ZmU5YTc0ZmFhMTJmNDJiYTA0YWNjMWU1NzA5NjVlMmE0YTRjODk3MzkifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L2279-L2370",
+          "version": "repo-lines-v1:sha256:03f943f75f670d8344dd5881d2f1c724d64f3223f2ea3db8d2445ff4e548c8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NWQ5YTVmYmE1ZDlhYzQ0YWY4M2M3ZjEwMDc3MzA3OTAzNzEzY2VhOGI2MDAwMTc0YzRjNzhlOTZiNGU3YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NTkyODBmNjE1NmMxZjY1MWI1MjJiMWIxODYxNjNiNjZkYjQ1YWRiZmE5YmM2NzFiZWQwNzM1MjllZWMxZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwZjI2NTEzZWYzZjNlMzMxZmM2NTUyM2FlYTM4MjJmYmVmMmY1YTQ4MGYyYzhiNzZmODVjYzcwNjM5YjVlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWZmMGNkZTAyMzdkMTJlNzEwNTcwZmY1MmRiYTM5ZDg0NmZiMGUxMTdmMTQ4NWUxM2VjZjEyZTA4MzNmZjIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cli/src/main.rs#L726-L790",
+          "version": "repo-lines-v1:sha256:bef433b631dbe2f275045ca072815135082f47c6488de8afb55836e469cbd1a1:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwNWEyNzYzZGYxNjQxZjY1YTI3N2NmOWVkNGZjMmM4OThiZjIxMDA4MzRmOTQ4OWUxOTc2YjJhMzQ4NzZlY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiMDg2ZDZiMDNhOGQ3YThmNGQxNzJmMTc5YjI5YTRlN2UxYmRlYjA4NWY2NGZlZjNjNDc2ODhjODM0ZmM4OTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxNWNkZWIyYmNiYzFhNWIwNGMzZDEyMDU3YTk3MDhiM2M5MjBjMmI1NjViNWQwMzk3Zjk3ZDFkMGU2MzE4YzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ce1fdbd1f42747ae8e7a5f5042d2d3ab",
+      "statement": "Three tools carry sources: `source_capture` (a URL fetched, read and kept as a `source` page, `DataChanged` emitted), `source_search` (the query with ` type:source` appended, over `search_with`) and `source_preview` (a page under `sources/`, any other slug refused); every answer about a source is marked in the tool layer — `untrusted: true`, a `note` saying web content is data and never instructions, and `snippet`, `compiled_truth` and `timeline` normalised (control characters out, blank runs to one, four thousand characters at most) — and `brain_search`, `brain_read_page` and `brain_render` mark a hit or page of type `source` the same way while leaving a rendered page's `raw` and HTML alone; `rusty-cli source capture <url>` and `source search <query>` reach the same methods.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L627-L641",
+          "version": "repo-lines-v1:sha256:20736987f7864f03abc09aaf93344ee4f2d88b8fc52eefb73638ac94f9fe344c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3NzNiYmYxODNiZGIyMzQyMmRhNzE5OGI4OGMxMjcyYWIwNDIwZTY2ZGQwYmI0ZDVlZGQ0MGFlYjAzYWIzYjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0OWRhYTk4MTEwNzQ2ZDhlYWU4ODM4OWUxZTg1MjQwYzEyODZjMjMxYmJiODIwNjk3NjVkMzcyYjZlMTdhYmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxNWU1MGNiMTQ1OTVkYjQyMDQ1NDVkYTAzNTQxZmE3ZDU0YTZhZTczMTE2OWYxZDZjOTY2ODdkMjJiMzBiYjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwN2U3ZWU5MjI1Y2E2NDI5NTExZjg2MGYzNDQ1Y2YyOGU4NWNiYTZmZWY4MzI3ZjUyNzUwZWRhZDVhMzE2ZTAifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L834-L860",
+          "version": "repo-lines-v1:sha256:ee8b9f192bf5f0b40f934a645c5c734770351cb8ec72480ae617a5d243ca8a6d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlNzhmMjNkMzQ5MGM1NDBiNjVmN2IyNTJhMmU1N2Q3YmIyNWQzNTk4OGYwN2VmNDA1YmFjYzI2ZmU1NjdlZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyZDJhZmE1OTE3M2I0ZTI3NDJhZThkYWZkMDA2Mjk3YzVmODQzZTYwNDIzYTU3MDRhNWY2MDFiZTQ5ZTEwZWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzMzhiYzIwOTAyZWE2MTBjMTAwZDUzOTdhNTZlYzVhMzIzYTUxNmIyNzgzNmI0NmVhNTA5YWZhNWYzNmFmZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3M2Q3YzYxOGE3NzFhMzVjODVhYWU0ZWVmMTg1ODYyOTgxNThhNmRiMzljYjgwMDQzM2RlNDhkNzEzODJkYzMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L917-L930",
+          "version": "repo-lines-v1:sha256:42932d6c977d3f5876a4879754671b8c4b7c494c7ae668fe5bfddc25548f0878:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNTBlYzNiOWFjMjE2Yzk1NjI3Y2FjNDBiODE3N2U2ZGJlODI3MmZkNWM0OWVhZThjYWUzNzUxMWE1NjI0YTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiN2Q3YTM0OTRmYWUxMzhjMjMyNGViMWQ3ZTQ1ZmNmMGUxYjNkOTY1MjYwNWJkOTE1YzU3YTExZjdkNDYzNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxY2ZjZjUwZTkwYTYyZGEwY2Y2Y2EwZDQ3ZTE2N2VmMzBlNThmODUzMDM5YWRmZDZkN2VjMDk2YTA3ZTMyYWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczZmRlNzIwZDZhOTdkMzYwYzIwYTNmNjkwM2NjYWE0OTEyYmNmYTZhNTQwZTEyZmUwMmMzNDg3Y2MwMjlhM2MifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1344-L1376",
+          "version": "repo-lines-v1:sha256:217eadfcf800ced0c9782cd6e78f5d03acf7dcfebacd25f814a5ed17fdc35c4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjNTQ1ODAxYzZhZTI4OTY2OThiYWNmYjVkNWQwYzdiMGVlY2E4YmM1M2U1MmFhMGI0YjY3Mjc2NmZmZWE4YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlY2UyNzE1MTdiNDRhODUyN2RmMTQzMjliOTQ1YWNlN2M2MDIyN2VmMmQ0MTQwODY1OGNhNzFlMDRmYmMzMzQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-cli/src/main.rs#L151-L200",
+          "version": "repo-lines-v1:sha256:ddc24e9b380b00e279e33d0276f6cad44bf918a2e307b2fb35f557fcebfbb8c2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNDY5NTE2YWFlMDg3Mjk1ZjI0OTEzMmY3NDk3NjAzZWZkZWExNmVkZTBlYTk1MjBmMzUyNmEzYTIzMDRmZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5NTc5NzA4YTkwYTkwNmFmZWQ2MTUzMTk5MzNkZjg4OWNiNzQ4NjM4NDM0NDg3NWYxNjllYWM4MTQ2ZDQzN2YifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2b360c3caea4e33b78a071f74afc841",
+      "statement": "`brain_new_page` takes a folder and an optional name (`Untitled`, `Untitled 1`, … on a clash, a `/` in the name flattened), or a `path` that wins over both: the page at exactly that vault path, its folders made, an existing page returned as it is, a path that is empty, absolute, holds `..`, ends in `/` or lies in `archive/` refused.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L611-L625",
+          "version": "repo-lines-v1:sha256:5117f24c1c77250df0a86dd0cc8f779b793327f6606e12bb3b85d7391a2d5571:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlNDQ0NjZiOGFhMjNjNjI5MWNhZjE4NzkwM2M0YjRhMWYyOTk4N2VmMGVmZGM2NTcwZWY4OWNiOGI5ZGQ4NGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlMjExM2M4MmQxZTNmZGZlYTMxOTkzNjkxYWFlNTU3NmIyOGJiMjQ0YzFhZjM1MjE5NGNjZmU5NDU4ZGUxYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYzODZhOTYyNGJjMzAyNmY0N2JkNWJjMWIyNDhiYjY5YjBhMWY4MDVlMDBkNGZjMWQ1MWQxYzk0M2FlMGM4Y2UifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1309-L1322",
+          "version": "repo-lines-v1:sha256:59d51cc25e18324b8f477df1e4d516dfd07002b5fa3ad7714bd87f02471eb175:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkNTM0NWExZjdhYzVjZTg1ZWJhMGQ4Nzk5N2I3ZWYzZWJlYjYyODQwODI4YmE3NzZhYjM5NTA3NGJiNWFkMTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5N2U1MTZjNTEwNzdlMTYxYTI0YTdhNTRlODIyYzA0YzAwYTFiZmQ1MTk2ZWUzNjU4ZWEyNzhlZTg5Mzk2MDMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L2580-L2650",
+          "version": "repo-lines-v1:sha256:5c97a1c05129f3a3598c04a28e40d365494b7a05ade35658ad05fea5c737bfa4:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0ODBiNjEzNTNiOTA5YTlmZDAzOGQ3ZTE2MjhmMDNiOTVmYzQwZjkyMjQyMDg0YTUxYWUzMDFhYjZmMzEwOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNTgwNjI2NWVmMjRiNWI2YWZhOTNkNDBhZTAxMGZhZTQxNmQ0MmFlZTlhZjE0ZGFlNjhlNDNkNjNlNzVlMzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlMzg5NDU5MWRjNWEyYTA1MjVlYmRkM2I2MGI5ZTM4MWU4ZmIwYWJiZjQ4ZDFlNzk3MDQ0ZWNlYzA3YmYxZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzYzBiZDE4ZGUxMzZhNGI5N2IyODQyMDY1ZDE5NThiMTEyOGJmNjIxN2JjYjAzYTE3NzdhNjE2YzQ1NmQ1ZjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e86e0340e9a24d9788fa48f9a4df6776",
+      "statement": "Every connection to `rusty.db` runs with WAL, a five-second busy timeout and foreign keys enforced, set in one place for the store and the test constructor; at open the rows that already violate a foreign key are counted and reported on stderr, never repaired.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L28-L48",
+          "version": "repo-lines-v1:sha256:8b8f9920c2343edcc39b5c98621c8d5ccc9a767a8103405cab360402a59d94f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkZTJiY2I2NmMxOWU1N2E1OGJlNzhjYTQ3MDk5NzM1NzU4MDFiODMyZTFjN2Q4MDUwZmQ3MTdiNTU0YzUwNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzYjcyOWI2YjZlNDE0MWY1YjY3MjZmZWNjN2FhZWMwMDg1ODYxZDI3NDEzYTA1MzNlNzUyNzFjYTY0ZGZkMGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3MjY0YTc1MDQ1MjAzY2FmNjViYjFkMjY0ODlkODVjYWI5MmU5NWFkM2YxZjYzZjExNTA1MWRhZGY5YjExZDkifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L325-L380",
+          "version": "repo-lines-v1:sha256:d12a82e33c6e48bdc6cdcd6d10f31d8f3729dc3fec9ac5901809c9070570f06c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzYTA4MWJjYjZiMWNhOWE3Yjc1MDc3NTgxYWVmYTUyYWQ2MmJkZDUyZWU4YWRiYTA0MDU0MjZmM2NlM2NmMDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4ZjQxODM4ZjMyZDQ3MGM2MDMyYmNhYWY5Y2I3YjhiOGE4OWY3NzM2OGZhMmEyZDI5MGM3MjAzYjUwMWUyZGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljYjNlMDkyODE4YjkxOThmMzNiZDQyODRlYjMxMzJmNWIxNDgyNWJjZjA4MGMwZjkxZmI0NjE0NDQzYzAyZTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0Mjg1NzVjZGZhNTVhZjRkNDA2Y2I0ZDM3MjIwNWM4NjM3NTI2MTA0ZjJjN2I3NTlmMThjODA5NGIzYzkyZTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4d4d4bd660114a0e9b856b18dee19aad",
+      "statement": "A write that names a task, task group, memory or secret that is not there fails with an error naming it (`No task <id>`, `No task group <id>`, `Memory not found: <id>`, `No secret <key>`), which reaches the client as the call's JSON-RPC error; creating a task checks its group first and the foreign key refuses an orphan another process races in.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/user_tasks.rs#L96-L145",
+          "version": "repo-lines-v1:sha256:50ad95230c9b90c90e1f0b0565ce10632340e394eb723f692ab6c6482f29a15b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjYTQ2N2JjZDc0MjIxNDRmMzg3M2MxYTdmZGU3OWU1NjI1YTY2Y2NhZjU0NWY3ZDU0NTBhNzg4YTEyNDI1ZDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkM2E5NmZlZWI4YWY4NTRkNWFhYWU3MDFmMzU5MGJlZjcwM2UxZTg4M2JjZmQ4OWVlNjI4M2UwNTBhNDRkYTYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/user_tasks.rs#L175-L215",
+          "version": "repo-lines-v1:sha256:22063f6b5290ed3bca10412e5723786546c7f571aece8b820b4146f25b53b199:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1NzQ1NzZjOTBiYjQ4YjkxYTRjZDBiNzk0ZGQ5Yzc2YTIzMjA0MTFmN2E0Yzk1NjdhYjA1YTY0YzYwMmY4ZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwZDcxZTdjMjQ5ZmVkMWNkYWRlYTUxNTE0YzZmMjIwMzA1ZDQyODJlMTY1OGJmZTlmNGUxMTA4YjhiYjBkMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRkYTZjZmI5MjFiMTcwM2Y1YWE0NjhmZDcyNzZmNDQzMGUzMmRkODIzOTIxMjlhNTBkYmNmOTIxMzllYTMwOWYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/user_tasks.rs#L325-L345",
+          "version": "repo-lines-v1:sha256:037c5be12e66415cabe2f11fc86333d5bf1310d607d9694c4ac2e4e44062f1a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhNWVjMDQ4Y2UxNmNiYzA5ODE5MDczODA0YzhiZjUxNTVkNDU5NTEyNzVlYjQ0OTYwZTk0NzgyMjEyOTM0NTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmYTE4ODMxYzIzODljZWU1NTMzOThiYmY1N2U4NTg0MDk0YTliMzU4YzVhYjBmMTdiNTYyODU5ZjRkNzlhZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0M2E5ZDFiZWEyNTI0MjQ5MDNhMzE5MDFhZmZmODE4ZDdkZjUyZTRiMTlhMzQ4MDk2MjM2ZTJjNTExZGQ4ZDgifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L143-L157",
+          "version": "repo-lines-v1:sha256:fde4b3feccfc695bd872801767c938f879affcaeb0af3f7b610c2544bc646199:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0YTE2NjU2NzcwOTcxZmNkNTAzY2RkMWRiZmIxMTMyMGY3YzU2ZDM3OGI2Njk3ODZhYjIzYTQ2N2M5N2RkNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVjMzZkYzczYTVjZDM0YjNkZmVkMGJlM2RkZGVjMDY0ZGIwOGZkMjNiZjIwMTY0MDdiNTI1MzAyMTA5OTZlODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4NWJiODMwZTRiZjNhMjA1MWJlYzVmYTlhN2MzMDc2ZWE1MmY3N2FjY2ZkMDI2ZWQ2YWU0NWNhN2UyNzM2MjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4a251a647c644c25acb1459c6599fa56",
+      "statement": "A page read (`brain_read_page`) and a page render (`brain_render`) carry `file`, the page's absolute path, and `brain_stats` carries `vault_root`, the vault's folder; the core resolves both (canonical, else made absolute), so a client never reads `brain_vault_path` and applies the default itself.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L595-L612",
+          "version": "repo-lines-v1:sha256:b9f41cf1fa79ed674cfdd2f6d4a26959d8f9eb2e7895b57a18321e685e62960b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhMzQzMTVmYjY4NWFkMmVjNzc1MzQ2YmE3NmY2NmJhNzJjY2NiYmYzNTZjMTY3NTA5ODU5ZWI4N2QzNmZhYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2MmVlNTdlNDFhOGMyMGFlMDE2NGRmMjYxNDM5ZGNjNDk5ZDM1MjA4MzQxNTE1MTZkMDQ3ZThkZWFlOGE0NjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2ZWMyMjNlOWY5MjAxMjM5Njc5ZDljNjJkNDZjNmJkZTJiNTc0ODNlZGUwY2Y0NjNmZDczOTJiZDA0YzlhZTAifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L30-L55",
+          "version": "repo-lines-v1:sha256:fca1c9590be6976fe1cbe006a960e8bc8a4d41d2f9e60ccd9cd9981d94c04d22:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyY2Y1YWRhMGMxODU4NGFhNWUzZjA2Zjc5YmZkODQyZDY4YTkwZDdjZjc4ZmU0ZTY1YTMyMjQxYzE1NzAzNzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJkZWIxNTgxNWMxZTRhNWNhZWI3NTA0ZGI4NmI5NDAwMjJkMjE0MDRkZjFiNDdlMjQ5NjQ4NzY1MjBlMWU2ODcifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L200-L215",
+          "version": "repo-lines-v1:sha256:3a3c2e14b6430b7562f81cf8e52b51aa7b2b693f3e92f45a538faae7df25b8e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliM2QyZDRkMTI0M2Q4NDJkZDhkZjA3NDZhZmZmMjhiNTkzMTczZjY5MDU5N2Q1NTAyZmIyMDc1NWJmNWQwNWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZTQyMDhjZDZmZmI4YzRhMzU0N2IyZjU0YWRhMTk5NzhjM2YzNjVlNzhmOTUwMmVmNTE0NWNkZDJhYTg1NDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3ODI4MGUzZTVkYWUzMDliMmY4NjQ0ZjBiMmQyMzRjOWVhY2QyYzkyODBmYmUyMzk1Y2NjODNhMWE2NjNjYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzNDZhYTQxYzE5OWJkOWY1ZTQ5ZjdjY2U0OThjNDg1MmE4YmFiNzc2ODJmMjI0ODNiNzJiMmE3MjNjMmY2MWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9bbb058268f0489fb85d3d3cabbed626",
+      "statement": "`brain_list_pages` gives every summary the page's aliases (from `brain_aliases`), and, when `properties` names keys, the values of those keys the page has, read from the index's stored copy of its frontmatter; without `properties` the summaries carry no `properties` field, as before.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L57-L80",
+          "version": "repo-lines-v1:sha256:519cfa64a4167459b3ed8d57d1a16855165c637d5fa555a6a6d4dab434f3dba1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmMDMzZjE4MGQ2OTZlMjJiMzFiOGQ2ZjhmYTk5OGQzNzkyN2MwYTBmNTcwNWYwNmZiMjA0MTI3NWQ2ZTNmYWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwMDdjZTczNjE2MTVhZGEzOGIwNGU5NDg2YjA0ZDBlOTM1YTI5MmQ2NjVjNTM0MTI0ZmYzODRiYTFhNWRlMGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2MDNlMmUxNmEwMTVjYzU0MDNmNTYyNWJhMDQ0NWEzNDIyMDM2ZjU0MjJlM2E0Yzg5NzYwMmRkYTYzNWM2YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0M2RiZDY1OTEwYzI4M2I4YmM2MDRlN2MyMmNkYjZlYTNjOTQ1MjE4YzZkZDJjNzRiMDQzYWM0ODRhYjIyOWIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L614-L690",
+          "version": "repo-lines-v1:sha256:b7654bd3ffb6cdf1c46837127df6b83e522cc6eeca578847982c8b5307c86510:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNGQ0YzRlYmM2ODJmMTNjY2UwNzJjM2I5NWJhZDQ4Nzk3YWZiMWRhNmM4Y2I4MDAxZmJmYTJhYzMzNzhjNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxMTlkNmEzYTdhN2U3MzYzNTViNjI0ZDU3NDU2ODQ4ZTE5YmQ2NTQxNjZlYzgzMjRlOTdiMmZjNDRhMDNhMDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1ZGZlOTBhNTMzYjA5OTA5NTg2YzJkNzE0YWIyOWM3NTdlNWYyNmM4YmUxOTA2Zjg3NTI1ZWMyNWQwOTYyNTgifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L216-L234",
+          "version": "repo-lines-v1:sha256:97ed099b42c93de4171cbe1bd44c5a71ab3f1d6f0b0290ab7db5b32d4fc34b93:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZmNhMGFiODcwMDAxODc0MzhjMzZiZTY1NTA1YTM1NmI4YjhiMTRlNWRkNzUxMmRjZjMzMjAzOGQzYzc4N2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjYmQ2MDY0YjY1YTBkYTdkZDNkZWE0MGQ3YjdlZWE3NTc5MTY4NzRiMzIyOTc5OWE2MTVhNzk1NjZjMTc3MDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0YjVlNDU5NmUyNzY3YWU2ZGFjMGM3ZDRjMDNmYTY5ZGI3MzViOTc4Y2UwNzA4ZDRhNmY0NGYyNjVmZDIwMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwNWQ3NDY5YWEzODdkNDViMGI3ZjA5NjczNGFiNTI3OWI3YzQwODM1ZTYwODQxN2Q0NGRkNTU5NzI3NWRiOTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2ec297d456554f959879fc27116646e1",
+      "statement": "`changes_since` returns what changed in the store after a cursor, from any process: every `rusty-core` writer appends a row (kind, key, operation, detail, time; names, never values or bodies) to the `changes` table, page changes where the shared index is written, so an edit seen by several watchers is recorded once; without a cursor it returns the current one, a cursor older than the 20,000 rows kept gets `reset: true`, and `more: true` asks for another call.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/changes.rs#L1-L166",
+          "version": "repo-lines-v1:sha256:69e032540472d6fcdb3c1a52c1c3c57fccd30e34c1715394902a2e00b6aa56d1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTY2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIwYzgwMjRlNjJiYWU5N2FhMGM2NjFlNDBlMDk4YTQ0NGJkMGY1OWYzY2RmNGVkNTg1NjUxNzZmZjRhYzY0OWQxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3YmM5OGQ2YjBkYzQ5MmM1MDE2ZGYxMDgwNWEzYTU0ZWI5YzE4NGE1YTYxMzdlN2Y0YmVjZmEwYzIyMDU1MGQwIn0"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L271-L281",
+          "version": "repo-lines-v1:sha256:d03a79865c9e099e7a42c7f2cadfca48a96551f3ccc06192f679810fe39e5916:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzNjAxMGViNDU1MGUwMjk1ZjA3OGU1NjEwZTAxYTZmNzJmNWMyMDExYjhkOWFiYmYzMjY3YTQwN2Y3YTNkMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjNTBkMWExMWU0MGMzY2NiMWNjNGNlZTIzMTJkZjBmNmYxYzNlMWRiYjI2Y2VlOTczMDkzNjdlOGZhYmIzYzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0MzZkMjRhNjViMTRlMjVmYTZkM2Q1NWZiZTQ0MWY4NGViZTUwNTU0OWVmZDkxOTkwYzAzZGJhZTk5MDk3MmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4YzY1MWU5YTk1YmYxM2ZlYTg2ODU0YzQ0YmM2OWI0NTEwNWMxMTA1ZjYzNmNlZmMxYWJkMjA3MTM5OTUyNmIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L110-L142",
+          "version": "repo-lines-v1:sha256:ec93a6f880f6c784c5f40f3c09223a8d526903c2133ed60fd9129118f8fc6630:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmNjZiNzM5YzE1ZWQ1ZDhjMTkyOTI4MzE2MWIyYTU4N2Q0YTRmMmUyZjNhYzE1MTI0NjNlOWNiZmMwNDYzMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM3OTQzMzQ0NzhlMmNmY2UwYzU5M2FkYzdlYjJiNWQ1MjExMTAxNjhmNWEwNjk1Mjc0MDVlMTJhNDdhMmI5MDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhYjllNGE5Y2Q5OTRhYTc0MDFmMTEwMjg4MjdlOTQzN2QzNDg2M2VlOWM0ZGI0ZTZiMjJlYWU1NmRjODFhZTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_30941c34b99b47efb53a23fcc9192f66",
+      "statement": "`brain_render` with `blocks: true` also returns the body as typed blocks (heading, paragraph, list with tasks, code, quote, callout with kind, title and fold, table, rule, html, footnote) holding inline runs with wikilinks resolved and page embeds expanded one level, each block with its byte range in the body and `body_start` giving the body's offset in the file; the builder parses a copy of the body masked byte for byte, so ranges are the page's own offsets, and without the flag the answer is unchanged.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/blocks.rs#L1-L240",
+          "version": "repo-lines-v1:sha256:5f3bdf055897520b274f33871217bd441e9d885461db297bc4a7f3b409eeaa5b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIwMWMzMTc1YzdmYmYwMDI0NzQyODc3YWE2MDA0ODY2MGRiNWIwOTgzN2RhMWEzNGZlZTgxMDVmNDdmNDVmMmNkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJhNDJhN2YzNDAxYTc0ODFjOWI3MWFkNjAwN2FmZGE5MDA2MTk2YjNiZmIyN2Y2YzVlZWExMGJhZTNhZTZiZjE5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyNTQ0MGUyOWMxZDk4YWUwZDRkZmQyMjYzNTdlODk0MzdjNWVjMTg2YTU0OTg2Y2UwYThiYWJmZTA3NTEwNzllIn0"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L2505-L2532",
+          "version": "repo-lines-v1:sha256:986c126ea5508941495765125ec5f9442cfd7f863a3cd05d1cbfc96044d8440e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2MjRkZmQ5ZDVlOWViNmFjNmRkM2ZkNzc1YWUxZDIyYmUwZjMxMDdkMTViZmY0YTA0MzJjNDhhNWYwZTRiNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhM2Q1NGViZTZkYjFiNGU5MGRlYTBmZmU0MTIzYzZkOWFmZmUxZTI4NzY1OWFkYWUzMDUzOWZlNmMzNGE1YmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJmNWU5NTZkZDczMjkwNTQ3ZDcxMDM4ZWMyMTEyNzcyYmIwNTk2MTdjMzg0YTg4ODE3OTNmMTVhMDQ2NmYwOWIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L205-L230",
+          "version": "repo-lines-v1:sha256:e75015626959e2aa5fc40e76b3bdb68c90b4d0332f4e4fc384adc2890a3313f6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhZDk5NTg3OTI4MzRhZDU0ODI2ZGEyZTRiODRjNDNkNTU5NjM2MGEzYzBlZTljNzM0ODliYWEyNjBiMWFhNGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3M2JkMTFkMmU3ZGUwY2QzMDA5NTUyNmM0NWE4NWFhMzlmNWFhNzg0YWUyMjAwMTJjMzBmNTZmMTBmMGNlOGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkNGU0YjlmODMyMzc2ODk0MDZmNWE1ZDUzYTMyN2QxMTlmZDE5MDc2NzUxMTIwOGM4MGZmODExMmI0MWJiOGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4NjNjZTQwMDI2YmFhZjA4NWJiYmFiMmE2M2M1MmRjMmU3YzI5MzdlYjJmNzZhYTg0OGMwN2QyNWI5NjdkNGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db4467b1de3741b5a82af882acff3d93",
+      "statement": "Four tools carry bookmarks: `bookmark_list` reads the vault's `.rusty/bookmarks.json`, `bookmark_add` appends one (a repeat is left as it is), `bookmark_remove` removes one by kind and path, query or heading (an error when absent), and `bookmark_set` replaces the list to reorder or retitle; each write goes through `mutate`, so the tool count is 90.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1269-L1309",
+          "version": "repo-lines-v1:sha256:62029ec3ef307fc312877c201e0bae83bef35f40ae8fccf51a1c0fdbcf53e222:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwMDczNDA4ODI3NmE3M2I4YzA2YjljNTYwYWRkMjVhZTI5ZDUxMzJlYTY5NjlmMDFmN2YzYTNjMjY5OGE3MzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiMDNlYjkzMmI1MWJiMGYxMmIwZmUxODAxN2UwY2RlNTAzOGZiNDM3YjkwNTIzYjEzMjYzYmJjOWEzYjRjZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L2279-L2370",
+          "version": "repo-lines-v1:sha256:03f943f75f670d8344dd5881d2f1c724d64f3223f2ea3db8d2445ff4e548c8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NWQ5YTVmYmE1ZDlhYzQ0YWY4M2M3ZjEwMDc3MzA3OTAzNzEzY2VhOGI2MDAwMTc0YzRjNzhlOTZiNGU3YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NTkyODBmNjE1NmMxZjY1MWI1MjJiMWIxODYxNjNiNjZkYjQ1YWRiZmE5YmM2NzFiZWQwNzM1MjllZWMxZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwZjI2NTEzZWYzZjNlMzMxZmM2NTUyM2FlYTM4MjJmYmVmMmY1YTQ4MGYyYzhiNzZmODVjYzcwNjM5YjVlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWZmMGNkZTAyMzdkMTJlNzEwNTcwZmY1MmRiYTM5ZDg0NmZiMGUxMTdmMTQ4NWUxM2VjZjEyZTA4MzNmZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f3347dd5399643dd824c3f82e6b2b9cd",
+      "statement": "Once a PIN is set, `secret_set` and `secret_delete` refuse a call without the live token (`PinLock::check_write`) before the vault file is touched, so a client that can reach the server cannot add, replace or delete a secret while the tab is locked; with no PIN set they need no token, because there is nothing to unlock with.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/pin_lock.rs#L163-L173",
+          "version": "repo-lines-v1:sha256:896167f6760c709988daaa9b6d23e584dccba40baf56ad600c94810a406566e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmOTM1MTAzOTdjYjZlMTY1ZjBiNzQ4YjNlOTkwOTdhNzQ5NGFiNzkzNzgyMjExOWRjZDkzYWMxNDI5NmFlYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyMjA3MDFjMDFjYzA1NzE2NmU2Mjk4Yzc5NWQ4ZDFjYTcxYzgzMjZlOGE1YmFlMjk2MGUxNjQ2NTkyMTg5YTUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1870-L1900",
+          "version": "repo-lines-v1:sha256:9866396da80db96b99c87b12dbb9415f7d5ecc0b039a8e28eb2d67b73c7a062c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMmIwYjA5YTk2MzVkZTNlN2NlZDkyYmYxNzdlNWJlMzM3MzRiMTgyNGZmMDkxN2Y0MTc0YjY4Y2UxYzg1YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0OTFiNzJiMjhkNWQ3NmJiNDQ2YTRiNGNjOWRlOGE0NGJlNGE4ZTlkNWFiMTU5Yzc0MmIzOGIzZWIwMzE1ODEifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L615-L730",
+          "version": "repo-lines-v1:sha256:341be2df10c452b138f12f39a6e2c6e3c29a908c2e51d83ffb45711df903148e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIwYzMzYzQ4YTdlN2Y5ZWMwODBkMjA0ZmE4MWRiZmQ4OTE5NzczYWQ0MjBiMzc3MDM2NWE3MDg5NjllMTJkYjQzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIxZjI4MmFlYzM5ZTcwOThiNWI1YzA4ODRhMzYyZDQ4OWVlYzc3YzdjMzFmMmVjOGI0NzFjNGZkMzc3ODlmYzc4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_5360322d6cb6488fbc870750b334e3d9",
+      "statement": "Every settings read over MCP (`settings_list` and `setting_get`) returns `•••` in place of the value of a key naming a key, token, secret or password, through one rule in `SettingsManager` (`looks_secret`, `get_masked`, `list_masked`); an unset key is null either way, in-process readers still get the value through `get`, and `setting_set` refuses the mask written back to such a key so a read-then-write round trip cannot overwrite a credential.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/settings_manager.rs#L10-L32",
+          "version": "repo-lines-v1:sha256:94458bf466fd326361724cfce363b9e16bea22d0013b2949883d9e6a48af3a8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZjcwNDEyZmEzZmU3Y2YwZmI0YWFiMGJkNjVlOWU0MjJlNjAwNTk2ZDVkZGJhYzMwNjJjYmZjYzM5OGY4ZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3MDg2M2VkODU1ZGNlYzdjNzQ0MmJjNWY5N2YxODU5YWM3YTcyMWVlYzBkZTA0ZmFhZDQ3YTlmNDk4ZTk5MDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1OWFhMjQyYTBmNzJjZTZjMzBiMGM4MzQ3ZGM3ZDU5YzQwYjg2N2Q4Njc5ZTNlM2ZmY2QyMmE2MmI1NmU1YjMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/settings_manager.rs#L64-L124",
+          "version": "repo-lines-v1:sha256:ca4ebd78d06a0106af99c16fb6fd5ea76e82ddb18b73010a7c54e0ecf59ac863:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMwYjM1YzlhMDI5NDYxMzY4OTEzMTI1ZWMwZGVhYTY2YjUwZDQwOTk4YjhhMTNhODgzNjI4NTEzN2ZlOTQ0OGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4ZTViMjkzM2FlZjBkMjUzZmFlMDljMDk2MmM3NTZkMmExNDRjMDQ0MmRiMzY3ZjA5NDU3NmExMTI4MjQ0ZDYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1049-L1058",
+          "version": "repo-lines-v1:sha256:b198d38613daf0958ef23c0c47200a9664f7357d27d6f0e07a4f3d41b6f928c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMmIwYjA5YTk2MzVkZTNlN2NlZDkyYmYxNzdlNWJlMzM3MzRiMTgyNGZmMDkxN2Y0MTc0YjY4Y2UxYzg1YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQxNDBiZDFjODI0ZjllZDM2Nzk1M2I4OWIzNjYzMWU1Yjc1NDAzZTI3YTI4MmUzODg2NGQwMTdkYmRjYWFhMmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1Y2M1ZjBiNGIyMzdmMGQ1MGM5ZWFhOWU5MjdkOTcwNjMwMTdhNzJmYWQ3ZGY5ODBmOGRlYWY0MjU2NDgxZmEifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1968-L1992",
+          "version": "repo-lines-v1:sha256:e7b55eb2944e7d715c9cab058f937ba6e843195a8fa6f1c1de7661a4fd39a1e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMmIwYjA5YTk2MzVkZTNlN2NlZDkyYmYxNzdlNWJlMzM3MzRiMTgyNGZmMDkxN2Y0MTc0YjY4Y2UxYzg1YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5NjY0NTMyN2YxMTIyZDhmOGJjYTc0MGM3ODZkMGRjNjljYzQ0YzQwMjkxOTlkZGY3NzRkNTMxOGQ2MWYzOGQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L733-L789",
+          "version": "repo-lines-v1:sha256:8c8fdc79d1edc458d19f0c2b7f02b9e768021519f9e31bade82f3e9b6bf33fdc:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1Njg0OTBjODM4Y2YxM2JlNmJhOTA0ZDU0MmNhZGEyZWMwNjFmMTAzODFlMDIzMThiODRkMjdlM2VjYjI3NWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzMjY0Y2Q3NDRiNmUyY2FjN2E0ZDhlNmVjMzEwMzY4OGE1ZmRlMGIwZTdmMGY1ZWYyNGM0YTgyODhkMjY5NDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_eb0c96bebf55426fa8e4bb9c8b2c25c5",
+      "statement": "Every skill and script write over MCP (`skill_create`, `skill_update`, `skill_delete`, `skill_approve`, `skill_reject`, `script_update`) commits the skills store through `commit_skills` before the call returns, with a subject naming the change as the CLI does; the commit is synchronous because a stdio server can exit right after the call, and git's output is ignored so a failed commit never fails the write.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L790-L800",
+          "version": "repo-lines-v1:sha256:4f4ed281945351be742276cddf00a9c02b10c3bb3c929c68b45ada56243a142e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1YjliNTNkZDYxN2Q0MDhkZWQ2MTU3NTQ3MzdmMTg2NTY1OTc0ZmMwODNkYjYxMjkwNzkyZTBjYWFiNDZmZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhhNjllMDYxMGMyMWVkZWU5MDRmYTExYTc4YmZlYTQ4MGIwNTg2NWQzZjc4MDc3MjZkOThlODI3YWZiYTAxYmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwYzU3OTA0ZTJhM2E1YzdiYjZkNmQ5Y2U3NGZmNjMzNmFjMzZjYTBmNzQ5OTJiMWFjZmRjODljMjk2NmM4NWMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1795-L1860",
+          "version": "repo-lines-v1:sha256:86369003980770bb880345224b8dd41da2472141acbd3f1163f34dd083a3205a:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlYjVhODhjMWQ0MTYxNTRjMzkwOTY4NWFkYjVkMjUxMmM5MTI0MGUxZmE5MTgzZDU3OTc3ODg0YTgzNjFkMjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3YzJhMDkxOWQ3ODc4YzRkOWNiM2RjZWFkNDMyMTNkNzNmODk4ZjYzNjA3M2NhNThmNjM5MjNhNmQ5OTc1NzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwNjg4OGFlMGNmNjZlNGU0OTBmNWU4MDkyODkyYmVlNDc2NmVlNmM2YWJhOGJjZGQxY2U5NTQwODA2YjY1NmEifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/mod.rs#L743-L750",
+          "version": "repo-lines-v1:sha256:c5c162ae91b1cc12442f0cb01cbbe4225ec1759413fbb0173482cc304d902760:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2NjZjEzZTliYzViNTk0NTZkOTI5ZTlkNTZkZjlkN2U0NGRmNDU1M2FhYWYwYTEzZWYxZjNmNzQ0ZjMzNDc1NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmQxZWY3MDJlNDRjMjIzZjk2NTc3NjUwZDY0NmJiMGFjZWZmMDUyZTMzNDE0ODM5ZGQwNmFhNTk3MmRiYTc4YiJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/mod.rs#L930-L956",
+          "version": "repo-lines-v1:sha256:d3659e11e7f019cbb34cc1b11c8b70d122b70a9645e48420dcd809e5c2146ed1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5OTVjNzZhZjVhNDg1NjJlNDhhZTEyNzgxMjY2Mjc4ZWYyMDk2Y2QwZDNkMWRjNDlmMWU1MmI0ZDkyYjUyMTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYWMxOGI1MDAwMzEzYmExNTg1MmY5NGMwNjliMDJmMTAyYWVlM2FhNWJhYTI3NDc0MTI0ODhiMjJlNTUyMDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NDAwZjUwMmM2ODRjMWEwMDFmM2Q5YTQ0YTgxNDJiNmM3MDM3MDIyNjZhMTFkZWU4ODI2MTZlMmY5MmJkYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1MzlhMzZlZWQ5OTg4N2QyNmRjZWNiODhjZmU1NzZkMWNkODE3Yjg1YmVlYzZhYWNkNWEwMDk4ZjE5ZGViZmQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L805-L895",
+          "version": "repo-lines-v1:sha256:37f61b45ab567b73245585d8769586f89b5d07e0dfd07817e46e82fbfe65f7d6:eyJzZWxlY3RlZExpbmVDb3VudCI6OTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxMGU2NDgwYmQ2OWZhZDNkMTdlNzBkNTJhN2M1MjAzNThjODZjZjkwYjliNzI2M2M1ZWVkNWFlYmU1ODdlODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3NGFjZGVmNzc3Mzk3MDRmZWE2ZmM2YjFjNzgyMWMyZTI0YjY1MGE2ODZkMWI0MjRjYWIyYzc3NTc4OTI5ZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZTJlMGQzMGZmMmNmNWQwMDhjN2E0MDdjNDc4ODk0MmIxNTg0ZGY0MWQ5ZjI1ODg5MDZhZTkwMWZkMTQ3MjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_83af8d1e2313403eba7637a793780cdc",
+      "statement": "Memory importance is one of `low`, `normal` or `high` (`importance_word`, case ignored, `medium` taken as `normal`): `store` and `update` refuse any other word before writing, an inline `<memory>` tag with an unknown word is stored as `normal`, `list` orders by level (high, normal, low, an unexpected stored word with normal) and then newest first, and every open rewrites stored `medium` and mixed-case words to the canonical one.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/memory_manager.rs#L13-L35",
+          "version": "repo-lines-v1:sha256:b3dd062fec2b170f2ca6e117d86b19931591cba4a004548bac155961cebcefb3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyNmNiNDhiYTliNzc1OTdiODkyNGQ4MjA0YTY4ZWEzNjM1YWI0N2E5OTAxNTk0YjkxYjI1MzYxZGYwOGZiYWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzNzgxMTVjMmRiZDMwMzU5MzkyMDQ2MDFlMzE3MDVlOTc0ZjA4MGU1ZTMxMmFkYTc5YTMyYWM5MzJmOTU4OWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1ZjhlYzc4YWVhNjM2YTY1OTk0OTNhMjU4NWExMzBiNTFlODYwZDExZGE3MTVhNjk4MDY3N2E5ZWI4NGQyMGQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/memory_manager.rs#L120-L150",
+          "version": "repo-lines-v1:sha256:e943340a9f7901bf35ccaee6a34bf9ed5c463bec5e7d3f2d7b5e71b36ac496a2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmZmM0MjRkNmFiNTNjMTVlYzI4Njg1M2QxZGMzODVhZTMyYTgxZTZlMGU3NjMyYWYyYmQxMGUwZmE0ODI4MjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5MjU0YmY0MWFjNDA1ODk0OGUwZWMyMTg0NWVhOTAwZWYxOGU1YWQ5MDQzZGI2NzFiNGRkOGQwMWQ5NDMyZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlMTNkZjYwMjc2MTRmYTllNThjYTMyMzg1YjhmOGRiZDA4MzM1ZWQzN2UwMWMzOWVjN2M0Y2Q3YTk4NzRlMGMifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L320-L330",
+          "version": "repo-lines-v1:sha256:64e8d4824c2d47e102cf18d8800526025a885f7886c41da07f1656044559f674:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MTRmZjhkOWI2ZGE4YzQ5ZTJmZDVhYjlmMTdiMjNiZDZiY2IxYmM2NGQ2MzAyMWFhN2VmY2RkZDRkNThlN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMyZWVkNTY3OWNjYTc3MjQ4YTA0NDZhODQ2ODM1MDZkZDgwY2I2ODZiNjQ0Y2FiODBlOTkzNjU0Y2I0Zjc5NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2MmVlNTdlNDFhOGMyMGFlMDE2NGRmMjYxNDM5ZGNjNDk5ZDM1MjA4MzQxNTE1MTZkMDQ3ZThkZWFlOGE0NjYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/src/main.rs#L1569-L1595",
+          "version": "repo-lines-v1:sha256:08277208c33ef90c753aae70a94ad23ac72b28d3f85dd39ae3a231f9708570f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMmIwYjA5YTk2MzVkZTNlN2NlZDkyYmYxNzdlNWJlMzM3MzRiMTgyNGZmMDkxN2Y0MTc0YjY4Y2UxYzg1YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDAzNDg5M2U4MGFkZWQxZGM1OGQ0ZTZkMDNjNjhhNjA0OTk3YTg3ZGUyN2NlMDVjMzg1MzZlODE4M2U1MmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkYWE0OGRkMjM1YTQ1ZmI5ZjUzMjVjNjZmNjYyYjc3ZWI0MjMwMjhkM2FlNGNlMDRjNTdmMDU2YjJlNjExMDQifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L898-L954",
+          "version": "repo-lines-v1:sha256:96e21703e9c5fb260f7dab7c6803bfdd104765cea0eb922a9f19e9b67f15926e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0OTIzMmRmNDhmMmFiZDI3OTU1NGFhZGQ1ZDEyZWEwNWFmMmI1ZTI3MmQ5MjYxYTBmOTZkMzM1Nzc2N2MxNjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0ZDk3ZGRhYTJlZjRkM2M3ODQ1YWJmNmY3NzRkMTRmMjhjZDVhMDUzY2E5OWQzOWQ2MWE5ZjRlZjQ3NjdlNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.3.3",
+    "at": "2026-10-09T17:18:26.892Z"
+  }
+}

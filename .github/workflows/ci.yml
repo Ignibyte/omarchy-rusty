@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    name: fmt, clippy, tests, docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      # The brain vault commits to git as pages change; a runner has no identity.
+      - run: |
+          git config --global user.name "Rusty CI"
+          git config --global user.email "ci@rusty.invalid"
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      # Includes crates/rusty-mcp/tests/smoke.rs, which spawns the built server over
+      # stdio in a scratch HOME and drives it with the rmcp client.
+      - run: cargo test --workspace
+      - run: cargo doc --workspace --no-deps --document-private-items
