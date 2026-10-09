@@ -26,7 +26,7 @@ done
 # only what Claude Code alone does.
 head -1 CLAUDE.md | grep -qx '@AGENTS.md' || fail "CLAUDE.md must start with the line @AGENTS.md; AGENTS.md is the one guide"
 
-if [[ ! -d docs/planning/pipeline ]]; then
+if [[ ! -d docs/planning/pipeline || ! -e docs/planning/.git ]]; then
   echo "Tools check passed; no work record at docs/planning (a contributor's clone), so the pipeline steps aside"
   exit 0
 fi

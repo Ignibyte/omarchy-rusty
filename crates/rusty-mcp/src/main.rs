@@ -77,7 +77,8 @@ pub struct GroupNameParams {
 /// Parameters for `brain_search`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct BrainSearchParams {
-    /// Full-text query. All terms must match; plain words work best.
+    /// The query. In the full-text half every term must match; with an embedding provider,
+    /// pages close in meaning join the results too. Plain words work best.
     pub query: String,
     /// Maximum results (default 10).
     pub limit: Option<usize>,
@@ -346,9 +347,9 @@ pub struct ApproveSkillParams {
 /// Parameters for `secret_set`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct SecretSetParams {
-    /// The vault key.
+    /// The secret's name, such as `OPENAI_API_KEY`.
     pub key: String,
-    /// The value; it is written to the vault and never echoed back.
+    /// The value; it is written to the secrets file and never echoed back. One line.
     pub value: String,
     /// The live unlock token from `secret_unlock`; needed once a PIN is set.
     #[serde(default)]
@@ -358,7 +359,7 @@ pub struct SecretSetParams {
 /// Parameters for `secret_delete`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct SecretDeleteParams {
-    /// The vault key, such as `OPENAI_API_KEY`.
+    /// The secret's name, such as `OPENAI_API_KEY`.
     pub key: String,
     /// The live unlock token from `secret_unlock`; needed once a PIN is set.
     #[serde(default)]
@@ -485,7 +486,7 @@ pub struct PinParams {
 /// Parameters for `secret_reveal`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct SecretRevealParams {
-    /// The vault key.
+    /// The secret's name.
     pub key: String,
     /// The live unlock token from `secret_unlock`.
     pub token: String,
@@ -494,9 +495,9 @@ pub struct SecretRevealParams {
 /// Parameters for `secret_update`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct SecretUpdateParams {
-    /// The vault key.
+    /// The secret's name.
     pub key: String,
-    /// The new value; it is written to the vault and never echoed back.
+    /// The new value; it is written to the secrets file and never echoed back. One line.
     pub value: String,
     /// The live unlock token from `secret_unlock`.
     pub token: String,
@@ -831,7 +832,11 @@ impl Rusty {
             ResourceUri::Note(path) => self.core.notes_manager.read_note(path),
             ResourceUri::Brain => pretty(self.core.brain_manager.list_pages(None, None)?),
             ResourceUri::BrainPage(slug) => match self.core.brain_manager.read_page(slug)? {
-                Some(page) => pretty(page),
+                Some(page) => {
+                    let mut value = serde_json::to_value(page).map_err(|e| e.to_string())?;
+                    rusty_core::brain::sources::mark(&mut value);
+                    pretty(value)
+                }
                 None => Err(format!("no page {slug}")),
             },
         }
@@ -962,7 +967,7 @@ impl Rusty {
         let core = Arc::clone(&self.core);
         let report = tokio::task::spawn_blocking(move || {
             let embedder = core.embedder().ok_or_else(|| {
-                "no embedding provider: set embedding_provider to ollama, or to openai with openai_api_key in the vault".to_string()
+                "no embedding provider: set embedding_provider to ollama, or to openai with openai_api_key in the secrets file".to_string()
             })?;
             core.brain_manager.index_stale(embedder.as_ref(), p.force)
         })
@@ -1190,7 +1195,12 @@ impl Rusty {
         })
         .await
         .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        json_result(result)
+        // The consulted pages are search hits: a source among them is marked like any.
+        json_result(result.and_then(|consultation| {
+            let mut value = serde_json::to_value(consultation).map_err(|e| e.to_string())?;
+            rusty_core::brain::sources::mark_hits(&mut value["pages"]);
+            Ok(value)
+        }))
     }
 
     #[tool(
@@ -1426,7 +1436,11 @@ impl Rusty {
 
     #[tool(description = "Every wikilink in the vault whose target is no page, with its line")]
     fn brain_unresolved(&self) -> Result<CallToolResult, McpError> {
-        json_result(self.core.brain_manager.unresolved())
+        json_result(self.core.brain_manager.unresolved().and_then(|rows| {
+            let mut value = serde_json::to_value(rows).map_err(|e| e.to_string())?;
+            rusty_core::brain::sources::mark_link_rows(&mut value);
+            Ok(value)
+        }))
     }
 
     #[tool(
@@ -1743,7 +1757,16 @@ impl Rusty {
         &self,
         Parameters(p): Parameters<SlugParams>,
     ) -> Result<CallToolResult, McpError> {
-        json_result(self.core.brain_manager.get_links(&p.slug))
+        json_result(
+            self.core
+                .brain_manager
+                .get_links(&p.slug)
+                .and_then(|links| {
+                    let mut value = serde_json::to_value(links).map_err(|e| e.to_string())?;
+                    rusty_core::brain::sources::mark_link_rows(&mut value);
+                    Ok(value)
+                }),
+        )
     }
 
     #[tool(description = "Replace a brain page's body; frontmatter and timeline are kept")]
@@ -1923,11 +1946,14 @@ impl Rusty {
         &self,
         Parameters(p): Parameters<PinSetParams>,
     ) -> Result<CallToolResult, McpError> {
-        json_result(
+        self.mutate(
             self.core
                 .pin_lock
                 .set(&p.pin, p.token.as_deref())
-                .map(|_| "set"),
+                .map(|()| {
+                    self.core.db.record_change("secret", ".pin", "updated", "");
+                    "set"
+                }),
         )
     }
 
@@ -2001,16 +2027,18 @@ impl Rusty {
     }
 
     #[tool(
-        description = "Write one setting. Writing the mask \"•••\" back to a credential-looking key is refused"
+        description = "Write one setting. Writing the mask \"•••\" back to a credential-looking key is refused. The path settings (brain_vault_path, notes_path, skills_path) take an absolute path or one starting with ~/, never the store's home or a folder that contains it, and apply when a server starts"
     )]
     fn setting_set(
         &self,
         Parameters(p): Parameters<SettingSetParams>,
     ) -> Result<CallToolResult, McpError> {
         use rusty_core::engine::settings_manager::refuse_the_mask;
+        use rusty_core::transfer::{check_path_setting, StoreLocation};
         self.mutate(
             refuse_the_mask(&p.key, &p.value)
-                .and_then(|_| self.core.settings_manager.set(&p.key, &p.value))
+                .and_then(|()| check_path_setting(&p.key, &p.value, &StoreLocation::user_home()))
+                .and_then(|value| self.core.settings_manager.set(&p.key, &value))
                 .map(|_| "set"),
         )
     }
@@ -2059,7 +2087,7 @@ impl ServerHandler for Rusty {
             "Rusty is the user's local memory and knowledge store: to-do lists, notes, \
                  long-term memories, the brain vault (a markdown wiki with a full-text index) \
                  and skills, exposed as {tool_count} tools. Slugs include their folder \
-                 (projects/name). Search is all-terms; use plain words. Resources under \
+                 (projects/name). Full-text search matches every term; use plain words. Resources under \
                  rusty:// mirror the same data and a list_changed notification follows every \
                  change this server makes; changes_since returns every change after a cursor, \
                  whichever process made it."
@@ -2215,7 +2243,7 @@ const RESOURCES: [(&str, &str, &str); 5] = [
     (
         "rusty://tasks",
         "tasks",
-        "Every to-do list with its open tasks (JSON)",
+        "Every to-do list with its tasks that are not archived (JSON)",
     ),
     ("rusty://memories", "memories", "Long-term memories (JSON)"),
     (
@@ -2236,7 +2264,7 @@ const RESOURCE_TEMPLATES: [(&str, &str, &str); 3] = [
     (
         "rusty://tasks/{group_id}",
         "tasks-in-list",
-        "Open tasks in one list (JSON)",
+        "The tasks in one list that are not archived (JSON)",
     ),
     (
         "rusty://brain/{slug}",
@@ -2261,8 +2289,11 @@ async fn main() -> anyhow::Result<()> {
     let mut args = std::env::args().skip(1);
     match args.next().as_deref() {
         None => {
-            let service = Rusty::new(core, peers).serve(stdio()).await?;
+            let service = Rusty::new(Arc::clone(&core), peers).serve(stdio()).await?;
             service.waiting().await?;
+            // An agent closes the server as soon as it is done; the last write's commit
+            // runs on a thread of its own and must finish before the process ends.
+            core.brain_manager.flush_commits();
         }
         Some("--http") => {
             let addr = args.next().unwrap_or_else(|| DEFAULT_HTTP_ADDR.to_string());
@@ -2593,6 +2624,10 @@ mod tests {
                     Some(props) if !props.is_empty() => {
                         out.push_str("| Parameter | Type | Required | Description |\n");
                         out.push_str("|---|---|---|---|\n");
+                        // Sorted here, so the page does not depend on whether this build
+                        // keeps JSON maps in insertion order (a feature another crate turns on).
+                        let mut props: Vec<_> = props.iter().collect();
+                        props.sort_by(|a, b| a.0.cmp(b.0));
                         for (name, prop) in props {
                             let what = prop
                                 .get("description")

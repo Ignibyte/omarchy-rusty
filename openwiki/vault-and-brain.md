@@ -25,10 +25,14 @@ sources:
     resource: repo://crates/rusty-core/src/engine/changes.rs
   - id: openwiki-source-8f342262c76136dc27154aaf
     resource: repo://crates/rusty-core/src/engine/db.rs
-generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
+  - id: openwiki-source-2bac0135ef08343388f2c7a1
+    resource: repo://crates/rusty-core/src/notes/mod.rs
+  - id: openwiki-source-087a3c8d2ec2da0b0f978302
+    resource: repo://crates/rusty-mcp/src/main.rs
+generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T18:25:07.825Z
+    at: 2026-10-09T19:17:18.990Z
 ---
 
 # Vault and brain: files as the truth, SQLite as the index
@@ -68,8 +72,10 @@ the change log have no file at all ([architecture](../docs/architecture.md#the-t
   imply `note`.
 - Frontmatter carries `title`, `type`, `aliases`, `tags`, `created`, `updated` and any
   extra keys. A file without frontmatter is still a page: the title is the file name and
-  the type comes from the top folder (`BrainFrontmatter::fill_defaults`). Unreadable YAML
-  degrades the same way (`parse_lenient`); only strict callers see the error.
+  the type comes from the top folder (`BrainFrontmatter::fill_defaults`). `tags` and
+  `aliases` take a list or, as Obsidian also writes them, a single value. YAML that does
+  not fit degrades the same way (`parse_lenient`) with the body still taken from after the
+  closing fence; only strict callers see the error.
 - Dates are the machine's local calendar day. `created`, `updated`, a decision's
   `decided`, follow-up headings, timeline entries and the default daily note all come
   from `frontmatter::today_iso`, which reads chrono's `Local` zone (`TZ`, else
@@ -81,7 +87,8 @@ the change log have no file at all ([architecture](../docs/architecture.md#the-t
   never written; `rusty-cli brain migrate` rewrites it.
 - Wikilinks are vault paths: `[[projects/orbit]]`, `[[projects/orbit|alias]]`,
   `[[projects/orbit#Heading]]`, `![[embed]]`. The scanner skips fenced and inline code.
-- Deletes are soft: a page or folder moves to `archive/<name>_<timestamp>`. The root's
+- Deletes are soft: a page or folder moves to `archive/<name>_<timestamp>`, with `_2`,
+  `_3`, … added when that name is taken, so two deletes never overwrite each other. The root's
   `archive/` holds no pages: the page walk, the attachment search and the
   tree skip it as they skip dot-folders (a folder named `archive` deeper down is
   ordinary), and `write_page`, `create_folder` and a move into it are refused with a
@@ -129,10 +136,11 @@ A source is a page of type `source` under `sources/`: `url`, `site`, `captured` 
 every page, and the embedding loop covers it when a provider is set.
 
 - `capture_url` fetches the URL: http or https only, twenty seconds, five redirects,
-  eight megabytes, a `rusty` user agent, nothing else sent.
+  eight megabytes counted after decompression, a `rusty` user agent, nothing else sent.
 - `capture_fetched` reads what came back. HTML goes through a small state machine in
   `brain/sources.rs`: the `<title>` or the first `<h1>`; the text of `<main>` or
-  `<article>` when the page has one, else the body; scripts, styles and the like dropped;
+  `<article>` when the page has one, else the body; script and style bodies skipped to
+  their closing tag (a `<` inside a script is not a tag), the rest of the chrome dropped;
   headings and list items kept as markdown; entities decoded. A PDF goes through
   `pdftotext` when the machine has it; markdown and text are kept as they are. A megabyte
   of text is kept.
@@ -157,8 +165,10 @@ every page, and the embedding loop covers it when a provider is set.
   failure. An edit made outside the tools (Obsidian, an editor, an agent's file write,
   the notes folder inside the vault) is committed on its own by
   `commit_outside_edits`, which the server's indexer runs after each sync; it leaves
-  paths a write in flight has claimed, and a second process finds the tree clean. A
-  failed commit leaves its files changed, and the next sweep commits them.
+  paths a write in flight in the same process has claimed, and a second process finds the
+  tree clean. A commit that meets another process's git index lock waits and tries again;
+  one that still fails leaves its files changed, and the next sweep commits them. A stdio
+  server finishes its pending commits before it exits.
 - Bookmarks live at `.rusty/bookmarks.json` in the vault: a JSON array of
   `{kind, title, path?, query?, heading?}` that git tracks and the page walk skips (a
   dot-folder). The core lists, adds, removes and replaces them; a rename carries the
@@ -183,12 +193,15 @@ every page, and the embedding loop covers it when a provider is set.
   which keeps key order but re-serialises the mapping.
 - Rename or move (`rename`): the file or folder moves; `links::rewrite_targets` rewrites
   every spelling of the old target in every page (exact slug, `.md`, leading `/`, and the
-  bare file name when it was unique; markdown links too; fenced code untouched); the
+  bare file name when it was unique; markdown links too; fenced code untouched; each line's
+  own ending kept; a file that is not text left alone); the
   index rows follow by slug or by folder prefix (`move_index_rows`); one commit records
   it. A title that was the old file name follows the new one.
 - Index: `sync_page` re-indexes when the content hash changed and refreshes the link
-  rows either way; `sync_all` walks every folder, removes orphans, then resolves link
-  rows whose targets arrived later. The back end runs `sync_all` after every burst of
+  rows either way, and writes one full-text row per page however many processes index it
+  at once; `sync_all` walks every folder (a file it cannot read is reported and skipped),
+  removes orphans after looking for each one's file again, then resolves link rows whose
+  targets arrived later. The back end runs `sync_all` after every burst of
   file changes, so edits made by Obsidian or an editor are indexed within seconds.
 - Links: each row in `brain_links` holds the resolved slug (exact, case-insensitive;
   else a unique file name anywhere; else a unique title or alias) or the raw target, plus
@@ -202,7 +215,7 @@ every page, and the embedding loop covers it when a provider is set.
   snippet around the first match); operator terms alone list the admitted pages newest
   first. `search_hybrid_with` fuses FTS5 with vector hits through reciprocal rank
   fusion, applies the same operators to both halves, and hands the two text modes to
-  `search_with`. `search` and `search_hybrid` are the same with the default options.
+  `search_with`; when the provider fails the query it answers from the text half alone. `search` and `search_hybrid` are the same with the default options.
 - Tags: `tags()` groups the index by tag with a page count, parents counting their
   nested tags too, for a client's tag pane and for agents.
 

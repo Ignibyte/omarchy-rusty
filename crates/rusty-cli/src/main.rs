@@ -82,6 +82,9 @@ Conversations
 
 The store
   rusty-cli changes [--since <cursor>] [--limit N]   (what changed, from any process)
+  rusty-cli settings list                      (every setting; credential-looking values masked)
+  rusty-cli settings get <key>
+  rusty-cli settings set <key> <value>         (path settings take an absolute path and apply when a server starts)
   rusty-cli refresh                            (tell running clients the data changed, after a raw write)
   rusty-cli export <file.zip> [--include-secrets]   (the whole store in one zip; secrets only when asked)
   rusty-cli import <file.zip> [--replace] [--dry-run]   (unpack an export into ~/.rusty; --replace moves an existing store aside)"#;
@@ -95,7 +98,15 @@ fn main() {
         (Some("brain"), Some(sub)) => run_brain(sub, &args[3..]),
         (Some("notes"), Some(sub)) => run_notes(sub, &args[3..]),
         (Some("source"), Some(sub)) => run_source(sub, &args[3..]),
-        (Some("hooks"), sub) => run_hooks(sub),
+        (Some("hooks"), sub) => {
+            if let Some(extra) = args.get(3) {
+                usage_error(&format!(
+                    "hooks {}: unexpected {extra:?}",
+                    sub.unwrap_or("")
+                ));
+            }
+            run_hooks(sub)
+        }
         (Some("skills"), _) => {
             let sub = args.get(2).map(String::as_str).unwrap_or("list");
             run_skills(sub, args.get(3..).unwrap_or_default());
@@ -116,6 +127,7 @@ fn main() {
         (Some("import"), _) => run_import(args.get(2..).unwrap_or_default()),
         (Some("changes"), _) => run_changes(args.get(2..).unwrap_or_default()),
         (Some("bookmarks"), sub) => run_bookmarks(sub, args.get(3..).unwrap_or_default()),
+        (Some("settings"), sub) => run_settings(sub, args.get(3..).unwrap_or_default()),
         (Some("--help") | Some("-h"), _) | (None, _) => {
             println!("{USAGE}");
         }
@@ -393,6 +405,9 @@ fn run_ingest_conversation(args: &[String]) {
             }
         }
         println!("ingested {ok}/{seen} transcripts from {}", dir.display());
+        if ok == 0 {
+            exit(1);
+        }
         return;
     }
 
@@ -812,7 +827,7 @@ fn run_brain(sub: &str, rest: &[String]) {
         "embed" => {
             let (_, flags) = parse_with_bools(rest, &["all"]);
             let Some(embedder) = configured_embedder() else {
-                fail("no embedding provider: set embedding_provider to ollama, or to openai with openai_api_key in the vault")
+                fail("no embedding provider: set embedding_provider to ollama, or to openai with openai_api_key in the secrets file")
             };
             match brain().index_stale(embedder.as_ref(), flags.contains_key("all")) {
                 Ok(r) => {
@@ -1021,10 +1036,7 @@ fn parse(args: &[String]) -> (Vec<String>, HashMap<String, String>) {
     parse_with_bools(args, &[])
 }
 
-/// Split raw args into positionals and `--flag value` pairs. Flags named in
-/// `bool_flags` are valueless switches (recorded with an empty value) and do NOT
-/// consume the following token — so `--force <name>` keeps `<name>` as a positional.
-/// `rusty-cli export <file.zip> [--include-secrets]` (TICKET-057): the whole store in one
+/// `rusty-cli export <file.zip> [--include-secrets]`: the whole store in one
 /// zip, the database as a consistent snapshot, the secrets only when asked.
 fn run_export(rest: &[String]) {
     let (words, flags) = parse_with_bools(rest, &["include-secrets"]);
@@ -1186,6 +1198,11 @@ fn servers_holding(db: &std::path::Path) -> Vec<String> {
     pids.into_iter().map(|p| p.to_string()).collect()
 }
 
+/// Split raw args into positionals and flags, `--flag value` or `--flag=value`. Flags
+/// named in `bool_flags` are switches (recorded with an empty value) and do not take the
+/// next word, so `--force <name>` keeps `<name>` as a positional. A flag the usage text
+/// does not name, a value flag without its value, or a count that is not a number ends
+/// the command with exit 2, so a mistyped flag never runs as if it were absent.
 fn parse_with_bools(
     args: &[String],
     bool_flags: &[&str],
@@ -1194,21 +1211,86 @@ fn parse_with_bools(
     let mut flags = HashMap::new();
     let mut i = 0;
     while i < args.len() {
-        if let Some(name) = args[i].strip_prefix("--") {
-            if bool_flags.contains(&name) {
-                flags.insert(name.to_string(), String::new());
-                i += 1;
-            } else {
-                let val = args.get(i + 1).cloned().unwrap_or_default();
-                flags.insert(name.to_string(), val);
-                i += 2;
-            }
-        } else {
+        let Some(raw) = args[i].strip_prefix("--") else {
             pos.push(args[i].clone());
             i += 1;
+            continue;
+        };
+        let (name, inline) = match raw.split_once('=') {
+            Some((name, value)) => (name, Some(value.to_string())),
+            None => (raw, None),
+        };
+        if !known_flag(name) {
+            usage_error(&format!("unknown flag --{name}"));
         }
+        let value = if bool_flags.contains(&name) {
+            if inline.is_some() {
+                usage_error(&format!("--{name} takes no value"));
+            }
+            i += 1;
+            String::new()
+        } else if let Some(value) = inline {
+            i += 1;
+            value
+        } else {
+            let Some(value) = args.get(i + 1) else {
+                usage_error(&format!("--{name} needs a value"));
+            };
+            i += 2;
+            value.clone()
+        };
+        if NUMERIC_FLAGS.contains(&name) && value.parse::<i64>().is_err() {
+            usage_error(&format!("--{name} takes a number, not {value:?}"));
+        }
+        flags.insert(name.to_string(), value);
     }
     (pos, flags)
+}
+
+/// The flags whose value is a count or a cursor.
+const NUMERIC_FLAGS: [&str; 3] = ["limit", "days", "since"];
+
+/// Whether the usage text names `--<name>`; the text is the list of every flag there is.
+fn known_flag(name: &str) -> bool {
+    let flag = format!("--{name}");
+    USAGE.match_indices(&flag).any(|(at, _)| {
+        !USAGE[at + flag.len()..].starts_with(|c: char| c.is_ascii_alphanumeric() || c == '-')
+    })
+}
+
+/// A mistake in how the command was called: the reason on stderr, exit 2.
+fn usage_error(msg: &str) -> ! {
+    eprintln!("error: {msg} (see rusty-cli --help)");
+    exit(2);
+}
+
+/// `rusty-cli settings list|get <key>|set <key> <value>`: the settings, through the same
+/// manager and rules as the `settings_list`, `setting_get` and `setting_set` tools, so a
+/// change is recorded in the change log like any other.
+fn run_settings(sub: Option<&str>, rest: &[String]) {
+    use rusty_core::engine::settings_manager::refuse_the_mask;
+    use rusty_core::transfer::{check_path_setting, StoreLocation};
+    let db = Arc::new(Database::open().unwrap_or_else(|e| fail(&format!("open database: {e}"))));
+    let settings = SettingsManager::new(db);
+    match (sub, rest) {
+        (Some("list") | None, []) => {
+            for (key, value) in settings.list_masked().unwrap_or_else(|e| fail(&e)) {
+                println!("{key} = {value}");
+            }
+        }
+        (Some("get"), [key]) => match settings.get_masked(key).unwrap_or_else(|e| fail(&e)) {
+            Some(value) => println!("{value}"),
+            None => fail(&format!("{key} is not set")),
+        },
+        (Some("set"), [key, value]) => {
+            let value = refuse_the_mask(key, value)
+                .and_then(|()| check_path_setting(key, value, &StoreLocation::user_home()))
+                .unwrap_or_else(|e| fail(&e));
+            settings.set(key, &value).unwrap_or_else(|e| fail(&e));
+            println!("{key} set");
+        }
+        _ => usage_error("usage: rusty-cli settings list | get <key> | set <key> <value>"),
+    }
 }
 
 /// Today's date as `YYYY-MM-DD` in local time.
@@ -1278,7 +1360,7 @@ fn run_changes(rest: &[String]) {
     let db = Database::open().unwrap_or_else(|e| fail(&format!("open database: {e}")));
     match rusty_core::engine::changes::since(
         &db,
-        number("since").or(Some(0)),
+        number("since"),
         number("limit").map(|n| n.max(1) as usize),
     ) {
         Ok(batch) => {
@@ -1476,7 +1558,7 @@ fn run_hooks(sub: Option<&str>) {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse, parse_with_bools, USAGE};
+    use super::{known_flag, parse, parse_with_bools, USAGE};
 
     /// `docs/cli.md` shows every command line of the usage text exactly as `--help` prints
     /// it, so the reference cannot fall behind the CLI.
@@ -1503,9 +1585,31 @@ mod tests {
 
     #[test]
     fn parse_pairs_value_flags() {
-        let (pos, flags) = parse(&argv(&["a", "--k", "v", "b"]));
+        let (pos, flags) = parse(&argv(&["a", "--type", "v", "b"]));
         assert_eq!(pos, vec!["a", "b"]);
-        assert_eq!(flags.get("k").map(String::as_str), Some("v"));
+        assert_eq!(flags.get("type").map(String::as_str), Some("v"));
+        let (pos, flags) = parse(&argv(&["alpha", "--limit=1", "beta"]));
+        assert_eq!(pos, vec!["alpha", "beta"]);
+        assert_eq!(flags.get("limit").map(String::as_str), Some("1"));
+    }
+
+    /// The flags a command accepts are the ones the usage text names: a mistyped one is
+    /// unknown (the parser then exits 2), a prefix of a real one is not a match.
+    #[test]
+    fn only_the_flags_the_usage_names_are_known() {
+        for flag in [
+            "limit",
+            "content",
+            "dry-run",
+            "include-secrets",
+            "follow-up-by",
+            "since",
+        ] {
+            assert!(known_flag(flag), "{flag}");
+        }
+        for flag in ["contents", "lim", "dry", "include", "k"] {
+            assert!(!known_flag(flag), "{flag}");
+        }
     }
 
     #[test]

@@ -2,14 +2,16 @@
 # Shared pieces of the gate: which paths are gated, the worktree fingerprint, the receipt.
 # Sourced by bin/gate.sh and the hooks; safe to source more than once.
 
-# Paths whose content the receipt binds. docs/ and the roadmap are exempt on purpose: a
-# pipeline writes notes while a gate run is in flight, and docs-only changes stay
-# committable without a receipt.
+# Paths whose content the receipt binds. The rest of docs/ and the roadmap are exempt on
+# purpose: a pipeline writes notes while a gate run is in flight, and docs-only changes
+# stay committable without a receipt. The three references that tests check are gated,
+# since an edit to one can turn the tests red.
 rusty_gated_paths=(
   crates Cargo.toml Cargo.lock
   bin scripts omarchy packaging
   .claude .codex .mcp.json .github
   CONSTITUTION.md AGENTS.md CLAUDE.md
+  docs/tools.md docs/cli.md docs/configuration.md
 )
 
 # The repository this library belongs to (it lives at <root>/bin/lib-gate.sh), whatever the
@@ -28,7 +30,41 @@ rusty_record_dir() {
 rusty_has_record() {
   local dir
   dir=$(rusty_record_dir) || return 1
-  [[ -d "$dir/pipeline" ]]
+  # The record is a checkout of its own; a folder made by hand in a clone is not one.
+  [[ -d "$dir/pipeline" && -e "$dir/.git" ]]
+}
+
+# Gated files that differ from HEAD in any way: staged, changed in the worktree, or new and
+# untracked. A commit made while any exist may carry them (`git add … && git commit`, `-a`,
+# a pathspec), so the commit hook asks for a receipt whenever this prints anything.
+rusty_gated_changes() {
+  local root
+  root=$(rusty_root) || return 0
+  {
+    git -C "$root" diff --no-renames --name-only HEAD -- "${rusty_gated_paths[@]}" 2>/dev/null
+    git -C "$root" ls-files -o --exclude-standard -- "${rusty_gated_paths[@]}" 2>/dev/null
+  } | grep -v '^$' | sort -u || true
+}
+
+# The receipt binds the worktree, and a commit takes the index: they must agree for what is
+# committed. Every staged gated file must be staged as it stands in the worktree, and no
+# untracked gated file may be left behind. Prints the problem and returns 1.
+rusty_commit_matches_worktree() {
+  local root drift untracked
+  local -a staged
+  root=$(rusty_root) || return 0
+  mapfile -t staged < <(git -C "$root" diff --cached --no-renames --name-only -- "${rusty_gated_paths[@]}" 2>/dev/null)
+  [[ ${#staged[@]} -gt 0 ]] || return 0
+  drift=$(git -C "$root" diff --no-renames --name-only -- "${staged[@]}" 2>/dev/null)
+  if [[ -n "$drift" ]]; then
+    echo "staged gated files differ from the worktree the gate checked ($(printf '%s' "$drift" | head -3 | tr '\n' ' ')); stage them as they stand or restore them"
+    return 1
+  fi
+  untracked=$(git -C "$root" ls-files -o --exclude-standard -- "${rusty_gated_paths[@]}" 2>/dev/null)
+  if [[ -n "$untracked" ]]; then
+    echo "untracked gated files would be left out of the commit ($(printf '%s' "$untracked" | head -3 | tr '\n' ' ')); add them or remove them"
+    return 1
+  fi
 }
 
 # Completed specs the record has not committed yet: a pipeline being delivered. The public

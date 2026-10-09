@@ -291,21 +291,30 @@ mod tests {
             "qmltermwidget",
             "com.ignibyte.rusty",
         ];
-        for dir in ["omarchy", "packaging"] {
-            for entry in std::fs::read_dir(root.join(dir)).unwrap().flatten() {
-                let path = entry.path();
-                let Ok(text) = std::fs::read_to_string(&path) else {
-                    continue;
-                };
-                for old in old_ways {
-                    assert!(!text.contains(old), "{} says `{old}`", path.display());
-                }
-                if path.extension().is_some_and(|e| e == "md") {
-                    continue;
-                }
-                for old in the_app {
-                    assert!(!text.contains(old), "{} says `{old}`", path.display());
-                }
+        // What git tracks under the two folders is what ships; a local makepkg leaves
+        // build folders there that git ignores.
+        let listed = std::process::Command::new("git")
+            .args(["ls-files", "--", "omarchy", "packaging"])
+            .current_dir(&root)
+            .output()
+            .expect("git ls-files");
+        let shipped: Vec<std::path::PathBuf> = String::from_utf8_lossy(&listed.stdout)
+            .lines()
+            .map(|rel| root.join(rel))
+            .collect();
+        assert!(shipped.iter().any(|p| p.ends_with("rusty-bin/PKGBUILD")));
+        for path in shipped {
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            for old in old_ways {
+                assert!(!text.contains(old), "{} says `{old}`", path.display());
+            }
+            if path.extension().is_some_and(|e| e == "md") {
+                continue;
+            }
+            for old in the_app {
+                assert!(!text.contains(old), "{} says `{old}`", path.display());
             }
         }
     }

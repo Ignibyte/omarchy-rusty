@@ -18,6 +18,19 @@ pub(crate) fn hidden(rel: &str, name: &str) -> bool {
     name.starts_with('.') || (rel.is_empty() && name == ARCHIVE_DIR)
 }
 
+/// `dir/name`, or `dir/name_2`, `_3`, … when that is taken: a soft delete never
+/// replaces what an earlier one put in the archive, however close together they ran.
+pub(crate) fn unused_name(dir: &Path, name: &str) -> PathBuf {
+    let first = dir.join(name);
+    if !first.exists() {
+        return first;
+    }
+    (2..)
+        .map(|n| dir.join(format!("{name}_{n}")))
+        .find(|p| !p.exists())
+        .unwrap_or(first)
+}
+
 /// Whether a vault-relative path is the root's archive or inside it.
 pub(crate) fn in_archive(rel: &str) -> bool {
     let rel = clean_rel(rel);
@@ -240,8 +253,8 @@ impl VaultManager {
 
     /// Wait for all in-flight git-commit threads to finish.
     ///
-    /// Call this from a short-lived process (e.g. rusty-cli) before exit so an
-    /// auto-commit isn't lost when the process ends. The server never needs it.
+    /// Call this before a process exits (rusty-cli, and a stdio server when its agent
+    /// closes it) so an auto-commit isn't lost when the process ends.
     pub fn flush_commits(&self) {
         let handles: Vec<_> = match self.pending_commits.lock() {
             Ok(mut pending) => pending.drain(..).collect(),
@@ -261,7 +274,7 @@ impl VaultManager {
         // Create .gitignore
         let gitignore = self.root.join(".gitignore");
         if !gitignore.exists() {
-            let _ = std::fs::write(&gitignore, ".templates/\narchive/\n");
+            let _ = std::fs::write(&gitignore, ".templates/\narchive/\n.obsidian/\n");
         }
         // Initial commit
         let _ = std::process::Command::new("git")
@@ -355,7 +368,7 @@ impl VaultManager {
         let archive_dir = self.root.join(ARCHIVE_DIR);
         std::fs::create_dir_all(&archive_dir)
             .map_err(|e| format!("Failed to create archive/: {e}"))?;
-        let dest = archive_dir.join(format!("{file_name}_{timestamp}"));
+        let dest = unused_name(&archive_dir, &format!("{file_name}_{timestamp}"));
         std::fs::rename(path, &dest).map_err(|e| format!("Failed to archive: {e}"))?;
         self.touch_path(path);
         Ok(format!(
@@ -481,12 +494,15 @@ impl VaultManager {
                 let is_page = path.extension().and_then(|e| e.to_str()) == Some("md");
                 files.push(VaultNode {
                     name: if is_page {
-                        name.trim_end_matches(".md").to_string()
+                        name.strip_suffix(".md").unwrap_or(&name).to_string()
                     } else {
                         name
                     },
                     path: if is_page {
-                        child_rel.trim_end_matches(".md").to_string()
+                        child_rel
+                            .strip_suffix(".md")
+                            .unwrap_or(&child_rel)
+                            .to_string()
                     } else {
                         child_rel
                     },
@@ -537,7 +553,13 @@ impl VaultManager {
             if path.is_dir() {
                 self.walk_pages(&path, &child_rel, out)?;
             } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
-                out.push((child_rel.trim_end_matches(".md").to_string(), path));
+                out.push((
+                    child_rel
+                        .strip_suffix(".md")
+                        .unwrap_or(&child_rel)
+                        .to_string(),
+                    path,
+                ));
             }
         }
         Ok(())
@@ -589,6 +611,8 @@ impl VaultManager {
         if slug.contains("..") {
             return Err("Invalid slug: path traversal not allowed".to_string());
         }
+        // A slug written with its `.md` names the same page, never `<name>.md.md`.
+        let slug = slug.strip_suffix(".md").unwrap_or(slug);
         let path = self.root.join(format!("{slug}.md"));
         if !path.starts_with(&self.root) {
             return Err("Invalid slug: outside vault directory".to_string());
@@ -659,22 +683,28 @@ fn commit_paths(root: &Path, message: &str, paths: &[String]) -> Result<(), Stri
     if changed.is_empty() {
         return Ok(());
     }
+    // Several processes commit to one vault; git's index lock turns them away while another
+    // holds it, so a locked attempt waits and tries again before it gives up.
     let run = |args: &[&str]| -> Result<(), String> {
-        let out = std::process::Command::new("git")
-            .arg("--literal-pathspecs")
-            .args(args)
-            .args(&changed)
-            .current_dir(root)
-            .output()
-            .map_err(|e| format!("git {}: {e}", args[0]))?;
-        if out.status.success() {
-            Ok(())
-        } else {
-            Err(format!(
-                "git {}: {}",
-                args[0],
-                String::from_utf8_lossy(&out.stderr).trim()
-            ))
+        let mut attempt = 0;
+        loop {
+            let out = std::process::Command::new("git")
+                .arg("--literal-pathspecs")
+                .args(args)
+                .args(&changed)
+                .current_dir(root)
+                .output()
+                .map_err(|e| format!("git {}: {e}", args[0]))?;
+            if out.status.success() {
+                return Ok(());
+            }
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            attempt += 1;
+            if stderr.contains("index.lock") && attempt < 8 {
+                std::thread::sleep(std::time::Duration::from_millis(100 * attempt));
+                continue;
+            }
+            return Err(format!("git {}: {}", args[0], stderr.trim()));
         }
     };
     run(&["add", "-A", "--"])?;
@@ -764,6 +794,30 @@ pub fn type_to_dir(page_type: &str) -> Result<&'static str, String> {
 mod tests {
     use super::*;
     use std::fs;
+
+    /// Two pages with one file name deleted in the same second both stay in the archive,
+    /// and a slug written with `.md` names the page, not `<name>.md.md`.
+    #[test]
+    fn soft_deletes_never_replace_each_other_and_md_slugs_are_one_page() {
+        let (dir, vm) = test_vault("archive_names");
+        vm.write_page("people/plan", "A").unwrap();
+        vm.write_page("projects/plan", "B").unwrap();
+        vm.delete_page("people/plan").unwrap();
+        vm.delete_page("projects/plan").unwrap();
+        let mut kept: Vec<String> = fs::read_dir(dir.join(ARCHIVE_DIR))
+            .unwrap()
+            .flatten()
+            .map(|e| fs::read_to_string(e.path()).unwrap())
+            .collect();
+        kept.sort();
+        assert_eq!(kept, vec!["A".to_string(), "B".to_string()]);
+
+        vm.write_page("ideas/x.md", "X").unwrap();
+        assert!(dir.join("ideas/x.md").is_file());
+        assert!(!dir.join("ideas/x.md.md").exists());
+        assert_eq!(vm.read_page("ideas/x").unwrap().as_deref(), Some("X"));
+        let _ = fs::remove_dir_all(dir);
+    }
 
     fn test_vault(name: &str) -> (PathBuf, VaultManager) {
         let dir =

@@ -22,6 +22,14 @@ jq -e '
 ' <<<"$HOOK_INPUT" >/dev/null 2>&1 || exit 0
 
 root=$(hook_root) || exit 0
+# The finish result alone proves nothing: OpenWiki's own record must show a complete run at
+# this HEAD before the receipt is written.
+last="$root/openwiki/.last-update.json"
+head=$(git -C "$root" rev-parse HEAD 2>/dev/null) || exit 0
+if ! jq -e --arg head "$head" '.status == "complete" and .gitHead == $head' "$last" >/dev/null 2>&1; then
+  echo "OpenWiki receipt not written: openwiki/.last-update.json shows no complete run at HEAD" >&2
+  exit 0
+fi
 pipeline=$(ls "$root"/docs/planning/pipeline/active/*.spec.md 2>/dev/null | head -1)
 pipeline_id="none"
 if [[ -n "$pipeline" ]]; then

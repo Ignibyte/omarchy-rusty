@@ -31,10 +31,10 @@ sources:
     resource: repo://packaging/rusty-bin/PKGBUILD
   - id: openwiki-source-484d3bfc1c9bd344c2b3a5f9
     resource: repo://packaging/rusty-bin/rusty-bin.install
-generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
+generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T18:25:07.825Z
+    at: 2026-10-09T19:17:18.990Z
 ---
 
 # Development and validation
@@ -54,7 +54,8 @@ change, and the ways the machine's state is kept out of the record.
   copies the three binaries in `bin/` beside its folder into `~/.local/bin`; from a
   checkout it builds them with `cargo install --force --locked` (`--force` replaces a
   binary an older install left under a name). Then the back end's user unit (installed,
-  enabled, restarted and probed over HTTP), the MCP config snippets, and pointers to the
+  enabled, restarted, probed over HTTP with two seconds a try, and checked active), the
+  MCP config snippets, and pointers to the
   compositor drop-in and the earlyoom line it does not apply. It also deletes a leftover
   `~/.local/bin/rusty-session` if one exists. Idempotent.
 - `packaging/PKGBUILD` (`rusty-git`) builds the same for the AUR, `!lto`, depends on the C
@@ -73,7 +74,7 @@ change, and the ways the machine's state is kept out of the record.
 - `bin/package-release.sh` builds the three binaries with `cargo build --release --locked`
   and writes `dist/rusty-<version>-<arch>-linux.tar.gz` (the binaries under `bin/`, the
   installer, the unit, the MCP config, the compositor drop-in, README, LICENSE, the
-  third-party notices, CHANGELOG)
+  third-party notices, CHANGELOG, SECURITY and the `docs/` references the README links)
   and a `.sha256` beside it. A maintainer runs it to test exactly what a release ships.
 - `.github/workflows/release.yml` runs on a `v*` tag: it refuses a tag that differs from
   `Cargo.toml`, runs the tests, runs the packaging script, and attaches the tarball and its
@@ -96,7 +97,8 @@ change, and the ways the machine's state is kept out of the record.
 - `rusty session` is the way in from a terminal: a noun of the `rusty` command, decided in
   `crates/rusty-cmd/src/session.rs`. `start` starts the back end's unit and prints the
   status; `status` reads the unit and posts an `initialize` to the port; any other verb
-  prints the usage. A test reads every file under `omarchy/` and `packaging/` and refuses
+  prints the usage. A test reads every file git tracks under `omarchy/` and `packaging/`,
+  subfolders included, and refuses
   invocations of a `rusty-session` script and, outside a README, the names of a desktop
   app, so the shipped files describe only what ships.
 - `omarchy/wayland-wm-oom.conf` is a drop-in for the compositor unit (`OOMScoreAdjust=100`)

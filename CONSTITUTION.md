@@ -94,8 +94,8 @@ recall → plan → design → implement → inspect → validate → complete �
   which this repository ignores. A clone without it follows the "Without `docs/planning`"
   section of `AGENTS.md`: it runs the gate and CI; the pipeline's checks step aside
   (`scripts/check-pipeline.sh`, the phase gate); the gate receipt rule for gated files and
-  the secrets check still hold. Creating anything under `docs/planning/` in such a clone
-  turns the pipeline's checks on, so a contributor never does.
+  the secrets check still hold. Only the record's own checkout (a `docs/planning/` that is
+  a git repository) turns the pipeline's checks on; a folder made by hand does not.
 - Tickets: `docs/planning/tickets/{open,closed}/TICKET-NNN-slug.md`, numbered from
   `tickets/INDEX.md`. Never renumber.
 - Pipeline: `docs/planning/pipeline/{active,completed}/<slug>.spec.md` and
@@ -126,3 +126,7 @@ recall → plan → design → implement → inspect → validate → complete �
   records the OpenWiki receipt through the hook script (§15); the waiver is the
   maintainers' alone (§3, §19); `brain_ask` replaces a `brain_context` tool that never
   existed (§18).
+- 2026-10-09 (TICKET-063): the commit gate reads every form of `git commit`, refuses `-n`,
+  needs `jq`, and checks that what is staged is what the gate saw (§0, §15); the OpenWiki
+  receipt needs OpenWiki's own record of a complete run at `HEAD` (§15); the record is
+  recognised by its own git checkout (§19).

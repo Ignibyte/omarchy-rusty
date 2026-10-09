@@ -73,6 +73,7 @@ impl SecretsManager {
     pub fn set(&self, key: &str, value: &str) -> Result<(), String> {
         let key = key.trim();
         validate_key(key)?;
+        validate_value(value)?;
         let mut lines = read_lines(&self.path)?;
         let formatted = format_line(key, value);
         let mut replaced = false;
@@ -150,6 +151,18 @@ fn format_line(key: &str, value: &str) -> String {
     format!("{key}='{escaped}'")
 }
 
+/// Reject a value with a line break: the file holds one secret per line, so a break would
+/// end the value early and turn its next line into a key of its own.
+fn validate_value(value: &str) -> Result<(), String> {
+    if value.contains(['\n', '\r']) {
+        return Err(
+            "a secret value cannot hold a line break; store a multi-line key base64-encoded"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 /// Reject keys that aren't valid shell variable names.
 fn validate_key(key: &str) -> Result<(), String> {
     if key.is_empty() {
@@ -172,18 +185,37 @@ fn read_lines(path: &Path) -> Result<Vec<String>, String> {
     }
 }
 
-/// Write lines back to the file (creating parent dirs), restricted to `0600`.
+/// Write lines back to the file (creating parent dirs). The new text goes to a temporary
+/// file created at mode `0600` beside it and is renamed over it, so the secrets are never
+/// readable by others, even for a moment, and a crash leaves the old file whole.
 fn write_lines(path: &Path, lines: &[String]) -> Result<(), String> {
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create dir: {e}"))?;
-    }
+    use std::io::Write;
+    let parent = path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create dir: {e}"))?;
     let mut body = lines.join("\n");
     body.push('\n');
-    std::fs::write(path, body).map_err(|e| format!("Failed to write secrets file: {e}"))?;
+    // One name per write, so two writes at once (threads, or processes) never share it.
+    static WRITES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = WRITES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let tmp = parent.join(format!(".{name}.{}.{n}.tmp", std::process::id()));
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create(true).truncate(true);
     #[cfg(unix)]
     {
-        use std::os::unix::fs::PermissionsExt;
-        let _ = std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600));
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let written = options
+        .open(&tmp)
+        .and_then(|mut f| {
+            f.write_all(body.as_bytes())?;
+            f.sync_all()
+        })
+        .and_then(|()| std::fs::rename(&tmp, path));
+    if let Err(e) = written {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(format!("Failed to write secrets file: {e}"));
     }
     Ok(())
 }
@@ -201,6 +233,23 @@ mod tests {
         let path = std::env::temp_dir().join(format!("rusty-secrets-{name}.secret"));
         let _ = std::fs::remove_file(&path);
         (SecretsManager::new(path.clone()), path)
+    }
+
+    #[test]
+    fn a_line_break_in_a_value_is_refused_and_the_file_stays_private() {
+        let (m, path) = mgr();
+        assert!(m
+            .set("NOTE", "line one\nAWS_SECRET_ACCESS_KEY=planted")
+            .is_err());
+        assert!(m.set("NOTE", "carriage\rreturn").is_err());
+        m.set("API_TOKEN", "plain").unwrap();
+        assert_eq!(m.list().unwrap().len(), 1);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = std::fs::metadata(&path).unwrap().permissions().mode();
+            assert_eq!(mode & 0o777, 0o600);
+        }
     }
 
     #[test]

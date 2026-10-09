@@ -13,10 +13,10 @@ sources:
     resource: repo://crates/rusty-core/src/skills/mod.rs
   - id: openwiki-source-5725b482ae3caf2b45126fc1
     resource: repo://crates/rusty-core/src/transfer.rs
-generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
+generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T17:42:25.313Z
+    at: 2026-10-09T19:17:18.990Z
 ---
 
 # Export and import: a whole store in one zip
@@ -57,11 +57,12 @@ is recreated, and anything else under the home is not the store.
 ## Runtime flow
 
 1. Export: refuse a destination that exists or lies inside the store; snapshot the
-   database beside the destination; write the zip as `<dest>.partial` (mode 0600), walking
+   database into a folder beside the destination that only the owner can enter; write the zip as `<dest>.partial` (mode 0600), walking
    each folder in name order with empty folders and file modes kept, symbolic links, git
    lock files and non-UTF-8 names skipped and listed; write the manifest last; rename the
    zip into place; delete the snapshot.
-2. Import: read and check the manifest; check every entry (no symbolic link, no escaping
+2. Import: read and check the manifest (a notes folder it names must be a plain path
+   inside the vault); check every entry (no symbolic link, no escaping
    path, only the known folders and files) before anything is written; with `--dry-run`,
    report and stop; refuse a home that holds a store unless `--replace`; unpack into
    `<home>.importing-<time>`; rewrite the path settings in the staged database; move an

@@ -53,7 +53,7 @@ check_secrets() {
   local hits
   hits=$(rusty_gated_files | while IFS= read -r f; do
     [[ -f "$f" ]] || continue
-    grep -nE '(sk-ant-[A-Za-z0-9_-]{8,}|sk-proj-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|xox[bp]-[0-9A-Za-z-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' "$f" 2>/dev/null | sed "s|^|$f:|" || true
+    grep -HnE '(sk-ant-[A-Za-z0-9_-]{8,}|sk-proj-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|xox[bp]-[0-9A-Za-z-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' -- "$f" 2>/dev/null || true
   done)
   if [[ -n "$hits" ]]; then
     echo "$hits" >&2
@@ -66,7 +66,7 @@ check_whitespace() {
   local hits
   hits=$(rusty_gated_files | grep -E '\.(rs|toml|sh|md|json|yml|yaml)$' | while IFS= read -r f; do
     [[ -f "$f" ]] || continue
-    grep -nE '[[:space:]]+$' "$f" 2>/dev/null | sed "s|^|$f:|" | head -3 || true
+    grep -HnE '[[:space:]]+$' -- "$f" 2>/dev/null | head -3 || true
   done)
   if [[ -n "$hits" ]]; then
     echo "trailing whitespace:" >&2
@@ -75,6 +75,9 @@ check_whitespace() {
   fi
 }
 
+# The receipt is for the tree the steps checked: a gated edit made while they run turns
+# the gate red instead of being blessed.
+[[ "$mode" == "fast" ]] || before=$(rusty_fingerprint)
 step fmt cargo fmt --all --check
 step clippy cargo clippy --workspace --all-targets -- -D warnings
 step test cargo test --workspace
@@ -84,8 +87,13 @@ if [[ "$mode" != "fast" ]]; then
   step shell-syntax check_shell_syntax
   step secrets check_secrets
   step whitespace check_whitespace
+  after=$(rusty_fingerprint)
+  if [[ "$after" != "$before" ]]; then
+    echo "GATE RED [$mode]: gated files changed while the gate ran; run it again" >&2
+    exit 1
+  fi
   receipt=$(rusty_receipt_path)
-  printf 'version=1\nfingerprint=%s\nmode=%s\nat=%s\n' "$(rusty_fingerprint)" "$mode" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$receipt"
+  printf 'version=1\nfingerprint=%s\nmode=%s\nat=%s\n' "$after" "$mode" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$receipt"
   echo "receipt written: $receipt"
 fi
 

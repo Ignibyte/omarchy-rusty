@@ -24,10 +24,18 @@ pub struct BrainFrontmatter {
     #[serde(rename = "type", default)]
     pub page_type: String,
     /// Alternative names for fuzzy resolution.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        skip_serializing_if = "Vec::is_empty",
+        deserialize_with = "one_or_many"
+    )]
     pub aliases: Vec<String>,
     /// Tags for categorization.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        skip_serializing_if = "Vec::is_empty",
+        deserialize_with = "one_or_many"
+    )]
     pub tags: Vec<String>,
     /// ISO date when the page was created.
     #[serde(default)]
@@ -137,13 +145,35 @@ pub fn parse_page(raw: &str) -> Result<ParsedPage, String> {
     })
 }
 
+/// A list of strings, or the single string Obsidian also accepts (`tags: project`).
+fn one_or_many<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Vec<String>, D::Error> {
+    #[derive(serde::Deserialize)]
+    #[serde(untagged)]
+    enum OneOrMany {
+        One(String),
+        Many(Vec<String>),
+    }
+    Ok(
+        match <Option<OneOrMany> as serde::Deserialize>::deserialize(d)? {
+            None => Vec::new(),
+            Some(OneOrMany::One(one)) if one.trim().is_empty() => Vec::new(),
+            Some(OneOrMany::One(one)) => vec![one],
+            Some(OneOrMany::Many(many)) => many,
+        },
+    )
+}
+
 /// Like [`parse_page`], but unreadable YAML becomes empty frontmatter with the whole file
 /// as the body, so a page always opens.
 pub fn parse_lenient(raw: &str) -> ParsedPage {
     match parse_page(raw) {
         Ok(parsed) => parsed,
         Err(_) => {
-            let (compiled_truth, timeline) = split_body(raw);
+            // When the fences are there but the YAML does not fit, the body is still what
+            // follows them; taking the whole file would copy the frontmatter into the body
+            // on the next write that keeps the frontmatter.
+            let body = split_raw(raw).map_or(raw, |(_, body)| body);
+            let (compiled_truth, timeline) = split_body(body);
             ParsedPage {
                 frontmatter: BrainFrontmatter::default(),
                 compiled_truth,
@@ -447,6 +477,23 @@ pub(crate) fn day_of<Tz: chrono::TimeZone>(now: &chrono::DateTime<Tz>) -> String
 
 #[cfg(test)]
 mod tests {
+    /// Obsidian's single-value `tags:` and `aliases:` parse, and YAML that does not fit
+    /// still leaves the frontmatter out of the body.
+    #[test]
+    fn single_values_parse_and_misfit_yaml_stays_out_of_the_body() {
+        let page = parse_page("---\ntitle: Launch\ntags: project\naliases: Other\n---\n\nBody.\n")
+            .unwrap();
+        assert_eq!(page.frontmatter.tags, vec!["project".to_string()]);
+        assert_eq!(page.frontmatter.aliases, vec!["Other".to_string()]);
+        let misfit = parse_lenient("---\ntitle: [1, 2\n---\n\nThe body.\n");
+        assert!(
+            !misfit.compiled_truth.contains("title"),
+            "{:?}",
+            misfit.compiled_truth
+        );
+        assert!(misfit.compiled_truth.contains("The body."));
+    }
+
     use super::*;
 
     #[test]

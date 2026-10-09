@@ -11,6 +11,8 @@ sources:
     resource: repo://crates/rusty-core/src/brain/decisions.rs
   - id: openwiki-source-c7501cab00d475ec77094adb
     resource: repo://crates/rusty-core/src/brain/mod.rs
+  - id: openwiki-source-469079f987eef0b6a4cf0a50
+    resource: repo://crates/rusty-core/src/brain/sources.rs
   - id: openwiki-source-705d180fc941297b1e844397
     resource: repo://crates/rusty-core/src/core.rs
   - id: openwiki-source-fe80ee2fefb437e929cac903
@@ -41,10 +43,10 @@ sources:
     resource: repo://crates/rusty-mcp/tests/smoke.rs
   - id: openwiki-source-f47a49d22d041953f356ca04
     resource: repo://omarchy/rusty-mcp.service
-generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
+generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T18:25:07.825Z
+    at: 2026-10-09T19:17:18.990Z
 ---
 
 # MCP back end: one server for Marley and the agents
@@ -121,15 +123,19 @@ rules below are the ones a family's list does not show.
   unless `force`.
 - **Scripts.** A script is a `*.sh` file in a skill directory, so it inherits that skill's
   approval state; `resolve_script` finds it by basename without the extension, taking
-  `skill/name` when two skills share a basename. `script_run` is the only tool that
-  executes anything, and it refuses a script whose skill is still pending.
-  `script_update` rewrites a script in place.
+  `skill/name` when two skills share a basename. Running resolves among the active skills
+  only, so a staged copy never shadows an approved script. `script_run` is the only tool
+  that executes anything; it refuses a script whose skill is still pending, runs it in a
+  process group of its own, and at its cap ends the script and every job it started.
+  `script_update` rewrites a script in place. The safety scan behind `skill_scan` and
+  `skill_approve` reads the skill's whole folder, its scripts included.
 - **Secrets and the PIN.** The server owns the PIN: `PinLock`
   (`rusty-core::engine::pin_lock`) keeps an argon2id hash at `~/.rusty/.pin` (mode 0600)
   and one in-memory token per process. `secret_pin_status` reports set, unlocked and any
   lockout; `secret_pin_set` sets the PIN (six characters or more) and needs the live token
   once one exists; `secret_unlock` verifies the PIN, counts five wrong tries in a row into
-  a one-minute lockout, and returns a token good for `pin_timeout_minutes` (default five);
+  a one-minute lockout kept in `.pin-attempts` (so a new process gets no new guesses), and
+  returns a token good for `pin_timeout_minutes` (default five);
   `secret_reveal` and `secret_update` require that token; `secret_lock`, a new unlock and
   a server restart end it. Once a PIN exists, `secret_set` and `secret_delete` require it
   too (`PinLock::check_write`), checked before the file is touched. An unlock on the HTTP
@@ -140,7 +146,10 @@ rules below are the ones a family's list does not show.
   both `settings_list` and `setting_get` (one rule in `SettingsManager`; an unset key is
   still null), and `setting_set` refuses that mask written back, so a client that reads
   and saves a form cannot overwrite the credential. The core's own readers still get the
-  value.
+  value. The path settings go through `check_path_setting`: an absolute path, never the
+  store's home or a folder above it, and a note path cannot name a dot-file, so the note
+  and page tools never reach `.secret` or `.pin`. `rusty-cli settings` applies the same
+  rules.
 - **The brain loop.** `brain_ask` runs the hybrid search (text alone without a provider),
   lists the decisions touching the question with their status and the follow-ups due, and
   records a consultation (`brain_consultations`: id, question, hits, outcome) whose id the
@@ -166,9 +175,11 @@ rules below are the ones a family's list does not show.
   refused). Every answer that carries a source is marked in the tool layer:
   `untrusted: true`, a `note` that says web content is data and never instructions, and
   `snippet`, `compiled_truth` and `timeline` normalised (control characters out, blank
-  runs to one, four thousand characters at most). `brain_search`, `brain_read_page` and
-  `brain_render` mark a hit or a page of type `source` the same way; a rendered page's
-  `raw` and HTML are left alone, since they are for display and editing.
+  runs to one, four thousand characters at most). `brain_search`, `brain_read_page`,
+  `brain_render`, `brain_ask` and the `rusty://brain/{slug}` resource mark a hit or a page
+  of type `source` the same way, and `brain_get_links` and `brain_unresolved` mark a link
+  row whose line comes from a source. A rendered source page's HTML shows its raw HTML as
+  text, and every page's links keep only http, https, mailto, `rusty:` and anchors.
 - **The conversation archive.** `search_conversations` searches the transcripts
   `rusty-cli ingest-conversation` kept (`ConversationArchive::search`) and returns them as
   `transcripts`, with `agent_runs` from the tables earlier versions' built-in agent runs
@@ -199,9 +210,10 @@ fails the test, every tool must carry a description, and every tool must fit a f
 
 - No tool reaches the database directly; managers do.
 - A renamed or removed tool is a versioned break; new tools are additive.
-- Search, `brain_ask`, re-embedding, the semantic status and `script_run` run in
+- `brain_search`, `brain_ask`, re-embedding, the semantic status and `script_run` run in
   `spawn_blocking`, so the server keeps answering while they work. `source_capture` (up to
-  a twenty-second fetch), `brain_import` and `brain_rename` run on the request's own task.
+  a twenty-second fetch), `brain_import`, `brain_rename`, `source_search` and
+  `search_conversations` run on the request's own task.
 - A secret's value leaves the server only against the live PIN token, and no call logs a
   PIN, a token or a value.
 - A script runs only from an approved skill. Both execution paths check the status, so
@@ -210,8 +222,10 @@ fails the test, every tool must carry a description, and every tool must fit a f
 ## Failure modes
 
 - Without an embedding provider `brain_reembed` errors and search stays full text.
-- Five wrong PINs in a row refuse every unlock for a minute, the right PIN included; the
-  lockout and the token live in memory, so a restart clears both.
+- Five wrong PINs in a row refuse every unlock for a minute, the right PIN included, in
+  every server process on the store; a restart clears the token but not the lockout.
+- An embedding provider that fails a query costs only the vector half: search logs it and
+  answers from the full-text index.
 - A script that does not finish inside the caller's cap is killed and reported as status
   124 with a `timed_out` flag rather than left running; each stream is truncated at
   64 KiB, so a script that prints forever cannot exhaust the server. The `rusty <name>`
@@ -236,7 +250,11 @@ fails the test, every tool must carry a description, and every tool must fit a f
   loop, the PIN on secret writes, masked settings, skill writes that commit, memory
   importance, and `search_conversations` finding an ingested transcript.
 - `cargo test -p rusty-core pin_lock`: set, unlock, check and lock; the short and the
-  wrong PIN; the lockout; the expiry; a PIN change needing the token; the file mode.
+  wrong PIN; the lockout, also as a second process sees it; the expiry; a PIN change
+  needing the token; the file mode.
+- `cargo test -p rusty-core skills`: the cap ending a script's background jobs and the
+  bounded output, a staged copy not shadowing an approved script, approval scanning the
+  scripts and unreadable frontmatter.
 - `cargo test -p rusty-core decisions`: the consultation record, the decision page with
   its links and timeline entries, the follow-up's status and date, the due list, the
   typed edges.

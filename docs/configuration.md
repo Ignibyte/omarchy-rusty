@@ -13,15 +13,17 @@ setting moves a part of it.
 ├── brain/                the vault: markdown pages, a git repository
 │   ├── people/ companies/ projects/ concepts/ meetings/ ideas/
 │   ├── daily/ inbox/ decisions/ conversations/ sources/
-│   ├── notes/            notes, also pages of type `note`
+│   ├── notes/            notes, also pages of type `note` (deleted ones in notes/.deleted/)
 │   ├── archive/          deleted pages and folders (not pages; ignored by git)
 │   ├── .templates/       page templates, one per type (ignored by git)
 │   └── .rusty/bookmarks.json
+│                         (a new vault's .gitignore also leaves out Obsidian's .obsidian/)
 ├── skills/               the skills store, a git repository
 │   ├── .claude/skills/<name>/SKILL.md   active skills, with any *.sh scripts beside them
 │   └── staging/<name>/SKILL.md          skills waiting for approval
 ├── .secret               secrets, KEY='value' lines, mode 0600
 ├── .pin                  the PIN's argon2id hash, when a PIN is set
+├── .pin-attempts         wrong PIN tries and any lockout, shared by every server process
 ├── hooks/                the brain loop's Claude Code hooks, after `rusty-cli hooks install`
 └── .changed              touched by `rusty-cli refresh` so running servers reload
 ```
@@ -36,13 +38,13 @@ To move the whole store to another machine, see `rusty-cli export` and `import` 
 ## Settings
 
 Settings are rows in `rusty.db`. Any MCP client reads and writes them with
-`settings_list`, `setting_get` and `setting_set`; a value whose key names a key, token,
-secret or password reads back as `•••`. There is no settings command in `rusty-cli` yet;
-from a terminal, ask an agent, or write the row and tell the servers:
+`settings_list`, `setting_get` and `setting_set`, and a terminal with `rusty-cli settings`;
+both record the change in the change log. A value whose key names a key, token, secret or
+password reads back as `•••`, and writing `•••` back is refused.
 
 ```bash
-sqlite3 ~/.rusty/rusty.db "INSERT OR REPLACE INTO settings(key, value) VALUES ('embedding_provider', 'ollama')"
-rusty-cli refresh
+rusty-cli settings set embedding_provider ollama
+rusty-cli settings list
 ```
 
 | Key | Default | What it does |
@@ -56,7 +58,9 @@ rusty-cli refresh
 | `skills_path` | `~/.rusty/skills` | The skills store. `RUSTY_SKILLS` overrides it. |
 | `skills_enabled` | on | `false`, `0`, `no` or `off` stops the seed skills from being installed into a new store. |
 
-The three path settings are read when a program starts: restart the service
+The three path settings take an absolute path, or one starting with `~/`, and never the
+store's home (`~/.rusty`) or a folder that contains it, since the note and page tools would
+then reach the secrets. They are read when a program starts: restart the service
 (`systemctl --user restart rusty-mcp`) and the agents' servers after changing one. The
 provider is resolved at most once a minute, so a provider change takes effect within a
 minute. `skills_seeded` is set by Rusty once the seeds are installed; deleting a seed skill
@@ -79,13 +83,15 @@ secrets file (`openai_api_key`, or `OPENAI_API_KEY`). Nothing is sent to OpenAI 
 
 ## Secrets
 
-`~/.rusty/.secret` holds `KEY='value'` lines (a shell can `source` it). The
+`~/.rusty/.secret` holds `KEY='value'` lines (a shell can `source` it); a value is one
+line, so a multi-line key goes in base64. Rusty writes the file whole and at mode 0600
+every time. The
 `secret_list`, `secret_set`, `secret_delete`, `secret_reveal` and `secret_update` tools
 read and write it; `secret_list` returns names only. `secret_reveal` and `secret_update`
 always need the token `secret_unlock` returns, so they work only once a PIN is set
 (`secret_pin_set`); from then on `secret_set` and `secret_delete` need it too. A token is
 good for `pin_timeout_minutes` on the server process that issued it, and five wrong PINs
-in a row lock unlocking for a minute. The PIN guards the tools, not the file: anything running as your user can
+in a row lock unlocking for a minute, in every server process on the store. The PIN guards the tools, not the file: anything running as your user can
 read `.secret`. You can also edit the file by hand; the next read sees the change.
 
 ## Environment variables
@@ -110,6 +116,18 @@ journalctl --user -u rusty-mcp -e
 systemctl --user restart rusty-mcp
 ```
 
-To listen elsewhere, change the address in the unit's `ExecStart` and run
-`systemctl --user daemon-reload` and a restart. Agents do not need the service: each one
-starts its own `rusty-mcp` over stdio, and every copy works on the same store.
+To use another port, override `ExecStart` in a drop-in, which a reinstall leaves alone,
+and keep the address on loopback (the server answers only `localhost`, `127.0.0.1` and
+`::1`):
+
+```bash
+systemctl --user edit rusty-mcp
+#   [Service]
+#   ExecStart=
+#   ExecStart=%h/.local/bin/rusty-mcp --http 127.0.0.1:4180
+systemctl --user restart rusty-mcp
+```
+
+Set `RUSTY_MCP_ADDR=127.0.0.1:4180` for `rusty session status`; the installer's own check
+still expects 4174. Agents do not need the service: each one starts its own `rusty-mcp`
+over stdio, and every copy works on the same store.

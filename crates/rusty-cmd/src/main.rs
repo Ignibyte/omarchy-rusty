@@ -12,14 +12,20 @@ fn store_script_exists(name: &str) -> bool {
     if name.is_empty() || name.starts_with('-') || name.contains("..") {
         return false;
     }
-    let store = std::env::var_os("RUSTY_SKILLS")
-        .map(std::path::PathBuf::from)
-        .or_else(|| {
-            std::env::var_os("HOME")
-                .map(|h| std::path::PathBuf::from(h).join(".rusty").join("skills"))
-        });
-    let Some(store) = store else {
-        return false;
+    // As the core reads it: an empty `RUSTY_SKILLS` is unset, and `~/` is the home.
+    let home = std::env::var_os("HOME").map(std::path::PathBuf::from);
+    let store = match std::env::var("RUSTY_SKILLS") {
+        Ok(value) if !value.trim().is_empty() => {
+            let value = value.trim();
+            match (value.strip_prefix("~/"), &home) {
+                (Some(rest), Some(home)) => home.join(rest),
+                _ => std::path::PathBuf::from(value),
+            }
+        }
+        _ => match home {
+            Some(home) => home.join(".rusty").join("skills"),
+            None => return false,
+        },
     };
     let active = store.join(".claude").join("skills");
     let name = name.strip_suffix(".sh").unwrap_or(name);

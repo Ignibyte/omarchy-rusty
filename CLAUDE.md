@@ -11,11 +11,14 @@ The hooks in `.claude/settings.json`:
   it allows every edit.
 - **Secrets** (Edit, Write, MultiEdit): refuses a write whose content looks like a
   credential.
-- **Commit gate** (Bash): refuses `git commit` of gated files without a gate receipt that
-  matches the worktree, a commit that delivers a completed pipeline without a matching
-  OpenWiki receipt, and `--no-verify`.
+- **Commit gate** (Bash): refuses `git commit` (in any form: `-a`, a pathspec,
+  `git add … && git commit`, `git -c … commit`) while gated files differ from `HEAD` and
+  no gate receipt matches the worktree; a staged gated file that differs from the
+  worktree, or an untracked one left out; a commit that delivers a completed pipeline
+  without a matching OpenWiki receipt; `--no-verify` and `-n`. It needs `jq`, and refuses
+  without it.
 - **OpenWiki receipt** (after `openwiki_finish`): writes `.git/rusty-openwiki-receipt` when
-  the run returned `complete`.
+  the run returned `complete` and `openwiki/.last-update.json` shows that run at `HEAD`.
 
 The project skills in `.claude/skills/` (`rusty-workflow`, `openwiki`) load on their own.
 

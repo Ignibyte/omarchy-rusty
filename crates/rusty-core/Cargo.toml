@@ -23,6 +23,8 @@ sha2 = "0.10"
 sqlite-vec = "0.1"
 tokio = { version = "1", features = ["full"] }
 ureq = { version = "3", features = ["json"] }
+# kill(2) for a script's process group.
+libc = "0.2"
 uuid = { version = "1", features = ["v4"] }
 argon2 = "0.5"
 rand_core = { version = "0.6", features = ["getrandom"] }

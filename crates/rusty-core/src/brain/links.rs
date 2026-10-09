@@ -169,23 +169,26 @@ pub fn normalise_target(target: &str) -> String {
 pub fn rewrite_targets(text: &str, map: &dyn Fn(&str) -> Option<String>) -> (String, usize) {
     let mut out = String::with_capacity(text.len());
     let mut changed = 0;
-    let ends_with_newline = text.ends_with('\n');
-    let mut first = true;
-    for (_, line, in_fence) in lines_with_fences(text) {
-        if !first {
-            out.push('\n');
+    // Each line keeps its own ending (`\r\n`, `\n`, or none on the last), so a rename
+    // never changes a file's line endings.
+    let endings = text.split_inclusive('\n').map(|segment| {
+        if segment.ends_with("\r\n") {
+            "\r\n"
+        } else if segment.ends_with('\n') {
+            "\n"
+        } else {
+            ""
         }
-        first = false;
+    });
+    for ((_, line, in_fence), ending) in lines_with_fences(text).zip(endings) {
         if in_fence {
             out.push_str(line);
-            continue;
+        } else {
+            let (rewritten, n) = rewrite_line(line, map);
+            changed += n;
+            out.push_str(&rewritten);
         }
-        let (rewritten, n) = rewrite_line(line, map);
-        changed += n;
-        out.push_str(&rewritten);
-    }
-    if ends_with_newline {
-        out.push('\n');
+        out.push_str(ending);
     }
     (out, changed)
 }
@@ -326,6 +329,17 @@ pub fn folder_move_map(from: &str, to: &str) -> impl Fn(&str) -> Option<String> 
 
 #[cfg(test)]
 mod tests {
+    /// A rename keeps each line's own ending.
+    #[test]
+    fn rewriting_keeps_crlf_line_endings() {
+        let text = "See [[a/target]].\r\nAnd again [[a/target]]\r\nlast";
+        let (out, n) = rewrite_targets(text, &|t: &str| {
+            (t == "a/target").then(|| "z/target".to_string())
+        });
+        assert_eq!(n, 2);
+        assert_eq!(out, "See [[z/target]].\r\nAnd again [[z/target]]\r\nlast");
+    }
+
     use super::*;
 
     #[test]

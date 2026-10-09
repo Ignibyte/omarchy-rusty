@@ -688,9 +688,10 @@ impl SkillsManager {
         let skill = self
             .get(name)
             .ok_or_else(|| format!("skill {name:?} not found"))?;
-        let raw = std::fs::read_to_string(&skill.path)
-            .map_err(|e| format!("Failed to read {}: {e}", skill.path))?;
-        Ok(scan_skill_md(&raw))
+        let folder = Path::new(&skill.path)
+            .parent()
+            .ok_or_else(|| format!("{} has no folder", skill.path))?;
+        Ok(scan_folder(folder))
     }
 
     /// Approve a pending (staged) skill: safety-scan it, then move it into the active dir.
@@ -708,9 +709,9 @@ impl SkillsManager {
         if dst.exists() {
             return Err(format!("an active skill {name:?} already exists"));
         }
-        let raw = std::fs::read_to_string(&src_md)
-            .map_err(|e| format!("Failed to read pending skill: {e}"))?;
-        let findings = scan_skill_md(&raw);
+        // Everything that would become runnable is read: the SKILL.md and the scripts and
+        // other files beside it.
+        let findings = scan_folder(&src);
         if !findings.is_empty() && !force {
             return Err(format!(
                 "blocked by safety scan ({} issue(s)): {} — re-run with --force to override",
@@ -896,17 +897,71 @@ const SECRET_MARKERS: &[&str] = &[
 /// agent-authored proposals to the active (invocable) set.
 pub fn scan_skill_md(raw: &str) -> Vec<String> {
     let mut findings = Vec::new();
+    match parse_skill_md(raw) {
+        Ok((fm, _body)) => {
+            if fm.extra.contains_key("allowed-tools") || fm.extra.contains_key("allowed_tools") {
+                findings.push(
+                    "declares allowed-tools (pre-approves tools without prompting)".to_string(),
+                );
+            }
+        }
+        // Frontmatter the scan cannot read is frontmatter it cannot vouch for.
+        Err(e) => findings.push(format!("frontmatter does not parse: {e}")),
+    }
+    findings.extend(scan_text(raw));
+    findings
+}
+
+/// The safety scan over a skill's folder: its `SKILL.md`, and every other file in it (the
+/// scripts above all), each finding outside `SKILL.md` named by its file.
+pub(crate) fn scan_folder(dir: &Path) -> Vec<String> {
+    fn files(dir: &Path, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if entry.file_name() == ".git" {
+                continue;
+            }
+            if path.is_dir() {
+                files(&path, out);
+            } else {
+                out.push(path);
+            }
+        }
+    }
+    let mut all = Vec::new();
+    files(dir, &mut all);
+    all.sort();
+    let mut findings = Vec::new();
+    for path in all {
+        let rel = path
+            .strip_prefix(dir)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            findings.push(format!("{rel}: not text, so it cannot be scanned"));
+            continue;
+        };
+        if rel == "SKILL.md" {
+            findings.extend(scan_skill_md(&text));
+        } else {
+            findings.extend(scan_text(&text).into_iter().map(|f| format!("{rel}: {f}")));
+        }
+    }
+    findings
+}
+
+/// The checks that apply to any file in a skill: its size, shell-injection markers, and
+/// things that look like secrets.
+pub(crate) fn scan_text(raw: &str) -> Vec<String> {
+    let mut findings = Vec::new();
 
     let lines = raw.lines().count();
     if lines > MAX_SKILL_LINES {
         findings.push(format!("oversized: {lines} lines (> {MAX_SKILL_LINES})"));
-    }
-
-    if let Ok((fm, _body)) = parse_skill_md(raw) {
-        if fm.extra.contains_key("allowed-tools") || fm.extra.contains_key("allowed_tools") {
-            findings
-                .push("declares allowed-tools (pre-approves tools without prompting)".to_string());
-        }
     }
 
     // Claude Code runs `!`...`` / fenced `!` as shell before the model sees the content.
@@ -1290,6 +1345,26 @@ mod tests {
         // Staged, not active: only visible when including pending.
         assert!(mgr.list(false).is_empty());
         assert_eq!(mgr.list(true).len(), 1);
+    }
+
+    /// A staged skill with a clean SKILL.md and a risky script beside it is not approved
+    /// without `force`, and frontmatter the scan cannot read is a finding.
+    #[test]
+    fn approval_scans_the_scripts_and_unreadable_frontmatter() {
+        let tmp = TempDir::new();
+        let mgr = SkillsManager::new(tmp.path().to_path_buf());
+        mgr.ensure_dirs().unwrap();
+        mgr.create_pending_skill("evil", "Looks fine.", "## Procedure\nrun it")
+            .unwrap();
+        let staged = tmp.path().join("staging/evil");
+        std::fs::write(staged.join("evil.sh"), "echo !`id`\n").unwrap();
+        let findings = mgr.scan("evil").unwrap();
+        assert!(
+            findings.iter().any(|f| f.starts_with("evil.sh:")),
+            "{findings:?}"
+        );
+        assert!(mgr.approve("evil", false).is_err());
+        assert!(!scan_skill_md("---\ndescription: [a, b\n---\nbody").is_empty());
     }
 
     #[test]

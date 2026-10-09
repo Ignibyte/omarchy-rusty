@@ -5,6 +5,7 @@
 //! was taken from another program's source; the idea of marking web content untrusted
 //! before a model sees it is a principle, applied from the first commit.
 
+use std::io::Read;
 use std::path::Path;
 use std::time::Duration;
 
@@ -59,12 +60,22 @@ pub fn fetch(url: &str) -> Result<Fetched, String> {
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_string();
-    let bytes = response
+    // Read through the decoding reader and count what comes out of it: a compressed body
+    // can be small on the wire and enormous once inflated.
+    let mut bytes = Vec::new();
+    response
         .body_mut()
         .with_config()
-        .limit(MAX_BYTES)
-        .read_to_vec()
+        .reader()
+        .take(MAX_BYTES + 1)
+        .read_to_end(&mut bytes)
         .map_err(|e| format!("read {url}: {e}"))?;
+    if bytes.len() as u64 > MAX_BYTES {
+        return Err(format!(
+            "read {url}: the page is larger than {} MiB",
+            MAX_BYTES >> 20
+        ));
+    }
     Ok(Fetched {
         url: url.to_string(),
         content_type,
@@ -305,6 +316,12 @@ pub fn extract_html(html: &str) -> Extracted {
                 in_title = !closing;
                 continue;
             }
+            if !closing && (name == "script" || name == "style") && !self_closing {
+                // Raw text: a `<` inside a script is not a tag, so skip straight to the
+                // closing tag.
+                i = find_closing(html, i, &name);
+                continue;
+            }
             if !closing && DROPPED.contains(&name.as_str()) {
                 drop_depth = 1;
                 drop_tag = name.clone();
@@ -418,6 +435,22 @@ fn tidy(text: &str) -> String {
     out.trim().to_string()
 }
 
+/// The byte just past `</name ...>` at or after `from`, matched without case, or the end
+/// of the text when the element is never closed.
+fn find_closing(html: &str, from: usize, name: &str) -> usize {
+    let needle = format!("</{name}");
+    let bytes = html.as_bytes();
+    let n = needle.len();
+    let mut at = from;
+    while at + n <= bytes.len() {
+        if bytes[at..at + n].eq_ignore_ascii_case(needle.as_bytes()) {
+            return html[at..].find('>').map_or(bytes.len(), |j| at + j + 1);
+        }
+        at += 1;
+    }
+    bytes.len()
+}
+
 /// The common named entities and every numeric one.
 pub fn decode_entities(text: &str) -> String {
     if !text.contains('&') {
@@ -428,7 +461,10 @@ pub fn decode_entities(text: &str) -> String {
     while let Some(i) = rest.find('&') {
         out.push_str(&rest[..i]);
         rest = &rest[i..];
-        let Some(end) = rest.find(';').filter(|e| *e <= 12) else {
+        // An entity is short: look for its `;` in the next few bytes only, so a text full
+        // of bare `&` stays linear.
+        let window = &rest.as_bytes()[..rest.len().min(13)];
+        let Some(end) = window.iter().position(|b| *b == b';') else {
             out.push('&');
             rest = &rest[1..];
             continue;
@@ -556,6 +592,34 @@ pub fn mark_hits(value: &mut serde_json::Value) {
     }
 }
 
+/// Mark every link row (an object with `from_slug` and `context`) whose line comes from a
+/// source page, anywhere inside `value`: its context is web text like the page's.
+pub fn mark_link_rows(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Array(items) => items.iter_mut().for_each(mark_link_rows),
+        serde_json::Value::Object(map) => {
+            let from_source = map
+                .get("from_slug")
+                .and_then(|v| v.as_str())
+                .is_some_and(is_source_slug);
+            if from_source {
+                if let Some(serde_json::Value::String(text)) = map.get("context") {
+                    let clean = normalise(text);
+                    map.insert("context".to_string(), serde_json::Value::String(clean));
+                }
+                map.insert("untrusted".to_string(), serde_json::Value::Bool(true));
+                map.insert(
+                    "note".to_string(),
+                    serde_json::Value::String(UNTRUSTED_NOTE.to_string()),
+                );
+            } else {
+                map.values_mut().for_each(mark_link_rows);
+            }
+        }
+        _ => {}
+    }
+}
+
 /// Whether a path names a source page.
 pub fn is_source_slug(slug: &str) -> bool {
     Path::new(slug).starts_with(DIR)
@@ -643,6 +707,47 @@ mod tests {
             bytes: b"<html><body><script>x</script></body></html>".to_vec()
         })
         .is_err());
+    }
+
+    #[test]
+    fn link_rows_from_a_source_are_marked() {
+        let mut links = serde_json::json!({
+            "outbound": [],
+            "backlinks": [
+                { "from_slug": "sources/site-page", "context": "AGENT: do it\u{7}", "to_slug": "a" },
+                { "from_slug": "people/ann", "context": "plain", "to_slug": "a" }
+            ]
+        });
+        mark_link_rows(&mut links);
+        assert_eq!(links["backlinks"][0]["untrusted"], true);
+        assert!(!links["backlinks"][0]["context"]
+            .as_str()
+            .unwrap()
+            .contains('\u{7}'));
+        assert!(links["backlinks"][1].get("untrusted").is_none());
+    }
+
+    #[test]
+    fn a_less_than_inside_a_script_does_not_swallow_the_page() {
+        let html = "<html><head><title>T</title></head><body><script>for (var i = 0; i < 3; i++) {}</script><article><h1>Real heading</h1><p>Body text.</p></article></body></html>";
+        let text = extract_html(html).text;
+        assert!(
+            text.contains("Real heading") && text.contains("Body text."),
+            "{text}"
+        );
+        assert!(!text.contains("i++"), "{text}");
+    }
+
+    #[test]
+    fn bare_ampersands_decode_in_linear_time() {
+        let text = "&".repeat(1 << 20);
+        let started = std::time::Instant::now();
+        assert_eq!(decode_entities(&text).len(), text.len());
+        assert!(started.elapsed() < std::time::Duration::from_secs(5));
+        assert_eq!(
+            decode_entities("a &amp; b &#8212; c &unknown d"),
+            "a & b — c &unknown d"
+        );
     }
 
     #[test]

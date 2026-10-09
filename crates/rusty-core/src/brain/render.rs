@@ -252,6 +252,20 @@ pub fn render(
     }
 }
 
+/// A link the HTML may carry: http, https, mailto, `rusty:`, an anchor or a relative path.
+/// Any other scheme (`javascript:`, `data:`, `vbscript:`, …) becomes an inert `#`.
+fn safe_href(dest: &str) -> &str {
+    let lower = dest.trim_start().to_ascii_lowercase();
+    let scheme = lower
+        .split_once(':')
+        .map(|(scheme, _)| scheme)
+        .filter(|scheme| !scheme.contains(['/', '#', '?']));
+    match scheme {
+        None | Some("http" | "https" | "mailto" | "rusty") => dest,
+        Some(_) => "#",
+    }
+}
+
 /// The headings of a body, fenced code skipped.
 pub fn outline(body: &str) -> Vec<Heading> {
     let mut out = Vec::new();
@@ -659,7 +673,16 @@ impl<'a> Writer<'a> {
             }
             Event::Html(h) | Event::InlineHtml(h) => {
                 self.flush_hold();
-                self.push(&h);
+                // A captured page is web text: its HTML is shown as text, never run.
+                let from_source = self
+                    .self_slug
+                    .as_deref()
+                    .is_some_and(super::sources::is_source_slug);
+                if from_source {
+                    self.push(&esc(&h));
+                } else {
+                    self.push(&h);
+                }
             }
             Event::FootnoteReference(label) => {
                 self.flush_hold();
@@ -941,7 +964,7 @@ impl<'a> Writer<'a> {
         }
         self.push(&format!(
             "<a href=\"{}\" style=\"color:{}\">",
-            esc(dest),
+            esc(safe_href(dest)),
             self.style.link
         ));
     }
@@ -1258,6 +1281,31 @@ impl Resolver for MapResolver {
 
 #[cfg(test)]
 mod tests {
+
+    /// A `javascript:` link becomes inert, and a source page's raw HTML is shown as text.
+    #[test]
+    fn unsafe_links_are_inert_and_source_html_is_escaped() {
+        let r = render(
+            "[click](javascript:alert(1)) [ok](https://example.org)",
+            &Style::default(),
+            &NoVault,
+            Some("notes/n"),
+        );
+        assert!(!r.html.contains("javascript:"), "{}", r.html);
+        assert!(r.html.contains("https://example.org"));
+        let r = render(
+            "Hello <img src=x onerror=\"x()\"> there\n\n<script>alert(1)</script>\n",
+            &Style::default(),
+            &NoVault,
+            Some("sources/site-page"),
+        );
+        assert!(
+            !r.html.contains("<script>") && !r.html.contains("<img"),
+            "{}",
+            r.html
+        );
+    }
+
     use super::*;
 
     fn resolver() -> MapResolver {

@@ -45,9 +45,15 @@ pub struct PinStatus {
 
 #[derive(Default)]
 struct State {
-    failures: u32,
-    locked_until: Option<Instant>,
     token: Option<(String, Instant)>,
+}
+
+/// Seconds since the epoch: the lockout is kept on disk, so it needs wall-clock time.
+fn unix_now() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
 }
 
 /// The PIN and its unlock, owned by the back end.
@@ -72,6 +78,32 @@ impl PinLock {
 
     fn state(&self) -> MutexGuard<'_, State> {
         self.state.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    /// The wrong tries in a row and the end of any lockout (seconds since the epoch), kept
+    /// in a private file beside the PIN so every server process on the store counts the
+    /// same tries: a fresh process gets no fresh guesses.
+    fn attempts_path(&self) -> PathBuf {
+        self.path.with_file_name(".pin-attempts")
+    }
+
+    fn read_attempts(&self) -> (u32, u64) {
+        std::fs::read_to_string(self.attempts_path())
+            .ok()
+            .and_then(|text| {
+                let mut words = text.split_whitespace();
+                Some((words.next()?.parse().ok()?, words.next()?.parse().ok()?))
+            })
+            .unwrap_or((0, 0))
+    }
+
+    fn write_attempts(&self, failures: u32, locked_until: u64) {
+        if let Err(e) = write_private(
+            &self.attempts_path(),
+            &format!("{failures} {locked_until}\n"),
+        ) {
+            eprintln!("rusty: PIN attempts not recorded: {e}");
+        }
     }
 
     /// Set the PIN. Changing an existing one needs the live token. The new PIN relocks.
@@ -104,12 +136,11 @@ impl PinLock {
         }
         let mut state = self.state();
         let now = Instant::now();
-        if let Some(until) = state.locked_until {
-            if until > now {
-                let left = until.saturating_duration_since(now).as_secs().max(1);
-                return Err(format!("locked for another {left} seconds"));
-            }
-            state.locked_until = None;
+        let (failures, locked_until) = self.read_attempts();
+        let now_unix = unix_now();
+        if locked_until > now_unix {
+            let left = (locked_until - now_unix).max(1);
+            return Err(format!("locked for another {left} seconds"));
         }
         let stored =
             std::fs::read_to_string(&self.path).map_err(|e| format!("read the PIN file: {e}"))?;
@@ -119,17 +150,19 @@ impl PinLock {
             .verify_password(pin.as_bytes(), &parsed)
             .is_err()
         {
-            state.failures += 1;
-            if state.failures >= MAX_FAILURES {
-                state.failures = 0;
-                state.locked_until = Some(now + LOCKOUT);
+            let failures = failures + 1;
+            if failures >= MAX_FAILURES {
+                self.write_attempts(0, now_unix + LOCKOUT.as_secs());
                 return Err(format!(
                     "wrong PIN {MAX_FAILURES} times; locked for a minute"
                 ));
             }
+            self.write_attempts(failures, 0);
             return Err("wrong PIN".to_string());
         }
-        state.failures = 0;
+        if failures > 0 {
+            self.write_attempts(0, 0);
+        }
         let mut bytes = [0u8; 32];
         OsRng.fill_bytes(&mut bytes);
         let token: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
@@ -160,7 +193,7 @@ impl PinLock {
         }
     }
 
-    /// May a write to the vault go ahead? With no PIN set there is nothing to unlock and
+    /// May a write to the secrets file go ahead? With no PIN set there is nothing to unlock and
     /// it may; once one is set, only with the live token (TICKET-049).
     pub fn check_write(&self, token: Option<&str>) -> Result<(), String> {
         if !self.is_set() {
@@ -168,7 +201,9 @@ impl PinLock {
         }
         match token.filter(|t| !t.is_empty()) {
             Some(token) => self.check(token),
-            None => Err("the vault is locked; unlock with the PIN and pass the token".to_string()),
+            None => {
+                Err("the secrets are locked; unlock with the PIN and pass the token".to_string())
+            }
         }
     }
 
@@ -181,14 +216,11 @@ impl PinLock {
     pub fn status(&self) -> PinStatus {
         let state = self.state();
         let now = Instant::now();
+        let (_, locked_until) = self.read_attempts();
         PinStatus {
             set: self.is_set(),
             unlocked: state.token.as_ref().is_some_and(|(_, until)| now < *until),
-            locked_out_seconds: state
-                .locked_until
-                .filter(|until| *until > now)
-                .map(|until| until.saturating_duration_since(now).as_secs())
-                .unwrap_or(0),
+            locked_out_seconds: locked_until.saturating_sub(unix_now()),
         }
     }
 }
@@ -228,6 +260,28 @@ fn write_private(path: &Path, text: &str) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
+
+    /// A second lock on the same file, as a second server process has, sees the lockout
+    /// the first one earned.
+    #[test]
+    fn the_lockout_holds_across_processes() {
+        let dir = std::env::temp_dir().join(format!("rusty_pin_shared_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let a = PinLock::new(dir.join(".pin"));
+        a.set("correct-pin", None).unwrap();
+        for _ in 0..MAX_FAILURES {
+            let _ = a.unlock("wrong-pin", Duration::from_secs(60));
+        }
+        let b = PinLock::new(dir.join(".pin"));
+        assert!(b.status().locked_out_seconds > 0);
+        let err = b
+            .unlock("correct-pin", Duration::from_secs(60))
+            .unwrap_err();
+        assert!(err.contains("locked"), "{err}");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
     use super::*;
 
     fn fresh(name: &str) -> (PathBuf, PinLock) {

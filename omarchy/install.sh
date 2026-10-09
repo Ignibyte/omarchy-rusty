@@ -45,7 +45,7 @@ systemctl --user enable rusty-mcp >/dev/null
 systemctl --user restart rusty-mcp
 answered=""
 for _ in $(seq 1 30); do
-  if curl -fs -o /dev/null -X POST "$mcp_url" \
+  if curl -fs --max-time 2 -o /dev/null -X POST "$mcp_url" \
       -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
       -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"install","version":"0"}}}' 2>/dev/null; then
     answered=yes
@@ -53,7 +53,8 @@ for _ in $(seq 1 30); do
   fi
   sleep 0.5
 done
-if [ -z "$answered" ]; then
+# Something else on the port could answer; the unit itself must be up too.
+if [ -z "$answered" ] || ! systemctl --user is-active --quiet rusty-mcp; then
   echo "    rusty-mcp did not answer on $mcp_url; see: journalctl --user -u rusty-mcp" >&2
   exit 1
 fi
@@ -61,10 +62,10 @@ echo "    answering on $mcp_url"
 
 echo "==> memory pressure"
 echo "    two steps this script leaves to you (another program's unit; root):"
-echo "      compositor last:  install -Dm644 $here/wayland-wm-oom.conf ~/.config/systemd/user/wayland-wm@hyprland.desktop.service.d/60-oom.conf && systemctl --user daemon-reload"
-echo "      earlyoom, if used: add Hyprland and rusty-mcp to --avoid in /etc/default/earlyoom (see $here/README.md)"
+echo "      compositor last:  install -Dm644 '$here/wayland-wm-oom.conf' ~/.config/systemd/user/wayland-wm@hyprland.desktop.service.d/60-oom.conf && systemctl --user daemon-reload"
+echo "      earlyoom, if used: add Hyprland and rusty-mcp to --avoid in /etc/default/earlyoom (see '$here/README.md')"
 
 echo "==> MCP config"
 echo "    agents (stdio): add to .mcp.json  ->  \"rusty\": {\"type\": \"stdio\", \"command\": \"rusty-mcp\"}"
-echo "    http clients:   $mcp_url   (both forms in $here/mcp-config.json)"
+echo "    http clients:   $mcp_url   (both forms in '$here/mcp-config.json')"
 echo "done"

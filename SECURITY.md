@@ -23,17 +23,22 @@ that one of them fails is welcome:
 - **A client can run code as you.** Any client of the server can write a skill, write a
   script into an approved skill (`script_update`), and run an approved script
   (`script_run`). A skill created without `pending: true` is active at once, and its
-  scripts can run. The safety scan reads a staged skill when it is approved (`force` skips
-  it) and any skill on demand (`skill_scan`); it flags known risky patterns and is not a
-  sandbox.
+  scripts can run. The safety scan reads a staged skill's whole folder, its scripts
+  included, when it is approved (`force` skips it), and any skill on demand
+  (`skill_scan`); it flags known risky patterns and is not a sandbox. `script_run` stops a
+  script and everything it started at its time limit.
 - **Secrets are a plain text file** (`~/.rusty/.secret`, mode 600). The PIN guards the
   tools that reveal or change a value: `secret_reveal` and `secret_update` need a live
   unlock token, and once a PIN is set `secret_set` and `secret_delete` do too. Settings
-  whose key names a key, token, secret or password read back masked. The PIN does not
-  encrypt the file; anything running as you can read it.
+  whose key names a key, token, secret or password read back masked. Five wrong PINs lock
+  unlocking for a minute in every server process on the store. The PIN does not encrypt
+  the file; anything running as you can read it. The note and page tools cannot reach it: a
+  note path cannot name a dot-file, and the path settings refuse the store's home.
 - **Captured sources are untrusted.** A page fetched with `source_capture` is marked as
-  untrusted data in every answer that carries it, so an agent does not take its text as
-  instructions.
+  untrusted data in every MCP answer that carries its text (search, reads, renders,
+  `brain_ask`, link context, the page resource) and in `rusty-cli brain context`, so an
+  agent does not take it as instructions. Its HTML is shown as text and its links keep only
+  safe schemes. A capture reads at most 8 MiB after decompression.
 - **What leaves the machine.** Page text goes to the embedding provider: Ollama at
   `ollama_url` (this machine unless you change it) or OpenAI when you choose `openai`.
   `source_capture` fetches the URL it is given. The vault and the skills store commit to

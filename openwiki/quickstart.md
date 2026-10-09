@@ -13,7 +13,7 @@ sources:
     resource: repo://crates/rusty-cmd/src/session.rs
   - id: openwiki-source-a8160e123db68363371d6a65
     resource: repo://crates/rusty-cmd/tests/command.rs
-generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
+generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
     at: 2026-10-09T18:25:07.825Z
@@ -45,8 +45,9 @@ from the router), `docs/cli.md`, `docs/configuration.md` and `docs/architecture.
 
 - `rusty session start` starts the back end's user unit and prints its status;
   `rusty session status` reads the unit and probes the port. `rusty` alone, like
-  `rusty help`, prints the usage. A flag, any other session verb, or a bare word that is
-  neither a noun nor a store script prints the usage and exits 2.
+  `rusty help`, `-h` or `--help`, prints the usage and exits 0. Another flag, any other
+  session verb, or a bare word that is neither a noun nor a store script prints the usage
+  and exits 2.
 - `rusty-mcp` serves agents over stdio; the user service `rusty-mcp.service` serves Marley
   and other HTTP clients at `http://127.0.0.1:4174/mcp` and comes back on its own after a
   kill.

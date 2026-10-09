@@ -67,7 +67,8 @@ references are [tools.md](tools.md), [cli.md](cli.md) and
 
 | Tables | Holds | Rebuilt from the vault |
 |---|---|---|
-| `brain_pages`, `brain_fts`, `brain_links`, `brain_tags`, `brain_aliases`, `brain_timeline` | the page index: one row per page with its frontmatter, the full-text index, links with their line, tags, aliases, timeline entries | yes, `rusty-cli brain reindex` |
+| `brain_pages`, `brain_fts`, `brain_links`, `brain_tags`, `brain_aliases` | the page index: one row per page with its frontmatter, the full-text index, links with their line, tags, aliases | yes, `rusty-cli brain reindex` |
+| `brain_timeline` | timeline entries added through the tools; each file's `## Timeline` section is the truth | no |
 | `brain_chunks`, `brain_vec`, `brain_vec_meta` | page text in chunks and their vectors (`sqlite-vec`), with the model that made them | yes, by embedding again |
 | `brain_versions` | a snapshot of a page before each update or whole-file write | no |
 | `brain_consultations` | the brain loop's consultations and their outcome | no |
@@ -76,17 +77,19 @@ references are [tools.md](tools.md), [cli.md](cli.md) and
 | `conversation_archive`, `conversation_archive_fts` | ingested Claude Code transcripts and their text | from the transcripts, while they exist |
 | `tasks`, `conversations`, `agents` | earlier versions' built-in agent runs; nothing writes them now, and `search_conversations` reads the first two | no |
 
-Migrations live in `engine/db.rs` and only add.
+Migrations live in `engine/db.rs`; they add tables and columns, and one normalises old
+importance words in place.
 
 ## A write, step by step
 
 A page update over MCP:
 
-1. The tool handler parses the parameters and calls the brain manager inside `mutate()`.
+1. The tool handler parses the parameters and calls the brain manager; `mutate()` takes
+   the result.
 2. The manager snapshots the page into `brain_versions`, then writes the file, keeping the
    frontmatter as written where it can.
-3. It indexes the page: `brain_pages`, the full-text row, links, tags, aliases and
-   timeline, in one place that also appends a `changes` row.
+3. It indexes the page (its `brain_pages` row, the full-text row and its links, with a
+   `changes` row in the same place), then its aliases and tags.
 4. It commits the paths this write touched to the vault's git repository, on a background
    thread, so the call does not wait for git.
 5. `mutate()` emits `DataChanged`; the notifier sends `notifications/resources/list_changed`
@@ -105,10 +108,14 @@ sync, database connection, PIN token and embedder cache. What keeps them consist
 - SQLite's WAL and the busy timeout serialize writes across processes; within a process
   one connection sits behind a mutex.
 - A page write indexes the page itself, and the other processes' watchers see the file
-  change and sync it again, which finds nothing to do (the content hash matches).
+  change and sync it again, which finds nothing to do (the content hash matches). When two
+  indexers do reach the same page at once, the page still ends with one full-text row,
+  and a pass never forgets a page that was written while it ran.
 - A vault commit names only the paths its write touched, and the sweep that commits
-  outside edits leaves paths a write in flight has claimed; when two processes sweep, the
-  second finds a clean tree.
+  outside edits leaves paths a write in flight in the same process has claimed; when two
+  processes sweep, the second finds a clean tree. A commit that meets another process's
+  git index lock waits and tries again.
+- A stdio server finishes its pending commits before it exits.
 
 Notifications do not cross processes. A client hears about writes made by the process it
 is connected to, and about file changes that process's watcher sees. A change another
@@ -139,7 +146,7 @@ Agents reach Rusty through MCP. The brain loop ([brain-loop.md](architecture/bra
 asks an agent to consult before it decides (`brain_ask`), to record the decision with what
 it rested on (`brain_decide`), and to come back on a date (`brain_follow_up`); two optional
 Claude Code hooks, installed by `rusty-cli hooks install`, enforce the first two. Captured
-sources are marked untrusted in every answer that carries them.
+sources are marked untrusted in every MCP answer that carries their text.
 
 ## Moving a store
 

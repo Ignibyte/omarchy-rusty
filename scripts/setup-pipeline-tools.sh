@@ -55,10 +55,14 @@ gated=0
 completed=0
 while IFS= read -r f; do
   rusty_is_gated "$f" && gated=1
-done < <(git diff --cached --name-only)
+done < <(git diff --cached --no-renames --name-only)
 [[ -n "$(rusty_undelivered_completed)" ]] && completed=1
 if [[ $gated -eq 1 ]] && ! msg=$(rusty_verify_receipt); then
   echo "pre-commit: gated files staged and $msg" >&2
+  exit 1
+fi
+if [[ $gated -eq 1 ]] && ! msg=$(rusty_commit_matches_worktree); then
+  echo "pre-commit: $msg" >&2
   exit 1
 fi
 if [[ $completed -eq 1 && ! -f "$root/docs/planning/pipeline/WAIVER.md" ]] && ! msg=$(rusty_verify_openwiki_receipt); then

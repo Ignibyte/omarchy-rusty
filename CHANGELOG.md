@@ -3,7 +3,7 @@
 What each release changed, newest first. Versions follow semantic versioning; before 1.0
 a minor version may change a tool or a command.
 
-## [0.1.0] - unreleased
+## [0.1.0] - 2026-10-09
 
 The first public release.
 
@@ -24,7 +24,8 @@ The first public release.
 - `rusty-cli export` and `import`: a whole store in one zip, secrets only on request.
 - A conversation archive: `rusty-cli ingest-conversation` keeps Claude Code transcripts as
   searchable text and brain pages; `search_conversations` searches it.
-- `rusty-cli` for the terminal, `rusty` for the service and store scripts, a systemd user
-  service and an installer that builds from source or installs a release's binaries.
+- `rusty-cli` for the terminal (settings included), `rusty` for the service and store
+  scripts, a systemd user service and an installer that builds from source or installs a
+  release's binaries.
 - References generated from or checked against the code: `docs/tools.md`, `docs/cli.md`,
   `docs/configuration.md`.

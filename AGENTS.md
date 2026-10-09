@@ -37,13 +37,16 @@ clone without it, follow this section and skip every step further down that name
 3. Run `bin/gate.sh --diff` until it prints `GATE GREEN [diff]`.
 4. Open a pull request. CI runs the same gate.
 
-Do not create `docs/planning/` or anything in it, a waiver included: the hooks take that
-folder for the record and start enforcing the pipeline. Under Claude Code two hooks still
-apply. A commit that carries gated files (the list is `rusty_gated_paths` in
-`bin/lib-gate.sh`) needs a gate receipt for that exact tree and `HEAD`, so run
-`bin/gate.sh --diff` again after every change; and a write that looks like a credential is
-refused. You do not need the MCP servers in `.mcp.json`, and you do not update `openwiki/`;
-the maintainers reconcile it.
+You need no waiver and no `docs/planning/`; the hooks only treat that folder as the record
+when it is a git checkout of its own. Under Claude Code two hooks still apply, and they
+need `jq`. A commit made while gated files (the list is `rusty_gated_paths` in
+`bin/lib-gate.sh`) differ from `HEAD` needs a gate receipt for that exact tree and `HEAD`,
+so run `bin/gate.sh --diff` again after every change, and stage gated files as the gate
+saw them; `-n` and `--no-verify` are refused. A write that looks like a credential is
+refused too. You do not need the MCP servers in `.mcp.json`, and you do not update
+`openwiki/`; the maintainers reconcile it. If you installed Rusty's own brain-loop hooks
+(`rusty-cli hooks install`), they also act here, because this repository's `.mcp.json`
+names a `rusty` server: answer them with `brain_ask`, or work with them uninstalled.
 
 ## With the record (maintainers)
 
@@ -109,7 +112,9 @@ Run cargo commands one at a time. Never kill a running cargo.
     | bash .claude/hooks/record-pipeline-tool-use.sh
   ```
 
-  The same command serves under Claude Code when its PostToolUse hook does not fire.
+  The script writes the receipt only when `openwiki/.last-update.json` records a complete
+  run at the current `HEAD`. The same command serves under Claude Code when its PostToolUse
+  hook does not fire.
 
 <!-- OPENWIKI:START -->
 

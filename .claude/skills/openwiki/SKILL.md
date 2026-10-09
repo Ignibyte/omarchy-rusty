@@ -38,6 +38,11 @@ the code.
 8. If the run changed a gated path (`AGENTS.md` and `CLAUDE.md` carry OpenWiki's managed
    section), rerun `bin/gate.sh --diff` before delivery.
 
+## Without the record
+
+A contributor's clone has no `docs/planning/` and no prepared OpenWiki build: the
+maintainers reconcile the wiki. Do not start a run there; say so and stop.
+
 ## Rules
 
 - Never report the lifecycle as done before `openwiki_finish` returns `complete`.

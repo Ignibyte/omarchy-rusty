@@ -1,5 +1,5 @@
 {
-  "_comment": "Two ways to reach Rusty. Claude Code and Codex read the stdio form from a project's .mcp.json or the user config; the http form shares the always-on user service with Marley and other HTTP clients.",
+  "_comment": "Two ways to reach Rusty, as a JSON MCP config such as Claude Code's .mcp.json takes them: the stdio form starts a server for the agent; the http form shares the always-on user service with Marley and other HTTP clients. Codex takes the same in TOML: [mcp_servers.rusty] command = \"rusty-mcp\".",
   "mcpServers": {
     "rusty": {
       "type": "stdio",

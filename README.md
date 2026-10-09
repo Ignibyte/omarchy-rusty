@@ -54,8 +54,9 @@ optional protections for low-memory machines; `packaging/` holds two Arch packag
 
 **Upgrading** is the same command with a newer release or a pulled checkout. It restarts
 the service, so HTTP clients reconnect; an agent's own `rusty-mcp` keeps the old build
-until the agent restarts. Database migrations run when a program opens the store, and
-they only add. Run `rusty-cli export` first if you want a copy to go back to.
+until the agent restarts. Database migrations run when a program opens the store; they add
+tables and columns and keep what is there. Run `rusty-cli export` first if you want a copy
+to go back to.
 
 ## Connect an agent
 
@@ -161,6 +162,7 @@ systemctl --user stop rusty-mcp
 rusty-cli import ~/rusty-backup.zip --dry-run    # what is inside and what would happen
 rusty-cli import ~/rusty-backup.zip --replace
 systemctl --user start rusty-mcp
+rusty-cli hooks install                          # if you used the brain loop's hooks
 ```
 
 The import checks every entry before it writes anything, builds the store beside
@@ -175,7 +177,9 @@ Pages are markdown files with YAML frontmatter, in folders by type (`people/`,
 `projects/`, `concepts/`, `decisions/`, `sources/`, …) or any folder you make. A file
 without frontmatter is a page too: its title is the file name and its type comes from its
 folder, or `note`. Wikilinks are vault paths (`[[projects/orbit]]`), and a page's history
-is its `## Timeline` section. Deletes are soft: the page moves to `archive/`. Rusty commits
+is its `## Timeline` section. Deletes are soft: a page moves to `archive/`, a note deleted
+with the notes tools to `notes/.deleted/`, and two deletes never overwrite each other. Rusty
+commits
 every change it makes, and the running server indexes and commits files another program
 changes (Obsidian, an editor, git) a few seconds after they change.
 
@@ -211,8 +215,9 @@ design.
 
 A skill is a `SKILL.md` in the store. One created with `skill_create` or
 `rusty-cli skills new` is active at once; with `pending: true` it waits in `staging/`
-until someone approves it, and approval runs the safety scan first (`force` skips it).
-`skill_scan` scans any skill on demand. A `*.sh` file beside a skill is a script: run it
+until someone approves it, and approval first runs the safety scan over the skill's whole
+folder, its scripts included (`force` skips it). `skill_scan` scans any skill the same way.
+The scan flags known risky patterns; it is not a sandbox. A `*.sh` file beside a skill is a script: run it
 as `rusty <name>` from a terminal, `rusty-cli scripts run`, or `script_run` (a script in a
 staged skill does not run). Every skill and script change commits the store.
 
@@ -226,9 +231,11 @@ names, never values. Set a PIN with `secret_pin_set` to read and change values t
 the tools: `secret_unlock` returns a token that lasts `pin_timeout_minutes` (five by
 default) on that server process, and `secret_reveal` and `secret_update` need it, as do
 `secret_set` and `secret_delete` once a PIN exists. Five wrong PINs in a row lock unlocking
-for a minute. The PIN guards the tools, not the file: anything running as your user can
+for a minute, in every server process on the store. A value is one line; a multi-line key
+goes in base64. The PIN guards the tools, not the file: anything running as your user can
 read it. Never type the PIN to an agent. A setting whose key names a key, token, secret or
-password reads back as `•••`; credentials belong in the secrets file.
+password reads back as `•••`; credentials belong in the secrets file. `rusty-cli settings`
+reads and writes settings from a terminal under the same rules.
 
 ## Conversations
 
@@ -242,8 +249,10 @@ linked to related pages. Nothing is read until you run it. `search_conversations
 - **Is it running?** `rusty session status`, then `journalctl --user -u rusty-mcp -e`.
 - **An agent cannot start `rusty-mcp`.** Its `PATH` lacks `~/.local/bin`; use the full
   path in its MCP config.
-- **Port 4174 is taken.** Change `--http` in the unit's `ExecStart`, then
-  `systemctl --user daemon-reload` and restart it.
+- **Port 4174 is taken.** Give the service another loopback port with a drop-in
+  (`systemctl --user edit rusty-mcp`; see [configuration.md](docs/configuration.md#the-service)),
+  which survives reinstalls; point your HTTP clients and `RUSTY_MCP_ADDR` at it. The
+  installer's own check still expects 4174.
 - **A client does not see a change another process made.** Each server tells its own
   clients about its writes and about file changes it notices; a change another process
   made only in the database (a to-do, a memory) shows up through `changes_since`. After

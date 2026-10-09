@@ -173,8 +173,16 @@ impl ConversationArchive {
     }
 
     /// Ingest a transcript file: archive it and create/update its brain node.
+    /// A file with no user or assistant message in it is refused: it is not a Claude Code
+    /// transcript, and archiving it would only make an empty page.
     pub fn ingest(&self, path: &Path) -> Result<IngestOutcome, String> {
         let parsed = Self::parse_transcript(path)?;
+        if parsed.message_count == 0 {
+            return Err(format!(
+                "{} holds no messages; it is not a Claude Code transcript",
+                path.display()
+            ));
+        }
         self.ingest_parsed(&parsed, &path.to_string_lossy())
     }
 

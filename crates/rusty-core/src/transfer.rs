@@ -16,7 +16,7 @@ use crate::engine::settings_manager::SettingsManager;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
-use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Component, Path, PathBuf};
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
@@ -32,6 +32,45 @@ const SECRET_ENTRY: &str = "secrets/.secret";
 const PIN_ENTRY: &str = "secrets/.pin";
 /// The folders an export holds besides the manifest.
 const ROOTS: [&str; 5] = ["db", "brain", "skills", "notes", "secrets"];
+
+/// The settings that move a part of the store.
+pub const PATH_SETTINGS: [&str; 3] = ["brain_vault_path", "notes_path", "skills_path"];
+
+/// Check a value for one of [`PATH_SETTINGS`] before it is saved, and return it as it
+/// should be stored: `~/` expanded, an absolute path required, and never the store home
+/// or a folder that contains it, since the tools would then reach `.secret`, `.pin` and
+/// the database through notes or pages. Other keys pass unchanged.
+pub fn check_path_setting(key: &str, value: &str, home: &Path) -> Result<String, String> {
+    if !PATH_SETTINGS.contains(&key) {
+        return Ok(value.to_string());
+    }
+    let value = value.trim();
+    let expanded = match value.strip_prefix("~/") {
+        Some(rest) => dirs::home_dir()
+            .map(|user| user.join(rest))
+            .unwrap_or_else(|| PathBuf::from(value)),
+        None => PathBuf::from(value),
+    };
+    if !expanded.is_absolute() {
+        return Err(format!(
+            "{key} must be an absolute path (or start with ~/), not {value:?}"
+        ));
+    }
+    let clean: PathBuf = expanded.components().collect();
+    if clean
+        .components()
+        .any(|c| matches!(c, Component::ParentDir))
+    {
+        return Err(format!("{key} cannot contain `..`"));
+    }
+    if home.starts_with(&clean) {
+        return Err(format!(
+            "{key} cannot be {} or a folder that contains it: the store's secrets live there",
+            home.display()
+        ));
+    }
+    Ok(clean.to_string_lossy().to_string())
+}
 
 /// Where the parts of one store live.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -189,15 +228,22 @@ pub fn export(
         }
     }
     let partial = with_suffix(&dest_abs, ".partial");
-    let snapshot = with_suffix(&dest_abs, ".db-snapshot");
-    let _ = fs::remove_file(&snapshot);
-    {
-        let conn = db.conn()?;
+    // The snapshot holds the whole database: it is made in a folder only the owner can
+    // enter, beside the destination, and the folder goes once the zip is written.
+    let work = with_suffix(&dest_abs, &format!(".export-{}", std::process::id()));
+    let mut builder = fs::DirBuilder::new();
+    builder.mode(0o700);
+    builder
+        .create(&work)
+        .map_err(|e| format!("create {}: {e}", work.display()))?;
+    let snapshot = work.join("rusty.db");
+    let snapshotted = db.conn().and_then(|conn| {
         conn.execute("VACUUM INTO ?1", [snapshot.to_string_lossy().as_ref()])
-            .map_err(|e| format!("snapshot the database: {e}"))?;
-    }
-    let written = write_zip(loc, &snapshot, &partial, opts);
-    let _ = fs::remove_file(&snapshot);
+            .map(|_| ())
+            .map_err(|e| format!("snapshot the database: {e}"))
+    });
+    let written = snapshotted.and_then(|()| write_zip(loc, &snapshot, &partial, opts));
+    let _ = fs::remove_dir_all(&work);
     let manifest = match written {
         Ok(m) => m,
         Err(e) => {
@@ -479,6 +525,19 @@ fn manifest_of(archive: &mut ZipArchive<File>) -> Result<Manifest, String> {
             "the export is format version {} and this Rusty reads up to {FORMAT_VERSION}; update Rusty first",
             manifest.format_version
         ));
+    }
+    // Where the notes sat becomes a path setting on import: only plain folder names
+    // inside the vault are accepted, never `..`, a root or an empty path.
+    if let Some(rel) = manifest.notes_in_vault.as_deref() {
+        let plain = !rel.is_empty()
+            && Path::new(rel)
+                .components()
+                .all(|c| matches!(c, Component::Normal(_)));
+        if !plain {
+            return Err(format!(
+                "manifest.json places the notes at {rel:?}, which is not a folder inside the vault"
+            ));
+        }
     }
     Ok(manifest)
 }
@@ -872,6 +931,13 @@ mod tests {
         let zip = src.path().join("out.zip");
         let report = export(&loc, &db, &zip, ExportOptions::default()).unwrap();
         assert_eq!(mode(&zip), 0o600);
+        let leftovers: Vec<_> = fs::read_dir(src.path())
+            .unwrap()
+            .flatten()
+            .map(|e| e.file_name().to_string_lossy().to_string())
+            .filter(|n| n.contains(".export-") || n.contains("snapshot") || n.ends_with(".partial"))
+            .collect();
+        assert!(leftovers.is_empty(), "{leftovers:?}");
         let names = entries(&zip);
         assert!(names.contains(&"db/rusty.db".to_string()), "{names:?}");
         assert!(
@@ -1027,6 +1093,27 @@ mod tests {
     }
 
     #[test]
+    fn path_settings_must_be_absolute_and_outside_the_store_home() {
+        let home = Path::new("/srv/u/.rusty");
+        let check = |key: &str, value: &str| check_path_setting(key, value, home);
+        for bad in [
+            "/srv/u/.rusty",
+            "/srv/u",
+            "/",
+            "relative/notes",
+            "/srv/u/x/../.rusty",
+        ] {
+            assert!(check("notes_path", bad).is_err(), "{bad} was accepted");
+        }
+        assert_eq!(check("notes_path", "/srv/u/notes").unwrap(), "/srv/u/notes");
+        assert_eq!(
+            check("brain_vault_path", "/srv/u/.rusty/brain").unwrap(),
+            "/srv/u/.rusty/brain"
+        );
+        assert_eq!(check("embedding_provider", "ollama").unwrap(), "ollama");
+    }
+
+    #[test]
     fn unsafe_or_foreign_zips_are_refused_before_anything_is_written() {
         let dir = Scratch::new("unsafe");
         let good = serde_json::to_string(&Manifest {
@@ -1044,7 +1131,17 @@ mod tests {
             &format!("\"format_version\":{FORMAT_VERSION}"),
             "\"format_version\":99",
         );
+        let notes_out = good.replace(
+            "\"notes_in_vault\":\"notes\"",
+            "\"notes_in_vault\":\"../../.ssh\"",
+        );
         let cases = [
+            (
+                "notes-out.zip",
+                Some(notes_out.as_str()),
+                None,
+                "not a folder inside the vault",
+            ),
             (
                 "no-manifest.zip",
                 None,

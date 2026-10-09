@@ -345,7 +345,9 @@ impl Database {
     /// instead of failing with `SQLITE_BUSY`, and foreign keys enforced (TICKET-045).
     fn prepare(conn: &Connection) -> Result<(), String> {
         conn.execute_batch(
-            "PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;",
+            // The timeout first: switching a new database to WAL takes a lock that another
+            // process starting at the same moment may hold.
+            "PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;",
         )
         .map_err(|e| format!("Failed to set connection pragmas: {e}"))
     }

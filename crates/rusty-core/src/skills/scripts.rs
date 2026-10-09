@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
-use super::{is_valid_skill_name, scan_skill_md, SkillsManager};
+use super::{is_valid_skill_name, scan_text, SkillsManager};
 
 /// How long `run_script` waits before it kills the child.
 pub const RUN_CAP: Duration = Duration::from_secs(60);
@@ -104,15 +104,40 @@ fn set_executable(path: &Path) -> Result<(), String> {
 }
 
 fn read_capped(mut stream: impl Read) -> String {
-    let mut bytes = Vec::new();
-    let _ = stream.read_to_end(&mut bytes);
-    if bytes.len() > MAX_OUTPUT {
-        bytes.truncate(MAX_OUTPUT);
-        let mut text = String::from_utf8_lossy(&bytes).to_string();
-        text.push_str("\n… (cut)\n");
-        return text;
+    // Keep the first MAX_OUTPUT bytes and read the rest away, so a script that prints
+    // without end costs no memory past the cap.
+    let mut kept = Vec::new();
+    let mut buf = [0u8; 8192];
+    let mut cut = false;
+    loop {
+        match stream.read(&mut buf) {
+            Ok(0) => break,
+            Ok(n) => {
+                let room = MAX_OUTPUT.saturating_sub(kept.len());
+                kept.extend_from_slice(&buf[..n.min(room)]);
+                cut |= n > room;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(_) => break,
+        }
     }
-    String::from_utf8_lossy(&bytes).to_string()
+    let mut text = String::from_utf8_lossy(&kept).to_string();
+    if cut {
+        text.push_str("\n… (cut)\n");
+    }
+    text
+}
+
+/// End a script's whole process group: the script and every job it started.
+#[cfg(unix)]
+fn kill_group(pgid: u32) {
+    if let Ok(pgid) = libc::pid_t::try_from(pgid) {
+        // SAFETY: kill(2) with a negative pid signals a process group and touches no
+        // memory; the group is the one `run_script` created for this script alone.
+        unsafe {
+            libc::kill(-pgid, libc::SIGKILL);
+        }
+    }
 }
 
 impl SkillsManager {
@@ -129,6 +154,26 @@ impl SkillsManager {
     /// The script named `name` or `skill/name`; a basename in two skills is an error
     /// that names both.
     pub fn resolve_script(&self, name: &str) -> Result<Script, String> {
+        self.resolve_in(name, true)
+    }
+
+    /// The script to run for `name`: among the active skills only, so a staged copy of a
+    /// script cannot shadow an approved one; a name only a staged skill has is refused as
+    /// pending.
+    fn resolve_runnable(&self, name: &str) -> Result<Script, String> {
+        match self.resolve_in(name, false) {
+            Ok(script) => Ok(script),
+            Err(e) => match self.resolve_in(name, true) {
+                Ok(script) => Err(format!(
+                    "{} is pending; approve the skill {:?} first",
+                    script.name, script.skill
+                )),
+                Err(_) => Err(e),
+            },
+        }
+    }
+
+    fn resolve_in(&self, name: &str, include_pending: bool) -> Result<Script, String> {
         let name = name.trim();
         let name = name.strip_suffix(".sh").unwrap_or(name);
         let (skill, base) = match name.split_once('/') {
@@ -138,7 +183,7 @@ impl SkillsManager {
         if base.is_empty() || !is_valid_skill_name(base) {
             return Err(format!("not a script name: {name:?}"));
         }
-        let all = self.scripts(true);
+        let all = self.scripts(include_pending);
         let matches: Vec<&Script> = all
             .iter()
             .filter(|s| s.name == base && skill.is_none_or(|k| s.skill == k))
@@ -248,7 +293,7 @@ impl SkillsManager {
     /// The safety scan over a script's text.
     pub fn scan_script(&self, name: &str) -> Result<Vec<String>, String> {
         let (_, text) = self.script_text(name)?;
-        Ok(scan_skill_md(&text))
+        Ok(scan_text(&text))
     }
 
     /// Run an active script with `args`, both streams captured, killed at `cap`.
@@ -258,21 +303,21 @@ impl SkillsManager {
         args: &[String],
         cap: Duration,
     ) -> Result<ScriptRun, String> {
-        let script = self.resolve_script(name)?;
-        if script.status != "active" {
-            return Err(format!(
-                "{} is pending; approve the skill {:?} first",
-                script.name, script.skill
-            ));
-        }
-        let mut child = Command::new("bash")
+        let script = self.resolve_runnable(name)?;
+        let mut command = Command::new("bash");
+        command
             .arg(&script.path)
             .args(args)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stderr(Stdio::piped());
+        // Its own process group, so the cap ends the script and every job it started.
+        #[cfg(unix)]
+        std::os::unix::process::CommandExt::process_group(&mut command, 0);
+        let mut child = command
             .spawn()
             .map_err(|e| format!("start {}: {e}", script.path))?;
+        let pgid = child.id();
         let out = child
             .stdout
             .take()
@@ -281,21 +326,42 @@ impl SkillsManager {
             .stderr
             .take()
             .map(|s| std::thread::spawn(move || read_capped(s)));
-        let started = Instant::now();
+        let deadline = Instant::now() + cap;
         let mut timed_out = false;
-        let status = loop {
+        let mut status = loop {
             match child.try_wait() {
                 Ok(Some(status)) => break status.code().unwrap_or(-1),
-                Ok(None) if started.elapsed() >= cap => {
+                Ok(None) if Instant::now() >= deadline => {
+                    #[cfg(unix)]
+                    kill_group(pgid);
                     let _ = child.kill();
                     let _ = child.wait();
                     timed_out = true;
                     break 124;
                 }
                 Ok(None) => std::thread::sleep(Duration::from_millis(20)),
-                Err(e) => return Err(format!("wait for {}: {e}", script.path)),
+                Err(e) => {
+                    #[cfg(unix)]
+                    kill_group(pgid);
+                    return Err(format!("wait for {}: {e}", script.path));
+                }
             }
         };
+        // A job the script left running keeps its output open; it gets until the cap,
+        // then the group ends so the readers finish.
+        let finished = |t: &Option<std::thread::JoinHandle<String>>| {
+            t.as_ref().is_none_or(|t| t.is_finished())
+        };
+        while !(finished(&out) && finished(&err)) {
+            if Instant::now() >= deadline {
+                #[cfg(unix)]
+                kill_group(pgid);
+                timed_out = true;
+                status = 124;
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
         let stdout = out.and_then(|t| t.join().ok()).unwrap_or_default();
         let stderr = err.and_then(|t| t.join().ok()).unwrap_or_default();
         Ok(ScriptRun {
@@ -311,13 +377,7 @@ impl SkillsManager {
     #[cfg(unix)]
     pub fn exec_script(&self, name: &str, args: &[String]) -> Result<(), String> {
         use std::os::unix::process::CommandExt;
-        let script = self.resolve_script(name)?;
-        if script.status != "active" {
-            return Err(format!(
-                "{} is pending; approve the skill {:?} first",
-                script.name, script.skill
-            ));
-        }
+        let script = self.resolve_runnable(name)?;
         let err = Command::new("bash").arg(&script.path).args(args).exec();
         Err(format!("exec {}: {err}", script.path))
     }
@@ -326,6 +386,69 @@ impl SkillsManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A job the script leaves running cannot hold the call past its cap, and output past
+    /// the cap is read away rather than kept.
+    #[test]
+    fn the_cap_ends_background_jobs_and_output_stays_bounded() {
+        let (_root, mgr) = store("cap");
+        mgr.create_script(
+            "lingers",
+            Some("tools"),
+            Some("#!/usr/bin/env bash\n(sleep 30; echo late) &\necho early\n"),
+            false,
+        )
+        .unwrap();
+        let started = Instant::now();
+        let run = mgr
+            .run_script("lingers", &[], Duration::from_secs(1))
+            .unwrap();
+        assert!(
+            started.elapsed() < Duration::from_secs(10),
+            "{:?}",
+            started.elapsed()
+        );
+        assert!(run.timed_out && run.status == 124, "{run:?}");
+        assert!(run.stdout.contains("early") && !run.stdout.contains("late"));
+
+        mgr.create_script(
+            "chatty",
+            Some("tools"),
+            Some("#!/usr/bin/env bash\nhead -c 1000000 /dev/zero | tr '\\0' 'a'\n"),
+            false,
+        )
+        .unwrap();
+        let run = mgr
+            .run_script("chatty", &[], Duration::from_secs(20))
+            .unwrap();
+        assert!(!run.timed_out, "{run:?}");
+        assert!(run.stdout.len() <= MAX_OUTPUT + 16, "{}", run.stdout.len());
+        assert!(run.stdout.ends_with("(cut)\n"));
+    }
+
+    /// A staged copy of a script does not shadow the approved one of the same name.
+    #[test]
+    fn a_staged_copy_does_not_block_the_approved_script() {
+        let (root, mgr) = store("shadow");
+        mgr.create_script("hello", Some("tools"), Some("echo active\n"), false)
+            .unwrap();
+        let staged = root.join("staging/tools");
+        std::fs::create_dir_all(&staged).unwrap();
+        std::fs::write(
+            staged.join("SKILL.md"),
+            "---\nname: tools\ndescription: d\n---\n",
+        )
+        .unwrap();
+        std::fs::write(staged.join("hello.sh"), "echo staged\n").unwrap();
+        let run = mgr
+            .run_script("hello", &[], Duration::from_secs(10))
+            .unwrap();
+        assert_eq!(run.stdout.trim(), "active");
+        let run = mgr
+            .run_script("tools/hello", &[], Duration::from_secs(10))
+            .unwrap();
+        assert_eq!(run.stdout.trim(), "active");
+    }
 
     fn store(name: &str) -> (PathBuf, SkillsManager) {
         let dir = std::env::temp_dir().join(format!("rusty_scripts_{}_{name}", std::process::id()));

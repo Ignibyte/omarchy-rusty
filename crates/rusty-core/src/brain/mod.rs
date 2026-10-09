@@ -602,7 +602,11 @@ impl BrainManager {
         self.forget_page(slug)?;
         self.vault.git_commit(&format!("delete: {slug}"));
         // After the delete's own commit, so it keeps its paths (TICKET-037).
-        self.drop_bookmarks(slug, false)?;
+        // The page is already archived; a bookmarks file that cannot be read must not
+        // turn that into a failure the caller would retry against a missing page.
+        if let Err(e) = self.drop_bookmarks(slug, false) {
+            eprintln!("rusty: bookmarks of {slug} left as they are: {e}");
+        }
         Ok(())
     }
 
@@ -1350,10 +1354,14 @@ impl BrainManager {
         // Collect valid slugs
         let mut valid_slugs: Vec<String> = Vec::new();
 
+        // One unreadable file (not UTF-8, gone mid-walk) is reported and skipped; it must
+        // not stop the rest of the vault from being indexed.
         for (slug, _path) in &files {
             valid_slugs.push(slug.clone());
-            self.sync_page(slug)?;
-            synced += 1;
+            match self.sync_page(slug) {
+                Ok(_) => synced += 1,
+                Err(e) => eprintln!("rusty: vault sync: skipped {slug}: {e}"),
+            }
         }
 
         // Remove orphan index rows (pages in DB but not on disk). The connection guard
@@ -1373,7 +1381,12 @@ impl BrainManager {
             slugs
         };
         for slug in &indexed_slugs {
-            if !valid_slugs.contains(slug) {
+            // A page written since the walk listed the files (by this process or another)
+            // is indexed but not in the list: look again before forgetting it.
+            let still_there = !vault::in_archive(slug)
+                && !slug.split('/').any(|part| part.starts_with('.'))
+                && self.vault.page_exists(slug);
+            if !valid_slugs.contains(slug) && !still_there {
                 self.forget_page(slug)?;
             }
         }
@@ -1789,7 +1802,15 @@ impl BrainManager {
         }
         let query = q.words.as_str();
         let fts = self.search_text(query, Some(limit * 2), page_type)?;
-        let mut hits = self.semantic().search(embedder, query, limit * 3)?;
+        // The vector half needs the provider; when it is down or slow, the text half still
+        // answers rather than the whole search failing.
+        let mut hits = match self.semantic().search(embedder, query, limit * 3) {
+            Ok(hits) => hits,
+            Err(e) => {
+                eprintln!("rusty: search: vectors skipped: {e}");
+                Vec::new()
+            }
+        };
         if let Some(set) = &allowed {
             hits.retain(|h| set.contains(&h.slug));
         }
@@ -2220,18 +2241,18 @@ impl BrainManager {
             "import: {} pages and {} attachments from {}",
             report.imported_pages, report.imported_attachments, report.plan.name
         ));
-        // The vault's bookmarks come into the store, not the app (TICKET-037).
-        let before = self.bookmarks()?.len();
-        let mut list = self.bookmarks()?;
-        list.extend(
-            report
-                .plan
-                .bookmarks
-                .iter()
-                .filter(|b| b.check().is_ok())
-                .cloned(),
-        );
-        report.bookmarks_added = self.set_bookmarks(list)?.len() - before;
+        // The source vault's bookmarks join the store's. The import is done and committed
+        // by now, so a bookmarks file that cannot be read is reported, not an error.
+        let incoming = report.plan.bookmarks.iter().filter(|b| b.check().is_ok());
+        let added = self.bookmarks().and_then(|mut list| {
+            let before = list.len();
+            list.extend(incoming.cloned());
+            Ok(self.set_bookmarks(list)?.len() - before)
+        });
+        match added {
+            Ok(n) => report.bookmarks_added = n,
+            Err(e) => eprintln!("rusty: import: bookmarks not added: {e}"),
+        }
         self.vault.flush_commits();
         Ok(report)
     }
@@ -2468,10 +2489,20 @@ impl BrainManager {
                 _ => continue,
             };
 
-            let section = format!(
-                "### {} ({})\n{}\n",
-                page.title, page.page_type, page.compiled_truth
-            );
+            // A captured page is web text: it is marked, normalised and kept as data.
+            let section = if page.page_type == sources::PAGE_TYPE {
+                format!(
+                    "### {} (source, untrusted)\n{}\n{}\n",
+                    page.title,
+                    sources::UNTRUSTED_NOTE,
+                    sources::normalise(&page.compiled_truth)
+                )
+            } else {
+                format!(
+                    "### {} ({})\n{}\n",
+                    page.title, page.page_type, page.compiled_truth
+                )
+            };
 
             total_chars += section.len();
             if total_chars > Self::MAX_BRAIN_CONTEXT_CHARS {
@@ -2642,7 +2673,7 @@ impl BrainManager {
         if raw.ends_with('/') {
             return Err("A page path needs a name".to_string());
         }
-        let slug = clean_rel(raw.trim_end_matches(".md"));
+        let slug = clean_rel(raw.strip_suffix(".md").unwrap_or(raw));
         let Some(name) = slug.rsplit('/').next().filter(|n| !n.trim().is_empty()) else {
             return Err("A page path needs a name".to_string());
         };
@@ -2688,7 +2719,9 @@ impl BrainManager {
             self.forget_page(slug)?;
         }
         self.vault.git_commit(&format!("delete folder: {folder}"));
-        self.drop_bookmarks(&folder, true)?;
+        if let Err(e) = self.drop_bookmarks(&folder, true) {
+            eprintln!("rusty: bookmarks under {folder} left as they are: {e}");
+        }
         Ok(archived)
     }
 
@@ -2697,9 +2730,9 @@ impl BrainManager {
     /// what moved is rewritten in every page (fenced code untouched), the index rows
     /// follow, and one commit records it.
     pub fn rename(&self, from: &str, to: &str) -> Result<RenameReport, String> {
-        let from = clean_rel(from.trim_end_matches(".md"));
+        let from = clean_rel(from.strip_suffix(".md").unwrap_or(from));
         let into_folder = to.trim().ends_with('/');
-        let mut to = clean_rel(to.trim_end_matches(".md"));
+        let mut to = clean_rel(to.strip_suffix(".md").unwrap_or(to));
         if from.contains("..") || to.contains("..") {
             return Err("Invalid path".to_string());
         }
@@ -2768,7 +2801,9 @@ impl BrainManager {
             "move: {from} to {to} ({} pages updated)",
             rewritten.len()
         ));
-        self.follow_bookmarks(from, to, false)?;
+        if let Err(e) = self.follow_bookmarks(from, to, false) {
+            eprintln!("rusty: bookmarks of {from} left as they are: {e}");
+        }
         Ok(RenameReport {
             from: from.to_string(),
             to: to.to_string(),
@@ -2801,7 +2836,9 @@ impl BrainManager {
             "move folder: {from} to {to} ({} pages updated)",
             rewritten.len()
         ));
-        self.follow_bookmarks(from, to, true)?;
+        if let Err(e) = self.follow_bookmarks(from, to, true) {
+            eprintln!("rusty: bookmarks under {from} left as they are: {e}");
+        }
         Ok(RenameReport {
             from: from.to_string(),
             to: to.to_string(),
@@ -2819,8 +2856,18 @@ impl BrainManager {
     ) -> Result<Vec<String>, String> {
         let mut changed = Vec::new();
         for (slug, path) in self.vault.list_all_files()? {
-            let raw = std::fs::read_to_string(&path)
-                .map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
+            // A file that cannot be read as text keeps its links as they are; failing here
+            // would leave the move done and the rewrite half-applied.
+            let raw = match std::fs::read_to_string(&path) {
+                Ok(raw) => raw,
+                Err(e) => {
+                    eprintln!(
+                        "rusty: rename: links in {} left as they are: {e}",
+                        path.display()
+                    );
+                    continue;
+                }
+            };
             let (new_raw, n) = links::rewrite_targets(&raw, map);
             if n > 0 && new_raw != raw {
                 std::fs::write(&path, new_raw)
@@ -3010,6 +3057,13 @@ impl BrainManager {
         )
         .map_err(|e| format!("Failed to index page: {e}"))?;
 
+        // Two processes indexing one outside edit can both get past the hash check; the
+        // delete keeps the page to one full-text row whichever inserts last.
+        conn.execute(
+            "DELETE FROM brain_fts WHERE slug = ?1",
+            rusqlite::params![entry.slug],
+        )
+        .map_err(|e| format!("Failed to index FTS: {e}"))?;
         conn.execute(
             "INSERT INTO brain_fts (slug, title, content, page_type) VALUES (?1, ?2, ?3, ?4)",
             rusqlite::params![entry.slug, entry.title, entry.content, entry.page_type],

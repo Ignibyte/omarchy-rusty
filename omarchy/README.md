@@ -8,7 +8,7 @@ idempotent.
 | `install.sh` | the three binaries into `~/.local/bin` (`rusty-mcp`, `rusty-cli`, and `rusty`, the command: built with cargo from a checkout, copied from a release's `bin/`), the back end's user service, and the two memory-pressure steps below printed for you to apply |
 | `rusty-mcp.service` | the back end over Streamable HTTP on localhost, wanted by `default.target`, restarted after any exit but a stop |
 | `wayland-wm-oom.conf` | a drop-in for uwsm's compositor unit so Hyprland is the last of the session to go under memory pressure; pointed at, never applied |
-| `mcp-config.json` | the `mcpServers` entries for Claude Code and Codex (stdio) and for HTTP clients |
+| `mcp-config.json` | the `mcpServers` entries for a JSON MCP config such as Claude Code's `.mcp.json` (stdio) and for HTTP clients; Codex takes TOML (see the README) |
 
 Rusty has no window of its own. [Marley](https://github.com/Ignibyte/marley_ide), a Zed
 fork, draws a knowledge workspace over the back end's HTTP endpoint, and agents start

@@ -156,7 +156,8 @@ impl NotesManager {
             .as_secs();
 
         let file_name = full_path.file_name().unwrap_or_default().to_string_lossy();
-        let dest = deleted_dir.join(format!("{file_name}_{timestamp}"));
+        let dest =
+            crate::brain::vault::unused_name(&deleted_dir, &format!("{file_name}_{timestamp}"));
 
         std::fs::rename(&full_path, &dest).map_err(|e| format!("Failed to delete note: {e}"))?;
         self.record(relative_path, "deleted", "");
@@ -199,6 +200,15 @@ impl NotesManager {
     fn resolve_safe_path(&self, relative_path: &str) -> Result<PathBuf, String> {
         if relative_path.contains("..") {
             return Err("Invalid path: directory traversal not allowed".to_string());
+        }
+        // A note is never a dot-file or inside a dot-folder: that keeps `.deleted/`,
+        // `.git` and, wherever the notes folder points, a store's `.secret` and `.pin`
+        // out of the note tools' reach.
+        let hidden = Path::new(relative_path).components().any(|c| {
+            matches!(c, std::path::Component::Normal(name) if name.to_string_lossy().starts_with('.'))
+        });
+        if hidden {
+            return Err("Invalid path: notes cannot be dot-files".to_string());
         }
 
         let full = self.root.join(relative_path);

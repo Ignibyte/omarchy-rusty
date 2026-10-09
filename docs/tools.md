@@ -14,12 +14,12 @@ without `.md` (`projects/orbit`).
 
 | URI | What |
 |---|---|
-| `rusty://tasks` | Every to-do list with its open tasks (JSON) |
+| `rusty://tasks` | Every to-do list with its tasks that are not archived (JSON) |
 | `rusty://memories` | Long-term memories (JSON) |
 | `rusty://skills` | Skills in the store, active and staged (JSON) |
 | `rusty://notes` | The notes folder as a tree (JSON) |
 | `rusty://brain` | Brain pages, newest first (JSON) |
-| `rusty://tasks/{group_id}` | Open tasks in one list (JSON) |
+| `rusty://tasks/{group_id}` | The tasks in one list that are not archived (JSON) |
 | `rusty://brain/{slug}` | One brain page with its frontmatter (JSON) |
 | `rusty://notes/{path}` | One note's markdown |
 
@@ -428,7 +428,7 @@ Search the brain vault: full text (and vectors when a provider is set). Operator
 | `case_sensitive` | boolean | no | Keep only pages whose text holds the words as typed, case included (a text search). |
 | `limit` | integer | no | Maximum results (default 10). |
 | `page_type` | string | no | Restrict to a page type such as `project`, `concept`, `person`. |
-| `query` | string | yes | Full-text query. All terms must match; plain words work best. |
+| `query` | string | yes | The query. In the full-text half every term must match; with an embedding provider, pages close in meaning join the results too. Plain words work best. |
 | `regex` | boolean | no | Treat the words as a regular expression over the page text (a text search). |
 
 ### `brain_semantic_status`
@@ -727,7 +727,7 @@ Delete a secret from the secrets file. Once a PIN is set this needs the live unl
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `key` | string | yes | The vault key, such as `OPENAI_API_KEY`. |
+| `key` | string | yes | The secret's name, such as `OPENAI_API_KEY`. |
 | `token` | string | no | The live unlock token from `secret_unlock`; needed once a PIN is set. |
 
 ### `secret_list`
@@ -763,7 +763,7 @@ Read one secret's value with a live unlock token; without one nothing is returne
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `key` | string | yes | The vault key. |
+| `key` | string | yes | The secret's name. |
 | `token` | string | yes | The live unlock token from `secret_unlock`. |
 
 ### `secret_set`
@@ -772,9 +772,9 @@ Set a secret in the secrets file. Once a PIN is set this needs the live unlock t
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `key` | string | yes | The vault key. |
+| `key` | string | yes | The secret's name, such as `OPENAI_API_KEY`. |
 | `token` | string | no | The live unlock token from `secret_unlock`; needed once a PIN is set. |
-| `value` | string | yes | The value; it is written to the vault and never echoed back. |
+| `value` | string | yes | The value; it is written to the secrets file and never echoed back. One line. |
 
 ### `secret_unlock`
 
@@ -790,9 +790,9 @@ Replace one secret's value with a live unlock token
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `key` | string | yes | The vault key. |
+| `key` | string | yes | The secret's name. |
 | `token` | string | yes | The live unlock token from `secret_unlock`. |
-| `value` | string | yes | The new value; it is written to the vault and never echoed back. |
+| `value` | string | yes | The new value; it is written to the secrets file and never echoed back. One line. |
 
 ## Settings
 
@@ -806,7 +806,7 @@ Read one setting; null when unset. A key naming a key, token, secret or password
 
 ### `setting_set`
 
-Write one setting. Writing the mask "•••" back to a credential-looking key is refused
+Write one setting. Writing the mask "•••" back to a credential-looking key is refused. The path settings (brain_vault_path, notes_path, skills_path) take an absolute path or one starting with ~/, never the store's home or a folder that contains it, and apply when a server starts
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|

@@ -31,10 +31,10 @@ sources:
     resource: repo://scripts/check-pipeline.sh
   - id: openwiki-source-58e168516499e3589535de84
     resource: repo://scripts/lib-openwiki.sh
-generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
+generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T18:25:07.825Z
+    at: 2026-10-09T19:17:18.990Z
 ---
 
 # Workflow and gates: how a change moves through this repository
@@ -101,9 +101,10 @@ recall → plan → design → implement → inspect → validate → complete �
   `CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`. `docs/` and the roadmap are exempt, so a
   pipeline can write notes while a gate runs and docs-only changes commit without a
   receipt.
-- `.git/rusty-openwiki-receipt` has the same shape plus the pipeline id. The
-  PostToolUse hook writes it when `openwiki_finish` returns `complete`. Neither receipt
-  is ever written by hand.
+- `.git/rusty-openwiki-receipt` holds `version`, `fingerprint`, the pipeline id and `at`
+  (no `mode`). The PostToolUse hook writes it when `openwiki_finish` returns `complete`
+  and `openwiki/.last-update.json` records that complete run at the current `HEAD`.
+  Neither receipt is ever written by hand.
 - `--verify` reports the OpenWiki receipt when the record is checked out, and exits on the
   gate receipt. CI runs `--diff` on every push to `main` and every pull request.
 - The library and the scripts find the repository from their own file's location, not
@@ -116,13 +117,16 @@ recall → plan → design → implement → inspect → validate → complete �
   With no record checked out it allows: there is no pipeline to enforce.
 - `enforce-secrets.sh` (the same matcher): a write that contains credential-looking bytes
   is refused, in a contributor's clone too.
-- `enforce-commit-gate.sh` (PreToolUse on Bash): a `git commit` that carries gated files
-  needs a matching gate receipt; a public commit made while the record holds a completed
+- `enforce-commit-gate.sh` (PreToolUse on Bash; it needs `jq` and refuses without it): it
+  reads every form of `git commit` (`-C`, `-c` or `--opt` before it; `-a`, a pathspec,
+  or `git add … &&` before it). While any gated file differs from `HEAD`, the commit
+  needs a matching gate receipt, and a staged gated file must match the worktree with no
+  untracked gated file left out; a public commit made while the record holds a completed
   spec it has not committed yet delivers that pipeline and needs a matching OpenWiki
   receipt too, unless a waiver is in force; a commit aimed at the record is exempt;
-  `--no-verify` is refused.
+  `--no-verify` and `-n` are refused.
 - `record-pipeline-tool-use.sh` (PostToolUse on `openwiki_finish`): the completion
-  receipt.
+  receipt, after checking OpenWiki's own record.
 - The git pre-commit shim installed by `scripts/setup-pipeline-tools.sh` applies the
   same two receipt rules to any tool that commits. Codex runs none of the Claude Code
   hooks: a Codex session runs the gate by hand, relies on the shim, and records the
@@ -169,9 +173,8 @@ shipped scripts under bash. The record is `docs/architecture/brain-loop.md`.
 
 - A host without the hooks (Codex) runs the same checks by hand and through the
   pre-commit shim.
-- Creating `docs/planning/` in a contributor's clone turns the phase gate on with no
-  pipeline to satisfy it, and every gated edit is then refused; a contributor never
-  creates it.
+- The record is recognised only as a git checkout of its own (`docs/planning/.git`), so a
+  `docs/planning/` folder made by hand in a contributor's clone turns nothing on.
 - A commit moves `HEAD`, so both receipts read stale right after it; the next gated
   commit needs its own gate run.
 

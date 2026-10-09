@@ -4,8 +4,10 @@ Rusty installs two commands: `rusty-cli`, the terminal client for the store, and
 which starts the back end and runs store scripts. Both read the store under `~/.rusty`
 (`$HOME/.rusty`; see [configuration.md](configuration.md) for the settings that move its
 parts). `rusty-cli` opens the store in-process, so it works whether or not the service
-runs. An error prints `error: <what>` on standard error and exits 1. The MCP tools are in
-[tools.md](tools.md).
+runs. A command that fails prints the reason on standard error (most as `error: <what>`)
+and exits 1; a mistake in how it was called (an unknown flag, a missing value, a count
+that is not a number) exits 2. Flags take `--flag value` or `--flag=value`. The MCP tools
+are in [tools.md](tools.md).
 
 ## `rusty`
 
@@ -97,7 +99,7 @@ rusty-cli source search <query...> [--limit N]
 `capture` fetches an http or https URL (a web page, a PDF, markdown or plain text) and
 keeps the readable text as a `source` page under `sources/`; a PDF needs `pdftotext`.
 Capturing the same URL again updates its page. Captured text is marked as untrusted
-wherever a tool returns it.
+wherever a tool returns it and in `brain context`.
 
 ### Notes
 
@@ -150,13 +152,21 @@ current directory, or `--dir`.
 
 ```text
 rusty-cli changes [--since <cursor>] [--limit N]
+rusty-cli settings list
+rusty-cli settings get <key>
+rusty-cli settings set <key> <value>
 rusty-cli refresh
 rusty-cli export <file.zip> [--include-secrets]
 rusty-cli import <file.zip> [--replace] [--dry-run]
 ```
 
 - `changes` lists what changed after a cursor, whichever process made the change; without
-  `--since` it prints the current cursor.
+  `--since` it prints only the current cursor, to start from.
+- `settings` reads and writes the settings in
+  [configuration.md](configuration.md#settings) through the same rules as the tools: a
+  credential-looking value reads back as `•••`, writing that mask back is refused, and a
+  path setting takes an absolute path (or one starting with `~/`) outside the store's
+  home folder. A path setting applies when a server starts.
 - `refresh` tells running servers to reload, after something wrote the store around them.
 - `export` writes the whole store (database snapshot, vault, skills, notes kept outside
   the vault) to a new zip readable by you alone. Secrets go in only with

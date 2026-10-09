@@ -89,64 +89,105 @@ fn entries_mut<'a>(
         .ok_or_else(|| format!("\"hooks\".\"{event}\" is not an array"))
 }
 
-fn entry_names_script(entry: &serde_json::Value, name: &str) -> bool {
-    entry["hooks"].as_array().is_some_and(|hooks| {
-        hooks
-            .iter()
-            .any(|h| h["command"].as_str().is_some_and(|c| c.contains(name)))
+/// Whether a hook command runs one of Rusty's scripts, from this home or another one:
+/// Rusty writes them to `<home>/.rusty/hooks/<name>`.
+fn is_ours(command: &str, name: &str) -> bool {
+    command.contains(&format!(".rusty/hooks/{name}"))
+}
+
+/// Remove the hook commands that run `name` but are not `keep` from one event's entries.
+/// An entry loses only those hook objects, and goes only when none is left in it, so a
+/// user's own hook that shares an entry with Rusty's stays. Returns how many went.
+fn remove_ours(entries: &mut Vec<serde_json::Value>, name: &str, keep: Option<&str>) -> usize {
+    let mut removed = 0;
+    entries.retain_mut(|entry| {
+        let Some(hooks) = entry.get_mut("hooks").and_then(|h| h.as_array_mut()) else {
+            return true;
+        };
+        let before = hooks.len();
+        hooks.retain(|h| {
+            let command = h["command"].as_str().unwrap_or("");
+            !is_ours(command, name) || Some(command) == keep
+        });
+        let gone = before - hooks.len();
+        removed += gone;
+        gone == 0 || !hooks.is_empty()
+    });
+    removed
+}
+
+/// Whether one event's entries hold exactly `command`.
+fn has_command(entries: &[serde_json::Value], command: &str) -> bool {
+    entries.iter().any(|entry| {
+        entry["hooks"]
+            .as_array()
+            .is_some_and(|hooks| hooks.iter().any(|h| h["command"].as_str() == Some(command)))
     })
 }
 
-/// Write the scripts and wire them; a second run changes nothing.
+/// Write the scripts and wire them. A stale command (another home's path) is replaced;
+/// a second run changes nothing, and the settings file is written only when it changes.
 pub fn install(home: &Path) -> Result<Report, String> {
     let dir = hooks_dir(home);
     std::fs::create_dir_all(&dir).map_err(|e| format!("create {}: {e}", dir.display()))?;
+    let path = settings_path(home);
+    // Read the settings first, so a file that does not parse stops the install before
+    // anything is written.
+    let original = read_settings(&path)?;
     let mut report = Report::default();
     for (name, body) in [(ASK_HOOK_NAME, ASK_HOOK), (STOP_HOOK_NAME, STOP_HOOK)] {
-        let path = dir.join(name);
-        std::fs::write(&path, body).map_err(|e| format!("write {}: {e}", path.display()))?;
+        let script = dir.join(name);
+        std::fs::write(&script, body).map_err(|e| format!("write {}: {e}", script.display()))?;
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
-                .map_err(|e| format!("chmod {}: {e}", path.display()))?;
+            std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755))
+                .map_err(|e| format!("chmod {}: {e}", script.display()))?;
         }
         report.scripts_written += 1;
     }
-    let path = settings_path(home);
-    let mut settings = read_settings(&path)?;
-    let pre = entries_mut(&mut settings, "PreToolUse")?;
-    if !pre.iter().any(|e| entry_names_script(e, ASK_HOOK_NAME)) {
-        pre.push(serde_json::json!({
-            "matcher": WRITE_MATCHER,
-            "hooks": [{ "type": "command", "command": command_for(&dir, ASK_HOOK_NAME), "timeout": 10 }],
-        }));
-        report.entries_added += 1;
+    let mut settings = original.clone();
+    for (event, name, matcher) in [
+        ("PreToolUse", ASK_HOOK_NAME, Some(WRITE_MATCHER)),
+        ("Stop", STOP_HOOK_NAME, None),
+    ] {
+        let command = command_for(&dir, name);
+        let entries = entries_mut(&mut settings, event)?;
+        remove_ours(entries, name, Some(&command));
+        if !has_command(entries, &command) {
+            let hook = serde_json::json!({ "type": "command", "command": command, "timeout": 10 });
+            entries.push(match matcher {
+                Some(m) => serde_json::json!({ "matcher": m, "hooks": [hook] }),
+                None => serde_json::json!({ "hooks": [hook] }),
+            });
+            report.entries_added += 1;
+        }
     }
-    let stop = entries_mut(&mut settings, "Stop")?;
-    if !stop.iter().any(|e| entry_names_script(e, STOP_HOOK_NAME)) {
-        stop.push(serde_json::json!({
-            "hooks": [{ "type": "command", "command": command_for(&dir, STOP_HOOK_NAME), "timeout": 10 }],
-        }));
-        report.entries_added += 1;
+    if settings != original {
+        write_settings(&path, &settings)?;
     }
-    write_settings(&path, &settings)?;
     Ok(report)
 }
 
-/// Remove the entries and the scripts; everything else stays.
+/// Remove Rusty's hook commands and the scripts; every other hook and setting stays, and
+/// the settings file is written only when something was removed from it.
 pub fn uninstall(home: &Path) -> Result<Report, String> {
     let mut report = Report::default();
     let path = settings_path(home);
     if path.exists() {
         let mut settings = read_settings(&path)?;
         for (event, name) in [("PreToolUse", ASK_HOOK_NAME), ("Stop", STOP_HOOK_NAME)] {
-            let entries = entries_mut(&mut settings, event)?;
-            let before = entries.len();
-            entries.retain(|e| !entry_names_script(e, name));
-            report.entries_removed += before - entries.len();
+            if let Some(entries) = settings
+                .get_mut("hooks")
+                .and_then(|h| h.get_mut(event))
+                .and_then(|e| e.as_array_mut())
+            {
+                report.entries_removed += remove_ours(entries, name, None);
+            }
         }
-        write_settings(&path, &settings)?;
+        if report.entries_removed > 0 {
+            write_settings(&path, &settings)?;
+        }
     }
     for name in [ASK_HOOK_NAME, STOP_HOOK_NAME] {
         let script = hooks_dir(home).join(name);
@@ -159,14 +200,14 @@ pub fn uninstall(home: &Path) -> Result<Report, String> {
     Ok(report)
 }
 
-/// Whether the scripts exist and the settings name them.
+/// Whether the scripts exist and the settings run them from this home.
 pub fn status(home: &Path) -> Status {
     let dir = hooks_dir(home);
     let settings = read_settings(&settings_path(home)).unwrap_or(serde_json::json!({}));
     let wired = |event: &str, name: &str| {
         settings["hooks"][event]
             .as_array()
-            .is_some_and(|entries| entries.iter().any(|e| entry_names_script(e, name)))
+            .is_some_and(|entries| has_command(entries, &command_for(&dir, name)))
     };
     Status {
         ask_script: dir.join(ASK_HOOK_NAME).is_file(),
@@ -246,6 +287,99 @@ mod tests {
         assert_eq!(value["permissions"]["allow"][0], "Bash(ls:*)");
         let s = status(&home);
         assert!(!s.ask_script && !s.stop_script && !s.ask_wired && !s.stop_wired);
+        let _ = std::fs::remove_dir_all(home);
+    }
+
+    /// A user's own hook in the same entry as Rusty's survives an uninstall, and a file
+    /// with nothing of Rusty's in it is not rewritten.
+    #[test]
+    fn uninstall_removes_only_rustys_commands() {
+        let home = home("uninstall_shared");
+        let settings = settings_path(&home);
+        install(&home).unwrap();
+        let mut value: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&settings).unwrap()).unwrap();
+        value["hooks"]["PreToolUse"][0]["hooks"]
+            .as_array_mut()
+            .unwrap()
+            .push(
+                serde_json::json!({ "type": "command", "command": "bash /my/own/format-check.sh" }),
+            );
+        value["hooks"]["Stop"][0]["hooks"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({ "type": "command", "command": "notify-send done" }));
+        std::fs::write(&settings, serde_json::to_string(&value).unwrap()).unwrap();
+        let removed = uninstall(&home).unwrap();
+        assert_eq!(removed.entries_removed, 2);
+        let value: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&settings).unwrap()).unwrap();
+        assert_eq!(
+            value["hooks"]["PreToolUse"][0]["hooks"][0]["command"],
+            "bash /my/own/format-check.sh"
+        );
+        assert_eq!(
+            value["hooks"]["Stop"][0]["hooks"][0]["command"],
+            "notify-send done"
+        );
+
+        let untouched = r#"{"theme":"dark","permissions":{"allow":[]}}"#;
+        std::fs::write(&settings, untouched).unwrap();
+        assert_eq!(uninstall(&home).unwrap().entries_removed, 0);
+        assert_eq!(std::fs::read_to_string(&settings).unwrap(), untouched);
+        let _ = std::fs::remove_dir_all(home);
+    }
+
+    /// The settings file keeps its own key order through an install.
+    #[test]
+    fn install_keeps_the_settings_key_order() {
+        let home = home("install_order");
+        let settings = settings_path(&home);
+        std::fs::create_dir_all(settings.parent().unwrap()).unwrap();
+        std::fs::write(
+            &settings,
+            r#"{"theme":"dark","permissions":{"allow":[]},"env":{"Z":"1","A":"2"}}"#,
+        )
+        .unwrap();
+        install(&home).unwrap();
+        let text = std::fs::read_to_string(&settings).unwrap();
+        let at = |key: &str| text.find(key).unwrap();
+        assert!(
+            at("\"theme\"") < at("\"permissions\"") && at("\"permissions\"") < at("\"env\""),
+            "{text}"
+        );
+        assert!(at("\"Z\"") < at("\"A\""), "{text}");
+        let _ = std::fs::remove_dir_all(home);
+    }
+
+    /// A command left by another home's install is replaced, not counted as wired, and a
+    /// second install leaves the file's bytes alone.
+    #[test]
+    fn install_replaces_a_stale_command_and_then_writes_nothing() {
+        let home = home("install_stale");
+        let settings = settings_path(&home);
+        std::fs::create_dir_all(settings.parent().unwrap()).unwrap();
+        std::fs::write(
+            &settings,
+            r#"{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash \"/srv/olduser/.rusty/hooks/brain-decide-before-stop.sh\""}]}]}}"#,
+        )
+        .unwrap();
+        assert!(!status(&home).stop_wired, "a stale path is not wired");
+        let first = install(&home).unwrap();
+        assert_eq!(first.entries_added, 2);
+        let value: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&settings).unwrap()).unwrap();
+        let stop = value["hooks"]["Stop"].as_array().unwrap();
+        assert_eq!(stop.len(), 1, "the stale entry went: {stop:?}");
+        assert!(!stop[0]["hooks"][0]["command"]
+            .as_str()
+            .unwrap()
+            .contains("olduser"));
+        let s = status(&home);
+        assert!(s.ask_wired && s.stop_wired, "{s:?}");
+        let bytes = std::fs::read(&settings).unwrap();
+        assert_eq!(install(&home).unwrap().entries_added, 0);
+        assert_eq!(std::fs::read(&settings).unwrap(), bytes);
         let _ = std::fs::remove_dir_all(home);
     }
 

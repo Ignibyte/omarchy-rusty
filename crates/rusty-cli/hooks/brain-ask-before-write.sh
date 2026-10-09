@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # brain-ask-before-write.sh: consult the brain before the first write (PreToolUse on
-# Edit, Write, MultiEdit and NotebookEdit). Part of Rusty's loop, Ask, Decide, Follow up
-# (TICKET-018). Scoped to sessions whose working directory carries a .mcp.json with a
-# rusty server, and to files under that directory: a scratch script elsewhere is not a
+# Edit, Write, MultiEdit and NotebookEdit). Part of Rusty's loop, Ask, Decide, Follow up.
+# Scoped to sessions whose working directory carries a .mcp.json with a server named
+# rusty, and to files under that directory: a scratch script elsewhere is not a
 # change to the repository. Monotonic: one brain_ask call whose result was not an error
 # lets every later write through. Fails open without jq, without a transcript, or on a
 # transcript that cannot be read: a hook never blocks on its own plumbing. Exit 0 allows;
@@ -13,8 +13,8 @@ command -v jq >/dev/null 2>&1 || exit 0
 cwd=$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null) || exit 0
 [ -n "$cwd" ] || cwd=$PWD
 [ -f "$cwd/.mcp.json" ] || exit 0
-grep -q '"rusty"' "$cwd/.mcp.json" 2>/dev/null || exit 0
-file=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || exit 0
+jq -e '.mcpServers.rusty' "$cwd/.mcp.json" >/dev/null 2>&1 || exit 0
+file=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty' 2>/dev/null) || exit 0
 case "$file" in
   "") ;;
   /*) case "$file" in "$cwd"/*) ;; *) exit 0 ;; esac ;;
