@@ -201,9 +201,9 @@ Two optional Claude Code hooks hold a session to the first two steps:
 `rusty-cli hooks install` writes them to `~/.rusty/hooks/` and adds them to
 `~/.claude/settings.json`. They act only when the session's directory has a `.mcp.json`
 naming a server called `rusty` (a server added with `claude mcp add --scope user` alone
-does not count), and they need `jq`. The first file write is blocked until the session
-has called `brain_ask`; a session that wrote files is refused its first stop until it
-records a decision or `brain_no_decision`. They read the transcript and step aside when
+does not count), and they need `jq`. The write hook blocks the first file write until the
+session has called `brain_ask`; the Stop hook refuses the first stop of a session that
+wrote files and recorded neither a decision nor `brain_no_decision`. They read the transcript and step aside when
 they cannot. [docs/architecture/brain-loop.md](docs/architecture/brain-loop.md) has the
 design.
 

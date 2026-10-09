@@ -32,7 +32,8 @@ What Rusty is for, what 0.1.0 holds, and what comes next. The shape is in
 - Staging by default for skills an agent writes, so nothing an agent authors runs before
   you approve it.
 - An encrypted export, so a backup can carry the secrets safely.
-- An export tool over MCP for clients such as Marley, without the secrets.
+- An export tool over MCP for clients such as [Marley](https://github.com/Ignibyte/marley_ide),
+  without the secrets.
 - Tiered context for agents: an abstract, an overview and the details per page and
   folder, so an agent reads the least it needs.
 - Turning a finished agent session into memories and timeline entries.
