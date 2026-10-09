@@ -27,8 +27,8 @@ You need x86_64 Linux with a systemd user session, `git` and `curl`. Optional:
 PDFs, and `jq` for the brain loop's Claude Code hooks.
 
 From a release, with no Rust toolchain: download `rusty-<version>-x86_64-linux.tar.gz`
-and its `.sha256` from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases),
-then:
+and its `.sha256` from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases)
+(if it lists no release yet, build from source as below), then:
 
 ```bash
 sha256sum -c rusty-0.1.0-x86_64-linux.tar.gz.sha256
