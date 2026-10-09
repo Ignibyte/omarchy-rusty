@@ -9,5 +9,4 @@ pub mod memory_manager;
 pub mod pin_lock;
 pub mod secrets_manager;
 pub mod settings_manager;
-pub mod task_manager;
 pub mod user_tasks;

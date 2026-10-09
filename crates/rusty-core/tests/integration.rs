@@ -7,7 +7,6 @@ use rusqlite::Connection;
 use rusty_core::brain::BrainManager;
 use rusty_core::engine::db::Database;
 use rusty_core::engine::memory_manager::MemoryManager;
-use rusty_core::engine::task_manager::{TaskManager, TaskState};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -213,63 +212,6 @@ fn memory_and_brain_independent() {
     assert!(!brain_ctx.contains("Prefers Rust"));
 
     cleanup(&dir);
-}
-
-// ── Conversation + Task lifecycle ───────────────────────────────────
-
-#[test]
-fn conversation_lifecycle() {
-    let db = test_db();
-    let tm = TaskManager::new(Arc::clone(&db));
-
-    // Create conversation
-    let conv_id = tm.create_conversation().unwrap();
-    assert!(!conv_id.is_empty());
-
-    // Create task in conversation
-    let task_id = tm.create_task("Hello Rusty", &conv_id, "").unwrap();
-    assert!(!task_id.is_empty());
-
-    // Task starts pending
-    let task = tm.get_task(&task_id).unwrap().unwrap();
-    assert_eq!(task.state, TaskState::Pending);
-
-    // Transition to running
-    tm.set_running(&task_id).unwrap();
-    let task = tm.get_task(&task_id).unwrap().unwrap();
-    assert_eq!(task.state, TaskState::Running);
-
-    // Complete
-    tm.set_completed(
-        &task_id,
-        "Hello! How can I help?",
-        "session-1",
-        0.01,
-        1,
-        500,
-    )
-    .unwrap();
-    let task = tm.get_task(&task_id).unwrap().unwrap();
-    assert_eq!(task.state, TaskState::Completed);
-    assert_eq!(task.result, "Hello! How can I help?");
-
-    // List conversations
-    let convos = tm.list_conversations().unwrap();
-    assert_eq!(convos.len(), 1);
-    assert_eq!(convos[0].id, conv_id);
-    assert_eq!(convos[0].message_count, 1);
-
-    // Search conversations
-    let found = tm.search_conversations("Hello", 10).unwrap();
-    assert_eq!(found.len(), 1);
-
-    let not_found = tm.search_conversations("nonexistent_xyz", 10).unwrap();
-    assert!(not_found.is_empty());
-
-    // Delete conversation
-    tm.delete_conversation(&conv_id).unwrap();
-    let convos = tm.list_conversations().unwrap();
-    assert!(convos.is_empty());
 }
 
 // ── Notes filesystem operations ─────────────────────────────────────

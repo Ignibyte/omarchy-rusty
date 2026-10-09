@@ -75,10 +75,10 @@ references are [tools.md](tools.md), [cli.md](cli.md) and
 | `task_headers`, `user_tasks` | to-do lists and their tasks | no |
 | `memories`, `settings`, `changes` | memories, settings, the change log | no |
 | `conversation_archive`, `conversation_archive_fts` | ingested Claude Code transcripts and their text | from the transcripts, while they exist |
-| `tasks`, `conversations`, `agents` | earlier versions' built-in agent runs; nothing writes them now, and `search_conversations` reads the first two | no |
 
-Migrations live in `engine/db.rs`; they add tables and columns, and one normalises old
-importance words in place.
+Migrations live in `engine/db.rs`; they add tables and columns, one normalises old
+importance words in place, and one drops three tables (`tasks`, `conversations`, `agents`)
+that the agent runs of versions before 0.1.0 used.
 
 ## A write, step by step
 

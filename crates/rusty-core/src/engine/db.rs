@@ -77,34 +77,11 @@ impl Database {
 
         conn.execute_batch(
             "
-            CREATE TABLE IF NOT EXISTS tasks (
-                id TEXT PRIMARY KEY,
-                prompt TEXT NOT NULL,
-                state TEXT NOT NULL DEFAULT 'pending',
-                result TEXT DEFAULT '',
-                error TEXT DEFAULT '',
-                session_id TEXT DEFAULT '',
-                claude_session_id TEXT DEFAULT '',
-                conversation_id TEXT DEFAULT '',
-                cost_usd REAL DEFAULT 0,
-                num_turns INTEGER DEFAULT 0,
-                duration_ms INTEGER DEFAULT 0,
-                created_at INTEGER NOT NULL,
-                started_at INTEGER DEFAULT 0,
-                completed_at INTEGER DEFAULT 0
-            );
-
-            CREATE TABLE IF NOT EXISTS conversations (
-                id TEXT PRIMARY KEY,
-                last_session_id TEXT DEFAULT '',
-                tts_muted INTEGER NOT NULL DEFAULT 0,
-                created_at INTEGER NOT NULL
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_tasks_conversation
-                ON tasks(conversation_id);
-            CREATE INDEX IF NOT EXISTS idx_tasks_state
-                ON tasks(state);
+            -- The agent host's tables, unused since TICKET-056 and dropped by TICKET-066;
+            -- their indexes go with them.
+            DROP TABLE IF EXISTS tasks;
+            DROP TABLE IF EXISTS conversations;
+            DROP TABLE IF EXISTS agents;
 
             CREATE TABLE IF NOT EXISTS memories (
                 id TEXT PRIMARY KEY,
@@ -141,28 +118,6 @@ impl Database {
 
             CREATE INDEX IF NOT EXISTS idx_user_tasks_header
                 ON user_tasks(header_id);
-
-            CREATE TABLE IF NOT EXISTS agents (
-                id TEXT PRIMARY KEY,
-                conversation_id TEXT NOT NULL DEFAULT '',
-                directory TEXT NOT NULL,
-                prompt TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'pending',
-                result TEXT DEFAULT '',
-                error TEXT DEFAULT '',
-                cost_usd REAL DEFAULT 0,
-                num_turns INTEGER DEFAULT 0,
-                duration_ms INTEGER DEFAULT 0,
-                session_id TEXT DEFAULT '',
-                created_at INTEGER NOT NULL,
-                started_at INTEGER DEFAULT 0,
-                completed_at INTEGER DEFAULT 0
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_agents_status
-                ON agents(status);
-            CREATE INDEX IF NOT EXISTS idx_agents_created
-                ON agents(created_at);
 
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY,
@@ -308,15 +263,6 @@ impl Database {
         )
         .map_err(|e| format!("Migration failed: {e}"))?;
 
-        // Backfill columns added to the CREATE statements above after some
-        // databases were already created (CREATE TABLE IF NOT EXISTS never alters
-        // an existing table). ALTER TABLE ADD COLUMN errors if the column already
-        // exists, so the result is ignored — this is idempotent.
-        let _ = conn.execute(
-            "ALTER TABLE conversations ADD COLUMN tts_muted INTEGER NOT NULL DEFAULT 0",
-            [],
-        );
-
         // One importance vocabulary (TICKET-052): `medium`, which `store_memory` used to
         // document, reads as `normal`, and the three words are stored in lower case.
         // Idempotent; a row already right is not touched.
@@ -414,6 +360,55 @@ mod tests {
             conn: Mutex::new(conn),
         };
         assert!(db.migrate().is_ok());
+    }
+
+    /// A store from 0.1.x still holds the agent host's tables: the first open drops them
+    /// with their indexes, keeps every other table's rows, and a second open is a no-op
+    /// (TICKET-066).
+    #[test]
+    fn open_drops_the_agent_host_tables() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE tasks (id TEXT PRIMARY KEY, prompt TEXT NOT NULL, conversation_id TEXT DEFAULT '', created_at INTEGER NOT NULL);
+             CREATE TABLE conversations (id TEXT PRIMARY KEY, tts_muted INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL);
+             CREATE TABLE agents (id TEXT PRIMARY KEY, directory TEXT NOT NULL, prompt TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at INTEGER NOT NULL);
+             CREATE INDEX idx_tasks_conversation ON tasks(conversation_id);
+             CREATE INDEX idx_agents_status ON agents(status);
+             INSERT INTO tasks (id, prompt, created_at) VALUES ('t1', 'old run', 1);
+             INSERT INTO conversations (id, created_at) VALUES ('c1', 1);
+             INSERT INTO agents (id, directory, prompt, created_at) VALUES ('a1', '/tmp', 'old agent', 1);
+             CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+             INSERT INTO settings VALUES ('kept', 'yes');",
+        )
+        .unwrap();
+        let db = Database::from_conn(conn);
+        db.migrate().unwrap();
+        db.migrate().unwrap();
+        let conn = db.conn().unwrap();
+        let left: Vec<String> = conn
+            .prepare(
+                "SELECT name FROM sqlite_master WHERE name IN \
+                 ('tasks', 'conversations', 'agents', 'idx_tasks_conversation', 'idx_agents_status')",
+            )
+            .unwrap()
+            .query_map([], |row| row.get(0))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
+        assert!(left.is_empty(), "{left:?}");
+        let kept: String = conn
+            .query_row("SELECT value FROM settings WHERE key = 'kept'", [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        assert_eq!(kept, "yes");
+        let user_tasks: i64 = conn
+            .query_row("SELECT COUNT(*) FROM user_tasks", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(
+            user_tasks, 0,
+            "the to-do lists' table is not the agent host's"
+        );
     }
 
     #[test]

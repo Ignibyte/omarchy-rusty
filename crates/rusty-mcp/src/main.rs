@@ -1828,7 +1828,7 @@ impl Rusty {
     }
 
     #[tool(
-        description = "Search the conversation archive by keyword: the Claude Code transcripts kept with `rusty-cli ingest-conversation`, each with its title, project, start time, brain page and a matching snippet (`transcripts`). `agent_runs` lists matching conversations from earlier versions' built-in agent runs, when the store holds any"
+        description = "Search the conversation archive by keyword: the Claude Code transcripts kept with `rusty-cli ingest-conversation`, each with its title, project, start time, brain page and a matching snippet, as `{ \"transcripts\": [...] }`"
     )]
     fn search_conversations(
         &self,
@@ -1839,13 +1839,9 @@ impl Rusty {
             Arc::clone(&self.core.db),
             Arc::clone(&self.core.brain_manager),
         );
-        let found = archive.search(&p.query, limit).and_then(|transcripts| {
-            let agent_runs = self
-                .core
-                .task_manager
-                .search_conversations(&p.query, limit)?;
-            Ok(serde_json::json!({ "transcripts": transcripts, "agent_runs": agent_runs }))
-        });
+        let found = archive
+            .search(&p.query, limit)
+            .map(|transcripts| serde_json::json!({ "transcripts": transcripts }));
         json_result(found)
     }
 

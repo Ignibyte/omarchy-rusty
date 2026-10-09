@@ -13,7 +13,8 @@ What Rusty is for, what 0.1.0 holds, and what comes next. The shape is in
 - The brain loop: `brain_ask`, `brain_decide`, `brain_follow_up` and `brain_due`, with
   two optional Claude Code hooks that make an agent ask before it writes and record what
   it decided.
-- To-do lists, memories, notes, settings, and secrets behind a PIN.
+- To-do lists, memories, notes, settings (also from a terminal, `rusty-cli settings`), and
+  secrets behind a PIN.
 - A skills store whose `*.sh` files are commands (`rusty <name>`), with optional staging
   and a safety scan before a staged skill is approved.
 - Sources: a web page, PDF or text fetched from a URL and kept as a page, marked untrusted
@@ -28,7 +29,6 @@ What Rusty is for, what 0.1.0 holds, and what comes next. The shape is in
 ## Next
 
 - `rusty-bin` and `rusty-git` on the AUR.
-- A `rusty-cli settings` command, so a terminal can change settings without an agent.
 - Staging by default for skills an agent writes, so nothing an agent authors runs before
   you approve it.
 - An encrypted export, so a backup can carry the secrets safely.

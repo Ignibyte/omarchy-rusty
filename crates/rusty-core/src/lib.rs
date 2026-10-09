@@ -6,6 +6,7 @@ pub mod brain;
 mod core;
 pub mod engine;
 pub mod events;
+mod git;
 pub mod notes;
 pub mod skills;
 pub mod transfer;

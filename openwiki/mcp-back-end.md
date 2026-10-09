@@ -43,10 +43,10 @@ sources:
     resource: repo://crates/rusty-mcp/tests/smoke.rs
   - id: openwiki-source-21e08c04e1a1eb05137c81aa
     resource: repo://service/rusty-mcp.service
-generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
+generated: {by: "claude-code", at: "2026-10-09T23:09:31.569Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T20:35:14.973Z
+    at: 2026-10-09T23:09:31.569Z
 ---
 
 # MCP back end: one server for Marley and the agents
@@ -182,8 +182,8 @@ rules below are the ones a family's list does not show.
   text, and every page's links keep only http, https, mailto, `rusty:` and anchors.
 - **The conversation archive.** `search_conversations` searches the transcripts
   `rusty-cli ingest-conversation` kept (`ConversationArchive::search`) and returns them as
-  `transcripts`, with `agent_runs` from the tables earlier versions' built-in agent runs
-  wrote.
+  `{ "transcripts": [...] }`. The `agent_runs` key and the agent host's three tables it read
+  are gone; a store from 0.1.x drops the tables at its next open.
 
 `EXPECTED` in the router test lists every name; a tool missing from it or from the router
 fails the test, every tool must carry a description, and every tool must fit a family.

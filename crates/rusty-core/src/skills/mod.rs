@@ -988,6 +988,7 @@ fn run_git_commit(root: &Path, message: &str) {
             .current_dir(root)
             .output();
     }
+    crate::git::ensure_identity(root);
     let _ = Command::new("git")
         .args(["add", "-A"])
         .current_dir(root)

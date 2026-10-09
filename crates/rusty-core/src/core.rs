@@ -9,7 +9,6 @@ use crate::engine::memory_manager::MemoryManager;
 use crate::engine::pin_lock::PinLock;
 use crate::engine::secrets_manager::SecretsManager;
 use crate::engine::settings_manager::SettingsManager;
-use crate::engine::task_manager::TaskManager;
 use crate::engine::user_tasks::UserTaskManager;
 use crate::events::EventBus;
 use crate::notes::NotesManager;
@@ -26,9 +25,6 @@ type EmbedderCache = Mutex<Option<(Instant, Option<Arc<dyn Embedder>>)>>;
 pub struct Core {
     /// Broadcasts [`crate::events::AppEvent`]s to whoever is listening.
     pub events: EventBus,
-    /// The conversations of earlier versions' built-in agent runs, which
-    /// `search_conversations` still lists beside the transcript archive.
-    pub task_manager: Arc<TaskManager>,
     /// Long-term memories.
     pub memory_manager: Arc<MemoryManager>,
     /// Markdown notes.
@@ -76,7 +72,6 @@ impl Core {
         let skills_root = loc.skills.clone();
 
         let events = EventBus::new();
-        let task_manager = Arc::new(TaskManager::new(Arc::clone(&db)));
         let memory_manager = Arc::new(MemoryManager::new(Arc::clone(&db)));
         let notes_manager = Arc::new(
             NotesManager::with_root(PathBuf::from(&notes_path))
@@ -97,7 +92,6 @@ impl Core {
 
         Core {
             events,
-            task_manager,
             memory_manager,
             notes_manager,
             user_task_manager,

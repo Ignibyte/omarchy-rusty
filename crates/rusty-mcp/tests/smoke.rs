@@ -864,6 +864,89 @@ async fn skill_writes_commit_the_store() {
         .output()
         .unwrap();
     assert!(status.stdout.is_empty(), "nothing left uncommitted");
+    // The user has an identity, so Rusty set none of its own (TICKET-067).
+    let skills = home.join(".rusty/skills");
+    assert_eq!(
+        git_line(&skills, &["config", "--local", "user.email"]),
+        None
+    );
+    assert_ne!(
+        git_line(&skills, &["log", "-1", "--format=%an <%ae>"]).as_deref(),
+        Some("Rusty <rusty@localhost>")
+    );
+
+    client.cancel().await.unwrap();
+    let _ = std::fs::remove_dir_all(&home);
+}
+
+/// Git's output in `dir` with `args`, trimmed, or `None` when git fails.
+fn git_line(dir: &std::path::Path, args: &[&str]) -> Option<String> {
+    let out = std::process::Command::new("git")
+        .args(args)
+        .current_dir(dir)
+        .output()
+        .ok()?;
+    out.status
+        .success()
+        .then(|| String::from_utf8_lossy(&out.stdout).trim().to_string())
+}
+
+/// A user who never gave git a name and an email still gets history: the vault and the
+/// skills store commit as Rusty, set in those two repositories only (TICKET-067).
+#[tokio::test]
+async fn stores_commit_without_a_git_identity() {
+    let home = scratch_home();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-mcp"));
+    cmd.env("HOME", &home)
+        .env("XDG_CONFIG_HOME", home.join(".config"))
+        .env("XDG_RUNTIME_DIR", home.join("run"))
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        // Never guess an identity from the host name, so the test means the same anywhere.
+        .env("GIT_CONFIG_COUNT", "1")
+        .env("GIT_CONFIG_KEY_0", "user.useConfigOnly")
+        .env("GIT_CONFIG_VALUE_0", "true");
+    for var in [
+        "GIT_AUTHOR_NAME",
+        "GIT_AUTHOR_EMAIL",
+        "GIT_COMMITTER_NAME",
+        "GIT_COMMITTER_EMAIL",
+        "EMAIL",
+    ] {
+        cmd.env_remove(var);
+    }
+    let client =
+        ().serve(TokioChildProcess::new(cmd).expect("spawn rusty-mcp"))
+            .await
+            .expect("initialize");
+
+    // The vault made its first commit when the server opened the store.
+    assert_eq!(
+        git_line(
+            &home.join(".rusty/brain"),
+            &["log", "-1", "--format=%an <%ae> %s"]
+        )
+        .as_deref(),
+        Some("Rusty <rusty@localhost> init: brain vault")
+    );
+    call(
+        &client,
+        "skill_create",
+        serde_json::json!({"name": "smoke-no-identity", "description": "Committed anyway.", "body": "## Procedure\n\nSay hello.\n"}),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        git_line(
+            &home.join(".rusty/skills"),
+            &["log", "-1", "--format=%an <%ae> %s"]
+        )
+        .as_deref(),
+        Some("Rusty <rusty@localhost> skills: add smoke-no-identity")
+    );
+    assert!(
+        !home.join(".gitconfig").exists() && !home.join(".config/git/config").exists(),
+        "the user's git config is untouched"
+    );
 
     client.cancel().await.unwrap();
     let _ = std::fs::remove_dir_all(&home);
@@ -1001,7 +1084,7 @@ async fn search_conversations_finds_an_ingested_transcript() {
     let transcripts = found["transcripts"].as_array().expect("transcripts");
     assert_eq!(transcripts.len(), 1, "{found}");
     assert_eq!(transcripts[0]["session_id"], "sid-smoke");
-    assert_eq!(found["agent_runs"].as_array().map(Vec::len), Some(0));
+    assert!(found.get("agent_runs").is_none(), "{found}");
     client.cancel().await.unwrap();
     let _ = std::fs::remove_dir_all(&home);
 }

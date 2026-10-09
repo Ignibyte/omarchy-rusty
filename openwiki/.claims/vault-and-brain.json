@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:a92e5c863e9fbf00a237a3644cfd0220f4a5cb5746f921ad03bd89b6f2f4dc7d",
+  "pageVersion": "sha256:6e918631422db0ee0fd2c04f665ac6fa53fd08960bbf9ed3f46908642e0ebb87",
   "claims": [
     {
       "id": "claim_68adc19bbd9b421d94fac143f471d633",
@@ -411,10 +411,50 @@
           "version": "repo-lines-v1:sha256:1f69af84af1609b7ad8ade1c62ce8c48938170e88e4a248bbfb2efd5571e73ee:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNjAyZTM3MjZjZGZmOTEwNjdlNmNhZjFiM2I4ZWY5ZDFmYWE1NTYyOTU4ZmNhZWYxZjg2MDQxMDdjMjljNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5Y2ZkNTc3NjE5MWU3ZjFkOGMzMmJmNzRmYWVkNDcwYjA3N2ZlZTI4YWQ2NThkMjIzZGFmNzllN2RlYWE0Y2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0NmEwNjExMDFjODdiNzFjODlmYzdjOWQ3ZWI3ZWVlZTI3NTg2MmFmZWFjNDc3YWI0YjA0MjllMTI0YmFjZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVkYTk0Yjg1NTU0NTE0YjhlY2IzMDY3Nzg3N2Q3NTAyZTk2N2Q3ZGZkYjMwMmEyZmI4ODg1ZDAwMTEyMjI2NmUifQ"
         }
       ]
+    },
+    {
+      "id": "claim_9c122bb21a374f379ebf4d5edf69d8fb",
+      "statement": "When git cannot determine a committer identity, `ensure_identity` sets `user.name` Rusty and `user.email` rusty@localhost in the repository only (checked with `git var GIT_COMMITTER_IDENT`); the vault calls it after `git init` and at every open, the skills store before each commit, and a user who has an identity keeps it.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/git.rs#L1-L38",
+          "version": "repo-lines-v1:sha256:90490ba6deaa099d6dc509c72a6d886b0a55f270ed3247aaba7a5860a933e45a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwNGI5NDFlMDQ5YWFiOGY3NjliMzlhN2MzODU5NTI4MGEzN2EwOWMyMDQ5ZWI3MTY0NGNjYzEwNjkzMjFiZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiYzk4ZDZiMGRjNDkyYzUwMTZkZjEwODA1YTNhNTRlYjljMTg0YTVhNjEzN2U3ZjRiZWNmYTBjMjIwNTUwZDAifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/vault.rs#L161-L180",
+          "version": "repo-lines-v1:sha256:868d926a7d6fade1684b91a29e908bbb09aa1729181628d4920478f42cfa1bed:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViZWViNmY5OTZlZjY1YTMwYTE0ZGQzMzU3ZDExNDU5NzIzNmIwYTA1NWRiNmQ0ZmYwMjYwYjhmZjZkNzBkOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE1MjlhMDVjZWE3NTlmMjFkNTgwZDk4YWE4OThmNGVjNGI2ODRhMGVlYzI3NDU2MWM1ZDNjNjVhN2I5NWUyY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhNzY5NzQ1NDQ3NmM4NThmZWIzYTg5NTRmZWMyN2Y4NzM5NWRkNjNmMzVkYWE3NGFhY2FmZjQxNThjZDE5OGUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/vault.rs#L287-L295",
+          "version": "repo-lines-v1:sha256:6b3812d1c762867cfc8cef3932fac388178b60eef4bf1fa181a6cefc24270e96:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQ0MjY4MTFjODU4ZmIzZmVhZjg5ODkxMTg1OGY3MWJhNWQ1ZTNmN2I1MjNhYTQ1MzEzMmYwNGMzNWUwMTJjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjQ4NTJkYmE1MTc3YTc0ZTg0ZDc3ODViMzFlNzIxYzliYWUzMTIxYWU1ZjNhOTc1ZmVlNzBlZDcxYzY4YzY5OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzBjZDk0ODUwZjI5ZTg2ZWNlM2Q2ZDQwODM4NWY1YzU0NjUxZWI5MTkyMTE3YzQ2NzhlMTQ3N2Q2YTBmMDEzYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2ZkMGYzMGIzNjZjNjAwZTkxNDc1OWVjYTI2Yjk4MDBiMGJmZTBkNDcwZjk0ODhiNmRmMTEzNjdlZGI2MzgzNCJ9"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/skills/mod.rs#L983-L995",
+          "version": "repo-lines-v1:sha256:bd4d4298995885a0f2eb628e5fa1679911ce46f1150ccca5f677eb101f9d4e1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5OTVjNzZhZjVhNDg1NjJlNDhhZTEyNzgxMjY2Mjc4ZWYyMDk2Y2QwZDNkMWRjNDlmMWU1MmI0ZDkyYjUyMTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3NTk4NTJkZGFkOTg1YzQ5YjY0MjY2NjNiYmIzYTMwY2RmNWRmZDE5MjZjNmQxNTMxZWY3YWZjMGNkZmRiNjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0NDAwZjUwMmM2ODRjMWEwMDFmM2Q5YTQ0YTgxNDJiNmM3MDM3MDIyNjZhMTFkZWU4ODI2MTZlMmY5MmJkYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjZjZhZjYxZjBmZGJjYzY2NDhkMWQ4M2M0Y2Q1N2U1MjM5YTU1ODY1Mzg4YmM4MjMwMWM1NWI4NjhhY2VlOTIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-mcp/tests/smoke.rs#L895-L953",
+          "version": "repo-lines-v1:sha256:5c4ffcf3c306a2301ca532ee76819b80333e64b3a0311ca804573c5d56411c88:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhZDY1YjczMDM4NzZiMTc2ZDQyZWE0YmQ1ODc0ZWQzOTdlNmRjMWY1MmY4YjE1MDEwZTgyYTE3ZDRiYWYzZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5NGI2OGQ2ZGQ1MzU4MzU2OWU1NzE2MmU3ZjcxNjI2MDUyOWQ4OTE3MmRkZWFjYTlkNjc4YTRhZTA2YzVmNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyN2VjZjY1NGZhM2JiMGM1NTM1NDRiYTVmM2YyNDkwNmJjNTUzMTQzZTg5N2YxOTRkNjJlY2IwY2Y5YTQ0YzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8373de0b955c4d9da425239acb4158b8",
+      "statement": "A store from 0.1.x drops the agent host's `tasks`, `conversations` and `agents` tables, with their indexes, at its first open under a later version; every other table keeps its rows, and the drop is a no-op afterwards.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L75-L90",
+          "version": "repo-lines-v1:sha256:6279d2febcb5fcb0fc6621155b20c2add8503449c2ea336f32fa8e6721bdbc0e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmZjM5N2IyMDQ5MTMyODkxMmJhYTUyMDZjOGQ5MTlhZDIzMDAwZDYzZDk4OTRmZThmNmQ1OGFmYjE2ZDMzYjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlZjNhNGY1NTFjY2QwM2E0ZTc2NzA5OGRkMDA3ZTFmY2UxNjY3ODc4YmRmZWU3OWUwMjg3M2VlYjJhYjNhZmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjOTYyMDdmMjcxNGQ0NmQ5ZTM5NTg0NzAyZDQzZDQ0NjRmY2FkYmM4M2MyNmNiMjZmMWM5MTIxNDM5NjE5YjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3ZGM2NDkyMTI4MjlkMDEzMmRjMTk0MTM2NjNiMzM5NGYyZDk4ZGY1ZDkxOGYyYmQ2ZTMyNWMyZDA0MDY0ZmIifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L365-L412",
+          "version": "repo-lines-v1:sha256:e170da81050199a826053fd6555277106f1c747cc4e76e95b803a0fef1aecd29:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1YjY5Yjk5YTY2Y2VjODZhNDQxZTA5YjZkMWVmMjlkZWVlMTlhM2E3Y2JkM2RjOGMyYTA4YTZiMzRkN2Y1NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQyODNhZjBkOWFjODM1YTZhNzZjMmMzNGU3MDM1Mzc1ZTA3YmM2MjJhYTFlOTJmYjBiYmE2NTI1ZWE2MDhjMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmYzA4ZjkzNDU5ZjM4MDMxZjljYmFmNTAxNjg2NDY3YzZkY2QyNTEyMGE0YzU3NTZkMGZiYTdlNGZjYzgzNjEifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T20:35:14.973Z"
+    "at": "2026-10-09T23:09:31.569Z"
   }
 }

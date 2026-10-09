@@ -31,6 +31,9 @@ setting moves a part of it.
 Any other folder in the vault is a folder of notes; a page outside the type folders has the
 type `note`. The vault opens in Obsidian as it is. Rusty commits every change it makes to
 `brain/` and `skills/`; a running server also commits edits other programs make there.
+The commits carry your git name and email. When git has none, Rusty sets
+`Rusty <rusty@localhost>` in those two repositories only, so their history still records;
+it never changes your global git configuration.
 
 To move the whole store to another machine, see `rusty-cli export` and `import` in
 [cli.md](cli.md#the-store).

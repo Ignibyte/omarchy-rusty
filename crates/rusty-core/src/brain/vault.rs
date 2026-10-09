@@ -168,9 +168,12 @@ impl VaultManager {
         std::fs::create_dir_all(self.root.join(ARCHIVE_DIR))
             .map_err(|e| format!("Failed to create archive/ directory: {e}"))?;
 
-        // Initialize git repo if not present
+        // Initialize git repo if not present; an existing one still needs an author for its
+        // commits (TICKET-067).
         if !self.root.join(".git").exists() {
             self.git_init();
+        } else {
+            crate::git::ensure_identity(&self.root);
         }
 
         Ok(())
@@ -286,6 +289,7 @@ impl VaultManager {
             .args(["init"])
             .current_dir(&self.root)
             .output();
+        crate::git::ensure_identity(&self.root);
         // Create .gitignore
         let gitignore = self.root.join(".gitignore");
         if !gitignore.exists() {

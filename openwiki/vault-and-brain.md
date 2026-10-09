@@ -25,14 +25,20 @@ sources:
     resource: repo://crates/rusty-core/src/engine/changes.rs
   - id: openwiki-source-8f342262c76136dc27154aaf
     resource: repo://crates/rusty-core/src/engine/db.rs
+  - id: openwiki-source-80305f9c3d101b91c1d94367
+    resource: repo://crates/rusty-core/src/git.rs
   - id: openwiki-source-2bac0135ef08343388f2c7a1
     resource: repo://crates/rusty-core/src/notes/mod.rs
+  - id: openwiki-source-637dadc84a3e86cb046587f2
+    resource: repo://crates/rusty-core/src/skills/mod.rs
   - id: openwiki-source-087a3c8d2ec2da0b0f978302
     resource: repo://crates/rusty-mcp/src/main.rs
-generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
+  - id: openwiki-source-84acb13abf83511312610cd3
+    resource: repo://crates/rusty-mcp/tests/smoke.rs
+generated: {by: "claude-code", at: "2026-10-09T23:09:31.569Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T20:35:14.973Z
+    at: 2026-10-09T23:09:31.569Z
 ---
 
 # Vault and brain: files as the truth, SQLite as the index
@@ -171,7 +177,10 @@ every page, and the embedding loop covers it when a provider is set.
   that wrote it, so another process's write keeps its own commit and message. A commit
   that meets another process's git index lock waits and tries again;
   one that still fails leaves its files changed, and the next sweep commits them. A stdio
-  server finishes its pending commits before it exits.
+  server finishes its pending commits before it exits. Commits carry the user's git
+  identity; when git has none, `crate::git::ensure_identity` sets `Rusty <rusty@localhost>`
+  in the vault and the skills store only (at `git init` and at every open), so their
+  history still records, and git's global config is never written.
 - Bookmarks live at `.rusty/bookmarks.json` in the vault: a JSON array of
   `{kind, title, path?, query?, heading?}` that git tracks and the page walk skips (a
   dot-folder). The core lists, adds, removes and replaces them; a rename carries the

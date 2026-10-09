@@ -834,7 +834,7 @@ What changed in the store after `cursor`, from any process (an agent's server, t
 
 ### `search_conversations`
 
-Search the conversation archive by keyword: the Claude Code transcripts kept with `rusty-cli ingest-conversation`, each with its title, project, start time, brain page and a matching snippet (`transcripts`). `agent_runs` lists matching conversations from earlier versions' built-in agent runs, when the store holds any
+Search the conversation archive by keyword: the Claude Code transcripts kept with `rusty-cli ingest-conversation`, each with its title, project, start time, brain page and a matching snippet, as `{ "transcripts": [...] }`
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|

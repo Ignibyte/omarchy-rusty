@@ -3,6 +3,16 @@
 What each release changed, newest first. Versions follow semantic versioning; before 1.0
 a minor version may change a tool or a command.
 
+## [Unreleased]
+
+- A user whose git has no name and email now gets history in the vault and the skills
+  store: Rusty commits there as `Rusty <rusty@localhost>`, set in those two repositories
+  only. Before, every commit failed and the stores kept none.
+- `search_conversations` returns `transcripts` alone. Its `agent_runs` key listed runs of
+  the agent host that was removed before 0.1.0, and the store drops that host's three
+  unused tables (`tasks`, `conversations`, `agents`) the next time it opens. An agent's
+  server of an older version answers the search with an error until it restarts.
+
 ## [0.1.1] - 2026-10-09
 
 Fixes and hardening after 0.1.0.
