@@ -2,6 +2,9 @@
 [mcp_servers.rusty]
 command = "rusty-mcp"
 
+[mcp_servers.rusty.tools.skill_view]
+approval_mode = "approve"
+
 [mcp_servers.codegraph]
 command = "bash"
 args = ["scripts/mcp-codegraph.sh"]
