@@ -1,6 +1,6 @@
 ---
 name: openwiki
-description: Initialize or update the repository's generated engineering wiki (openwiki/) through the project-local OpenWiki MCP lifecycle. Required at Phase 5 of every pipeline in the Ignibyte/omarchy-rusty repo, when asked to refresh the repository documentation, or when repairing an interrupted run. The host agent authors the pages; OpenWiki keeps the claims, the index and the provenance.
+description: Initialize or update the repository's generated engineering wiki (openwiki/) through the project-local OpenWiki MCP lifecycle. Required at Phase 5 of every pipeline in the Ignibyte/rusty repo, when asked to refresh the repository documentation, or when repairing an interrupted run. The host agent authors the pages; OpenWiki keeps the claims, the index and the provenance.
 ---
 
 # OpenWiki

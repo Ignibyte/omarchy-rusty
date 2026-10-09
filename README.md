@@ -1,10 +1,9 @@
 # Rusty
 
-A local-first memory and knowledge store for AI agents, built for
-[Omarchy](https://omarchy.org). Rusty runs on your machine as an MCP server and keeps your
-to-do lists, memories, notes, skills, secrets and a markdown knowledge vault in one place
-that Claude Code, Codex and any other MCP client can read and write. Nothing leaves the
-machine unless you set it up to.
+A local-first memory and knowledge store for AI agents on Linux. Rusty runs on your
+machine as an MCP server and keeps your to-do lists, memories, notes, skills, secrets and a
+markdown knowledge vault in one place that Claude Code, Codex and any other MCP client can
+read and write. Nothing leaves the machine unless you set it up to.
 
 - **A brain you can open in any editor.** The vault is a folder of markdown with
   frontmatter and `[[wikilinks]]`, versioned with git, indexed in SQLite for full-text
@@ -18,7 +17,7 @@ machine unless you set it up to.
 
 **Status: 0.1.1, an early release.** It runs on Linux with systemd user services and is
 built and used daily on Omarchy (Arch, Hyprland). Expect rough edges, and please
-[open an issue](https://github.com/Ignibyte/omarchy-rusty/issues) for what you hit.
+[open an issue](https://github.com/Ignibyte/rusty/issues) for what you hit.
 
 ## Install
 
@@ -27,7 +26,7 @@ You need x86_64 Linux with a systemd user session, `git` and `curl`. Optional:
 PDFs, and `jq` for the brain loop's Claude Code hooks.
 
 From a release, with no Rust toolchain: download `rusty-<version>-x86_64-linux.tar.gz`
-and its `.sha256` from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases),
+and its `.sha256` from the [releases page](https://github.com/Ignibyte/rusty/releases),
 then:
 
 ```bash
@@ -40,8 +39,8 @@ From source, with a stable Rust toolchain and a C compiler (SQLite, `ring` and
 `sqlite-vec` build C code):
 
 ```bash
-git clone https://github.com/Ignibyte/omarchy-rusty.git
-cd omarchy-rusty
+git clone https://github.com/Ignibyte/rusty.git
+cd rusty
 ./install.sh
 ```
 

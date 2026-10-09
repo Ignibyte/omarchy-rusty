@@ -8,7 +8,7 @@ pkgdesc="Local-first memory and knowledge store for AI agents: an MCP server ove
 arch=('x86_64')
 # Prebuilt binaries: no separate debug package.
 options=('!debug')
-url="https://github.com/Ignibyte/omarchy-rusty"
+url="https://github.com/Ignibyte/rusty"
 license=('MIT')
 depends=('gcc-libs' 'glibc' 'git')
 optdepends=('ollama: local embeddings for semantic search'
@@ -16,7 +16,7 @@ optdepends=('ollama: local embeddings for semantic search'
 provides=('rusty')
 conflicts=('rusty' 'rusty-git')
 install=rusty-bin.install
-source=("https://github.com/Ignibyte/omarchy-rusty/releases/download/v$pkgver/rusty-$pkgver-x86_64-linux.tar.gz")
+source=("https://github.com/Ignibyte/rusty/releases/download/v$pkgver/rusty-$pkgver-x86_64-linux.tar.gz")
 sha256sums=('636d0bc80fab32266b87d3610c12a7921f2d9a10c04f22e839b18cf31fe25379')
 
 package() {

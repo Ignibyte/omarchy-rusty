@@ -7,4 +7,4 @@ members = ["crates/rusty-core", "crates/rusty-mcp", "crates/rusty-cli",
 version = "0.1.1"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/Ignibyte/omarchy-rusty"
+repository = "https://github.com/Ignibyte/rusty"

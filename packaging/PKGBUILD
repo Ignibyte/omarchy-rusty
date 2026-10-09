@@ -9,7 +9,7 @@ arch=('x86_64')
 # makepkg's default LTO compiles the bundled SQLite and ring C code into GCC bitcode, which
 # Rust's linker cannot use; build them plainly.
 options=('!lto')
-url="https://github.com/Ignibyte/omarchy-rusty"
+url="https://github.com/Ignibyte/rusty"
 license=('MIT')
 depends=('gcc-libs' 'glibc' 'git')
 optdepends=('ollama: local embeddings for semantic search'
@@ -17,7 +17,7 @@ optdepends=('ollama: local embeddings for semantic search'
 makedepends=('git' 'cargo' 'rust' 'clang')
 provides=('rusty')
 conflicts=('rusty')
-source=("rusty::git+https://github.com/Ignibyte/omarchy-rusty.git")
+source=("rusty::git+https://github.com/Ignibyte/rusty.git")
 install=rusty-git.install
 sha256sums=('SKIP')
 

@@ -1,6 +1,6 @@
 ---
 name: rusty-workflow
-description: Run or resume the evidence-based Rusty work pipeline for any non-trivial feature, fix, migration, packaging or workflow change in the Ignibyte/omarchy-rusty repo. Covers recall, the ticket and the spec/notes pair, EARS requirements, the design file manifest with CodeGraph evidence, the adversarial inspect ledger, the gate receipt, the AAR and the knowledge register. Use it before touching files; read references/phases.md completely.
+description: Run or resume the evidence-based Rusty work pipeline for any non-trivial feature, fix, migration, packaging or workflow change in the Ignibyte/rusty repo. Covers recall, the ticket and the spec/notes pair, EARS requirements, the design file manifest with CodeGraph evidence, the adversarial inspect ledger, the gate receipt, the AAR and the knowledge register. Use it before touching files; read references/phases.md completely.
 ---
 
 # Rusty workflow

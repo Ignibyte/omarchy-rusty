@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:d95f6f3520c57bb97006be7523f54886a5f364217802a52e7e3ac10a126f9f47",
+  "pageVersion": "sha256:913551f91362d3dd489294481511480dc9e1ba1243ee4d7ad6461762f4c058dd",
   "claims": [
     {
       "id": "claim_c0c6eafaea2d400b8beffe873825065f",
@@ -118,7 +118,7 @@
       "evidence": [
         {
           "resource": "repo://packaging/rusty-bin/PKGBUILD",
-          "version": "repo-file-v1:sha256:18a36f4f3280d12acaffa6e51ec685e18d83e862ee0af5a3233f63a07010c5a9"
+          "version": "repo-file-v1:sha256:95e483caab88d1f7ee4c82d97b0df234762b7fd847b5585e871369378d15220e"
         },
         {
           "resource": "repo://packaging/rusty-bin/rusty-bin.install",
@@ -153,6 +153,6 @@
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T20:47:59.130Z"
+    "at": "2026-10-09T22:46:29.558Z"
   }
 }

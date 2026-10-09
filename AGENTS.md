@@ -6,7 +6,7 @@ binding rules.
 
 ## Product
 
-Rusty is a local-first memory and knowledge store for AI agents on Omarchy:
+Rusty is a local-first memory and knowledge store for AI agents on Linux:
 
 - `crates/rusty-core`: the managers (to-do lists, notes, memories, the brain vault and its
   SQLite index, semantic search, skills and scripts, secrets and the PIN, settings, the
