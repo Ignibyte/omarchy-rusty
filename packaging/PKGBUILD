@@ -2,7 +2,7 @@
 # Rusty, a local-first memory and knowledge store for AI agents, from the main branch: the
 # MCP back end, the CLI and the `rusty` command. Not yet submitted to the AUR.
 pkgname=rusty-git
-pkgver=r1.ed9e139
+pkgver=r6.fd52fe1
 pkgrel=1
 pkgdesc="Local-first memory and knowledge store for AI agents: an MCP server over a markdown vault, tasks, memories and skills, with a CLI"
 arch=('x86_64')
