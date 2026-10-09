@@ -108,13 +108,14 @@ sync, database connection, PIN token and embedder cache. What keeps them consist
 - SQLite's WAL and the busy timeout serialize writes across processes; within a process
   one connection sits behind a mutex.
 - A page write indexes the page itself, and the other processes' watchers see the file
-  change and sync it again, which finds nothing to do (the content hash matches). When two
-  indexers do reach the same page at once, the page still ends with one full-text row,
-  and a pass never forgets a page that was written while it ran.
+  change and sync it again, which finds nothing to do (the content hash matches). A sync
+  checks the hash and writes the rows in one transaction, so two indexers reaching the
+  same page at once index it once, and a pass never forgets a page written while it ran.
 - A vault commit names only the paths its write touched, and the sweep that commits
   outside edits leaves paths a write in flight in the same process has claimed; when two
-  processes sweep, the second finds a clean tree. A commit that meets another process's
-  git index lock waits and tries again.
+  processes sweep, the second finds a clean tree. The sweep leaves a file written in the
+  last three seconds to the process that wrote it, and a commit that meets another
+  process's git index lock waits and tries again.
 - A stdio server finishes its pending commits before it exits.
 
 Notifications do not cross processes. A client hears about writes made by the process it
@@ -138,7 +139,8 @@ indexer also runs every ten minutes when nothing has changed.
 `-` to exclude) and two text modes (match case, regular expression). With an embedding
 provider (`auto` is Ollama when it answers; OpenAI only when set and keyed), pages are
 chunked and embedded into `sqlite-vec`, and the two rankings merge by reciprocal rank
-fusion. Changing the provider or model rebuilds the vectors.
+fusion. Changing the provider or model rebuilds the vectors. A query's embedding gets
+five seconds; past that, or on any provider error, search answers from the text index.
 
 ## Agents and the brain loop
 
@@ -158,7 +160,7 @@ rewrites the path settings for the new layout.
 
 ## Running
 
-`omarchy/install.sh` builds the three binaries (or copies a release's) into
+`install.sh` builds the three binaries (or copies a release's) into
 `~/.local/bin` and installs `rusty-mcp.service`, wanted by `default.target`, restarted
 after any exit but a stop, at OOM score 100. Agents start their own `rusty-mcp` over
 stdio.

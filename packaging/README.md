@@ -7,9 +7,8 @@ Two Arch packages, neither on the AUR yet:
   drop-in and MCP snippets under `/usr/share/rusty/`, the licence, the third-party notices
   and the README. Its `check()` runs the tests of `rusty-core`, `rusty-mcp` and
   `rusty-cmd`.
-- `rusty-bin/PKGBUILD` installs the same files from a release's prebuilt tarball. Its
-  `sha256sums` stay `SKIP` until a release exists: after each release, set `pkgver` and
-  run `updpkgsums` so the download is verified.
+- `rusty-bin/PKGBUILD` installs the same files from a release's prebuilt tarball, checked
+  against the release's sha256. After each release, set `pkgver` and run `updpkgsums`.
 
 Build them from the repository root:
 
@@ -27,4 +26,4 @@ systemctl --user enable --now rusty-mcp    # the first time
 systemctl --user restart rusty-mcp         # after an upgrade
 ```
 
-`omarchy/install.sh` is the path for a checkout or an unpacked tarball without a package.
+`install.sh` is the path for a checkout or an unpacked tarball without a package.

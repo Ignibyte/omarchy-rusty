@@ -51,7 +51,7 @@ fn start_starts_the_back_end_alone() {
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("rusty-mcp.service"), "{stdout}");
     assert!(
-        stdout.contains("not answering on http://127.0.0.1:4174/mcp"),
+        stdout.contains("not answering on http://127.0.0.1:1/mcp"),
         "{stdout}"
     );
     let calls = std::fs::read_to_string(&log).unwrap();

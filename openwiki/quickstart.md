@@ -16,7 +16,7 @@ sources:
 generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T18:25:07.825Z
+    at: 2026-10-09T20:21:56.922Z
 ---
 
 # Rusty engineering quickstart
@@ -65,7 +65,7 @@ cargo build                       # one cargo command at a time, never killed
 bin/gate.sh --fast                # fmt, clippy (-D warnings), tests
 bin/gate.sh --diff                # the delivery gate; green writes .git/rusty-gate-receipt
 bin/gate.sh --verify              # do the receipts match this worktree
-omarchy/install.sh                # binaries into ~/.local/bin, the back end's unit
+./install.sh              # binaries into ~/.local/bin, the back end's unit
 ```
 
 Details and the reasons behind them: [Development and validation](development-and-validation.md).
@@ -84,5 +84,5 @@ each area so a change can find both quickly.
 
 - `README.md`, `AGENTS.md` (which `CLAUDE.md` imports), `CONSTITUTION.md`, `ROADMAP.md`
 - `docs/architecture.md`, `docs/tools.md`, `docs/cli.md`, `docs/configuration.md`
-- `bin/gate.sh`, `omarchy/install.sh`
+- `bin/gate.sh`, `install.sh`
 - `crates/rusty-cmd/src/main.rs` and `session.rs` (the dispatch and the `rusty session` verbs)

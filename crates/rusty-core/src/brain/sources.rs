@@ -180,30 +180,100 @@ fn cut(text: &str) -> String {
 /// The text of a PDF through `pdftotext`, on a temporary file; a missing `pdftotext` is
 /// an error the page records.
 pub fn extract_pdf(bytes: &[u8]) -> Result<String, String> {
+    use std::io::Write;
+    use std::time::{Duration, Instant};
+    /// How long `pdftotext` may take before the capture gives up on it.
+    const PDF_LIMIT: Duration = Duration::from_secs(30);
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_nanos())
         .unwrap_or(0);
     let path =
         std::env::temp_dir().join(format!("rusty-capture-{}-{nanos}.pdf", std::process::id()));
-    std::fs::write(&path, bytes).map_err(|e| format!("write {}: {e}", path.display()))?;
-    let out = std::process::Command::new("pdftotext")
+    // The fetched file is readable by its owner only, like the rest of the store.
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    std::os::unix::fs::OpenOptionsExt::mode(&mut options, 0o600);
+    options
+        .open(&path)
+        .and_then(|mut f| f.write_all(bytes))
+        .map_err(|e| format!("write {}: {e}", path.display()))?;
+    let mut command = std::process::Command::new("pdftotext");
+    command
         .args(["-layout", "-enc", "UTF-8"])
         .arg(&path)
         .arg("-")
         .stdin(std::process::Stdio::null())
-        .output();
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    // A group of its own, so the time limit also ends anything it started, which would
+    // otherwise hold the output open and keep the readers waiting.
+    #[cfg(unix)]
+    std::os::unix::process::CommandExt::process_group(&mut command, 0);
+    let child = command.spawn();
+    let mut child = match child {
+        Ok(child) => child,
+        Err(e) => {
+            let _ = std::fs::remove_file(&path);
+            return Err(format!(
+                "pdftotext is not available ({e}); install poppler to capture PDFs"
+            ));
+        }
+    };
+    // Output past the cap is read away, so a PDF that expands without end costs no memory.
+    let read = |stream: Option<Box<dyn Read + Send>>| {
+        std::thread::spawn(move || {
+            let mut kept = Vec::new();
+            if let Some(stream) = stream {
+                let mut limited = stream.take(MAX_BYTES);
+                let _ = limited.read_to_end(&mut kept);
+                let _ = std::io::copy(&mut limited.into_inner(), &mut std::io::sink());
+            }
+            kept
+        })
+    };
+    let out = read(
+        child
+            .stdout
+            .take()
+            .map(|s| Box::new(s) as Box<dyn Read + Send>),
+    );
+    let err = read(
+        child
+            .stderr
+            .take()
+            .map(|s| Box::new(s) as Box<dyn Read + Send>),
+    );
+    let deadline = Instant::now() + PDF_LIMIT;
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break Ok(status),
+            Ok(None) if Instant::now() >= deadline => {
+                #[cfg(unix)]
+                crate::skills::scripts::kill_group(child.id());
+                let _ = child.kill();
+                let _ = child.wait();
+                break Err(format!(
+                    "pdftotext took longer than {} seconds",
+                    PDF_LIMIT.as_secs()
+                ));
+            }
+            Ok(None) => std::thread::sleep(Duration::from_millis(20)),
+            Err(e) => break Err(format!("pdftotext: {e}")),
+        }
+    };
+    let stdout = out.join().unwrap_or_default();
+    let stderr = err.join().unwrap_or_default();
     let _ = std::fs::remove_file(&path);
-    let out = out.map_err(|e| {
-        format!("pdftotext is not available ({e}); install poppler to capture PDFs")
-    })?;
-    if !out.status.success() {
+    let status = status?;
+    if !status.success() {
         return Err(format!(
             "pdftotext failed: {}",
-            String::from_utf8_lossy(&out.stderr).trim()
+            String::from_utf8_lossy(&stderr).trim()
         ));
     }
-    let text = String::from_utf8_lossy(&out.stdout).to_string();
+    let text = String::from_utf8_lossy(&stdout).to_string();
     if text.trim().is_empty() {
         return Err("the PDF has no text layer".to_string());
     }

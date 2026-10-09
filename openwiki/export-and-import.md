@@ -16,7 +16,7 @@ sources:
 generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T19:17:18.990Z
+    at: 2026-10-09T20:21:56.922Z
 ---
 
 # Export and import: a whole store in one zip
@@ -64,11 +64,14 @@ is recreated, and anything else under the home is not the store.
 2. Import: read and check the manifest (a notes folder it names must be a plain path
    inside the vault); check every entry (no symbolic link, no escaping
    path, only the known folders and files) before anything is written; with `--dry-run`,
-   report and stop; refuse a home that holds a store unless `--replace`; unpack into
+   report and stop; refuse a home that holds a store unless `--replace`; follow a home
+   that is a symbolic link to the folder it names, so the work happens there and the link
+   stays; unpack into
    `<home>.importing-<time>`; rewrite the path settings in the staged database; move an
    existing home to `<home>.before-import-<time>` and copy its `hooks/` across; rename the
    staged store into place.
-3. The CLI refuses an import while a `rusty-mcp` holds the target database open.
+3. The CLI refuses an import while a `rusty-mcp` holds the target database open, also
+   one that holds it after the file was deleted (`… (deleted)` in `/proc/<pid>/fd`).
 
 ## Invariants
 

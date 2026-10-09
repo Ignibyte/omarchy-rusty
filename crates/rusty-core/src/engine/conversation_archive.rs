@@ -24,7 +24,8 @@ const MAX_DIALOGUE_BYTES: usize = 2_000_000;
 /// Parsed contents of a Claude Code transcript.
 #[derive(Debug, Default)]
 pub struct ParsedTranscript {
-    /// Session id (from the transcript lines, falling back to the file stem).
+    /// Session id (from the transcript lines, falling back to the file stem and a hash of
+    /// the path).
     pub session_id: String,
     /// Claude Code's own generated session title (`aiTitle`), or a fallback.
     pub title: String,
@@ -81,9 +82,7 @@ impl ConversationArchive {
         let reader = std::io::BufReader::new(file);
 
         let mut t = ParsedTranscript::default();
-        if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-            t.session_id = stem.to_string();
-        }
+        let mut named_in_file = false;
 
         for line in reader.lines() {
             let line = match line {
@@ -98,11 +97,12 @@ impl ConversationArchive {
                 Err(_) => continue,
             };
 
-            // The in-file sessionId is authoritative; the file stem (set above)
-            // is only a fallback for transcripts that omit it.
+            // The in-file sessionId is authoritative; the file name is only a fallback
+            // for transcripts that omit it (below).
             if let Some(sid) = v.get("sessionId").and_then(|x| x.as_str()) {
                 if !sid.is_empty() {
                     t.session_id = sid.to_string();
+                    named_in_file = true;
                 }
             }
 
@@ -158,6 +158,16 @@ impl ConversationArchive {
             }
         }
 
+        // A transcript that names no session takes its file name and a short hash of its
+        // full path, so two such files with one name in different folders stay apart.
+        if !named_in_file {
+            use sha2::{Digest, Sha256};
+            let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+            let full = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+            let digest = Sha256::digest(full.to_string_lossy().as_bytes());
+            let short: String = digest.iter().take(4).map(|b| format!("{b:02x}")).collect();
+            t.session_id = format!("{stem}-{short}");
+        }
         if t.session_id.is_empty() {
             return Err("transcript has no session id".to_string());
         }

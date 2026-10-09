@@ -32,7 +32,7 @@ sources:
 generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T19:17:18.990Z
+    at: 2026-10-09T20:35:14.973Z
 ---
 
 # Vault and brain: files as the truth, SQLite as the index
@@ -142,7 +142,8 @@ every page, and the embedding loop covers it when a provider is set.
   `<article>` when the page has one, else the body; script and style bodies skipped to
   their closing tag (a `<` inside a script is not a tag), the rest of the chrome dropped;
   headings and list items kept as markdown; entities decoded. A PDF goes through
-  `pdftotext` when the machine has it; markdown and text are kept as they are. A megabyte
+  `pdftotext` when the machine has it (thirty seconds and 8 MiB of output at most, the
+  temporary copy of the PDF at mode 0600); markdown and text are kept as they are. A megabyte
   of text is kept.
 - A URL captured before is found by its `url` property and its page rewritten with
   `created` kept; a new one takes `sources/<site>-<title slug>`.
@@ -166,7 +167,9 @@ every page, and the embedding loop covers it when a provider is set.
   the notes folder inside the vault) is committed on its own by
   `commit_outside_edits`, which the server's indexer runs after each sync; it leaves
   paths a write in flight in the same process has claimed, and a second process finds the
-  tree clean. A commit that meets another process's git index lock waits and tries again;
+  tree clean. The sweep leaves a file written in the last three seconds to the process
+  that wrote it, so another process's write keeps its own commit and message. A commit
+  that meets another process's git index lock waits and tries again;
   one that still fails leaves its files changed, and the next sweep commits them. A stdio
   server finishes its pending commits before it exits.
 - Bookmarks live at `.rusty/bookmarks.json` in the vault: a JSON array of
@@ -198,8 +201,8 @@ every page, and the embedding loop covers it when a provider is set.
   index rows follow by slug or by folder prefix (`move_index_rows`); one commit records
   it. A title that was the old file name follows the new one.
 - Index: `sync_page` re-indexes when the content hash changed and refreshes the link
-  rows either way, and writes one full-text row per page however many processes index it
-  at once; `sync_all` walks every folder (a file it cannot read is reported and skipped),
+  rows either way, checking the hash and writing every row in one `BEGIN IMMEDIATE`
+  transaction, so two processes indexing one edit index it once and record one change; `sync_all` walks every folder (a file it cannot read is reported and skipped),
   removes orphans after looking for each one's file again, then resolves link rows whose
   targets arrived later. The back end runs `sync_all` after every burst of
   file changes, so edits made by Obsidian or an editor are indexed within seconds.
@@ -227,7 +230,10 @@ every page, and the embedding loop covers it when a provider is set.
 locally; OpenAI is used only when the setting names it and a key exists, because it
 sends page text off the machine. Vectors live in the `vec0` table `brain_vec`, created at
 the model's width; changing the model rebuilds them. With no provider, search stays
-full text and nothing else changes.
+full text and nothing else changes. Each request carries its own limit: five seconds for
+a query's embedding (`QUERY_TIMEOUT`), two minutes for an indexing batch. A request a
+signal interrupts is sent again inside the same limit, and a query the provider does not
+answer in time costs only the vector half of the results.
 
 A capture is the one other thing that leaves the machine: a single GET of the URL the
 user chose, with a `rusty` user agent and no cookie or key. What comes back is data from

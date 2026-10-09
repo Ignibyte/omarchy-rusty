@@ -16,7 +16,7 @@ machine unless you set it up to.
 - **A terminal CLI** (`rusty-cli`) for the same store, and a small `rusty` command that
   starts the back end and runs your store scripts.
 
-**Status: 0.1.0, an early release.** It runs on Linux with systemd user services and is
+**Status: 0.1.1, an early release.** It runs on Linux with systemd user services and is
 built and used daily on Omarchy (Arch, Hyprland). Expect rough edges, and please
 [open an issue](https://github.com/Ignibyte/omarchy-rusty/issues) for what you hit.
 
@@ -27,13 +27,13 @@ You need x86_64 Linux with a systemd user session, `git` and `curl`. Optional:
 PDFs, and `jq` for the brain loop's Claude Code hooks.
 
 From a release, with no Rust toolchain: download `rusty-<version>-x86_64-linux.tar.gz`
-and its `.sha256` from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases)
-(if it lists no release yet, build from source as below), then:
+and its `.sha256` from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases),
+then:
 
 ```bash
-sha256sum -c rusty-0.1.0-x86_64-linux.tar.gz.sha256
-tar xzf rusty-0.1.0-x86_64-linux.tar.gz
-rusty-0.1.0-x86_64-linux/omarchy/install.sh
+sha256sum -c rusty-0.1.1-x86_64-linux.tar.gz.sha256
+tar xzf rusty-0.1.1-x86_64-linux.tar.gz
+rusty-0.1.1-x86_64-linux/install.sh
 ```
 
 From source, with a stable Rust toolchain and a C compiler (SQLite, `ring` and
@@ -42,14 +42,14 @@ From source, with a stable Rust toolchain and a C compiler (SQLite, `ring` and
 ```bash
 git clone https://github.com/Ignibyte/omarchy-rusty.git
 cd omarchy-rusty
-omarchy/install.sh
+./install.sh
 ```
 
 The installer puts `rusty-mcp`, `rusty-cli` and `rusty` in `~/.local/bin` (built with
 cargo from a checkout, copied from a release), installs the user service
 `rusty-mcp.service` (Streamable HTTP on `127.0.0.1:4174/mcp`), starts it and checks it
 answers. On its first start Rusty creates `~/.rusty/` with an empty vault, a skills store
-holding four seed skills, and the database. `omarchy/README.md` covers the service and two
+holding four seed skills, and the database. `service/README.md` covers the service and two
 optional protections for low-memory machines; `packaging/` holds two Arch packages.
 
 **Upgrading** is the same command with a newer release or a pulled checkout. It restarts
@@ -80,7 +80,7 @@ command = "rusty-mcp"
 Each agent starts its own `rusty-mcp` over stdio; every copy works on the same store. If
 the agent does not have `~/.local/bin` on its `PATH`, give the full path as the command.
 Any other MCP client can use the service over Streamable HTTP at
-`http://127.0.0.1:4174/mcp`; `omarchy/mcp-config.json` has both forms.
+`http://127.0.0.1:4174/mcp`; `service/mcp-config.json` has both forms.
 [Marley](https://github.com/Ignibyte/marley_ide), a Zed fork, draws a knowledge workspace
 (pages, graph, to-do lists, decisions, memories, skills, secrets) over that endpoint.
 

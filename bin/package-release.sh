@@ -16,11 +16,11 @@ cargo build --release --locked -p rusty-mcp -p rusty-cli -p rusty-cmd
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 dir="$stage/$name"
-mkdir -p "$dir/bin" "$dir/omarchy"
+mkdir -p "$dir/bin" "$dir/service"
 install -m755 "$target/release/rusty-mcp" "$target/release/rusty-cli" "$target/release/rusty" "$dir/bin/"
-install -m755 omarchy/install.sh "$dir/omarchy/"
-install -m644 omarchy/rusty-mcp.service omarchy/mcp-config.json omarchy/wayland-wm-oom.conf \
-  omarchy/README.md "$dir/omarchy/"
+install -m755 install.sh "$dir/"
+install -m644 service/rusty-mcp.service service/mcp-config.json service/wayland-wm-oom.conf \
+  service/README.md "$dir/service/"
 install -m644 README.md LICENSE THIRD_PARTY_NOTICES.md CHANGELOG.md SECURITY.md "$dir/"
 # The references the README links to.
 mkdir -p "$dir/docs/architecture"

@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Install Rusty on this machine: the three binaries, the back end's user service and a
-# reminder of the MCP config. From a release tarball it installs the binaries in `bin/`
-# beside this folder; from a checkout it builds them with cargo. Every step is
+# reminder of the MCP config. It sits at the top of a checkout and of an unpacked release:
+# from a release it installs the binaries in `bin/` beside it, from a checkout it builds
+# them with cargo, and either way the unit comes from `service/`. Every step is
 # idempotent, so run it again after pulling or unpacking a newer release.
 set -euo pipefail
 
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo="$(cd "$here/.." && pwd)"
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+here="$repo/service"
 bin="$HOME/.local/bin"
 unit_dir="$HOME/.config/systemd/user"
 mcp_url="http://127.0.0.1:4174/mcp"

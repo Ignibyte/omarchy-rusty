@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:5fba4a9f2dd7cd8b9512e11a4c5ca9b93859d28ad86146fb375e6133eb3b8340",
+  "pageVersion": "sha256:bf190164327b982e52ebb8571c5fb10295c21717a99e4974167e923cd98ff0e7",
   "claims": [
     {
       "id": "claim_c0c6eafaea2d400b8beffe873825065f",
@@ -18,25 +18,21 @@
     },
     {
       "id": "claim_35cdce94d2b14972bd1e066feff77b5d",
-      "statement": "The installer needs `systemctl`, `curl` and `git`; it installs the `rusty-mcp`, `rusty-cli` and `rusty` binaries it finds in `bin/` beside its folder (a release tarball) and otherwise builds them with `cargo install --force --locked` from the checkout, then installs and enables `rusty-mcp.service`, restarts it, probes it over HTTP with a two-second limit per try and checks that the unit itself is active, and deletes a leftover `~/.local/bin/rusty-session`; it installs no desktop entry, extra unit or key snippet.",
+      "statement": "The installer, `install.sh` at the top of a checkout and of a release, needs `systemctl`, `curl` and `git`; it installs the `rusty-mcp`, `rusty-cli` and `rusty` binaries it finds in `bin/` beside it (a release tarball) and otherwise builds them with `cargo install --force --locked` from the checkout, then installs the unit from `service/`, enables and restarts it, probes it over HTTP with a two-second limit per try and checks that the unit itself is active, and deletes a leftover `~/.local/bin/rusty-session`; it installs no desktop entry, extra unit or key snippet.",
       "evidence": [
         {
-          "resource": "repo://omarchy/install.sh#L14-L62",
-          "version": "repo-lines-v1:sha256:578602833c4a181ee89daa98b543b177250b17fb89bb8598cdd481fa922624bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczZTg0ZGI1Y2JkMzUzNjdlZjhiZTVjNjk0YjZiNzU0YTQxOWJmMjNkMWMyZmQxMGI3YmE3YjgwNTM4MjE2ZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4OTQ3OTMzZTUxZGQzNGM4ODk5MDQzY2Y4YTRlNDliOTI4M2UzNGNiMjAwNjZjZjg4ZmZjYjIxMmNjNzRmOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlY2JiZTI2NDI4NGE2ODE1NjY1N2UzOWI0N2FhZDEyOGQ1M2QwMThjMjU4YzZiMjhmN2U4NGQ4N2RmZDVjZTgifQ"
+          "resource": "repo://install.sh#L1-L63",
+          "version": "repo-lines-v1:sha256:576d638ec53f6d2e841f888936ac8344e7f85746167cfc1f2db9b50c016e3356:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlY2JiZTI2NDI4NGE2ODE1NjY1N2UzOWI0N2FhZDEyOGQ1M2QwMThjMjU4YzZiMjhmN2U4NGQ4N2RmZDVjZTgifQ"
         }
       ]
     },
     {
       "id": "claim_0a5cf85e53464f16a101823ae7412789",
-      "statement": "`rusty session start` runs `systemctl --user start rusty-mcp.service` and, when that succeeds, prints the status; `status` prints the unit's state and whether an MCP `initialize` posted to 127.0.0.1:4174 (or `RUSTY_MCP_ADDR`) is answered 200, and exits 0 either way.",
+      "statement": "`rusty session start` runs `systemctl --user start rusty-mcp.service` and, when that succeeds, prints the status; `status` prints the unit's state and whether an MCP `initialize` posted to 127.0.0.1:4174, or the address or name in `RUSTY_MCP_ADDR`, is answered 200, names the address it probed, and exits 0 either way.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-cmd/src/session.rs#L69-L89",
-          "version": "repo-lines-v1:sha256:a0fc305d4bd3b6a873f118c2fe3e42bacbb914dfc44ab1a269008e10aad92be3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzOWRjYTViOWY5MGU0NDI4N2M2OGFiODdlMmI3YWNjMmJiOTM0OGM3MjczODEwNjI4YzJjYWFhOGQzODA0NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllYWE0YTIxMWE1MTllYWJlNDI3ZGMwOTg3YjY4NzdkMDAwZGMyNmI1YTI4YzBjZGNhNmMzODAxYTVkY2VlNjgifQ"
-        },
-        {
-          "resource": "repo://crates/rusty-cmd/src/session.rs#L91-L138",
-          "version": "repo-lines-v1:sha256:93b539afb69437404c2e3f129a093afa54281643cd706418ae61a6ec2cf94226:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2MDY1ZTFjYzdkYTAxNTEzYjYwZmFjNTRlY2QyMDJlYWNjNDczZDYwM2FlOTYwZDljZDY1OTdhMzBmMjQ0ZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNhMWRjNDNmMjM1MTc3NzIyMGQ1MDc4MjNjZDE2Y2UxOTNiOWRjY2YxOTAwZDE0NTM0NTk0Y2JjNTYxYTk3MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU5NTk1M2I2NzIwZjc5NjlmYjY1MGY1NGYwNmJiMDBhYzZmNGI2ZTQyZWMzYzc2YzFjYjNkODVlYTNmMGViNWEifQ"
+          "resource": "repo://crates/rusty-cmd/src/session.rs#L76-L145",
+          "version": "repo-lines-v1:sha256:bcd828a830008497022c6749decdbe016762e02bf13e3598ababb31d39ee7dea:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzOWRjYTViOWY5MGU0NDI4N2M2OGFiODdlMmI3YWNjMmJiOTM0OGM3MjczODEwNjI4YzJjYWFhOGQzODA0NjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwNjQyZGM5ODVhY2NjMGVhZjFlYjM1NzQ1ODBiMmMwMjBmNWU1ODMyYzE1OTEwNWNhZDdlMzJmMDhhZmRiOGMifQ"
         }
       ]
     },
@@ -45,12 +41,12 @@
       "statement": "The installer applies neither the compositor drop-in (`OOMScoreAdjust=100` on uwsm's `wayland-wm@hyprland.desktop.service`) nor the earlyoom avoid line; it prints both as pointers.",
       "evidence": [
         {
-          "resource": "repo://omarchy/install.sh#L63-L67",
+          "resource": "repo://install.sh#L64-L68",
           "version": "repo-lines-v1:sha256:aeea25875a903f964bf0395367affc0e55058f9ec8e6b7fcb2085313a7c8b130:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzM4NzdiMGY5NzA3MjBlNDdlYjlhZDM4MWYzNTNlYmJhOGY1YmU2YzkyZTgwMDQzNDc1ZWM5YjZlZjEwMzdjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmY0OWYzMmVjYjNiMmVlMTI5YjRlZTU3OTYzNWZkMGVlYjdlZWE2NDFkMmQ3ZWVjYmI3ZTQ2NmYwYjRjZDVjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzdhMjI2NGFjZGExM2UwYzY0YTEyMzM3OTUyNjI0MGYwN2FlZTA2YTcwZTQ1YjJkM2U2ZDY0MDAyNmIxNTJjMyJ9"
         },
         {
-          "resource": "repo://omarchy/wayland-wm-oom.conf#L12-L13",
-          "version": "repo-lines-v1:sha256:af084bccc59898e261f028675d4b5c2bf28149c3a879da9d995db756e1d773a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDBkOGJhYWFiYWM4NWFkOGFjNWEyZWM0MGRkMDY1YjRlYTBmYjQ3YzI1Y2UzZGRhZDRjMjkwZDIyNTAzYzkwZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTY5MWQwMzAyNjdhODRjYTNkODVhMjc5YzExMjJlMzdjYTAwMzgxMGU4OTZjN2M4YjMxZTUxNmNkMDc4ZDgxNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzY4YWQwYTJhMGEzOTdiZWQzNTc4YjU1MzVjMWQ3ZTkzNjNkMDEzYmNkMzJjYTNjZTZkODhlMWJmMjlmMWUxYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+          "resource": "repo://service/wayland-wm-oom.conf#L12-L13",
+          "version": "repo-lines-v1:sha256:af084bccc59898e261f028675d4b5c2bf28149c3a879da9d995db756e1d773a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDBkOGJhYWFiYWM4NWFkOGFjNWEyZWM0MGRkMDY1YjRlYTBmYjQ3YzI1Y2UzZGRhZDRjMjkwZDIyNTAzYzkwZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTY5MWQwMzAyNjdhODRjYTNkODVhMjc5YzExMjJlMzdjYTAwMzgxMGU4OTZjN2M4YjMxZTUxNmNkMDc4ZDgxNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGM0NTNiOGJjOTk5Zjc4ZWRiZmIzZjNhNmNmZjRiM2U1YjQ3MGE1NTZhYTI1M2Q5YWI2ZDFlZDYxOTVjYjU4NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         }
       ]
     },
@@ -63,18 +59,18 @@
           "version": "repo-lines-v1:sha256:c2ef8c07ea781a9e0006f1086cdc0dd2ec6ea73d16eac4598fc71c62c28ba878:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFhMDg3NmFjN2FmY2VhYTMwNThjODQ0ZGJmYTVjNWI0YTMyZjBhZmUzMjQ5OGViZWI4ZWViMzBjZDliMDY3OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDQzNzgwM2YyOWUzMTJhNDE2MzY3NzEwNjg1NzM1MWE4OTdkNmE4ODI2ZDE2NDM5ZmQ3NjAwOGQyODkxZmU3MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODk2NDNjNGU3Mjg1NTJkNGUyZmQ5ZjUwYjUyNmU2YzVkYzFjZTA3Yzc3MDIwNmYyZjY3NGJlMmY5YTI1YjA5ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjY0NjA1YzM1NDNlMjQ1ZWI1Y2Q4ZDEzODQ1ZmY4NjhhYTZhYjZhN2VhN2NjYjhmODA5NDk5MGYxZTA0OWM2MyJ9"
         },
         {
-          "resource": "repo://packaging/PKGBUILD#L48-L55",
-          "version": "repo-lines-v1:sha256:f59e69e6ef0d803d41442f6fc3760dc15e2a1cbfda90d4f2d4d8d51b8a4c7fd7:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTUxZGE2NDhkMjJkYTIxMjRhYTQ4YjQ0ZjFmMjNkZjEzYzNkNTA4OWFmNDdkYzM0OGNiMjJlZGM2NmJiZjA2NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzA5NTgwMzU4ZDJhY2FhMjc5NGJhYTY1NGZmMjM2MzhmZmY2ZDUyNGIxZGM4MDJhZjhmNDdkMDI4ZjNlZmRmMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2QzMzQ5OTEzZmEyNDM0MmE3ZGUzMDNhYzM1NjJlYTU1Mjc1N2M0YWE3MzkyYjczZWMzNGM2N2E3NjFhNDU2ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZiNTI2NDlhZDIyNGU3ODljYzA4NWU0MDU0MmE1OTFjYzE2NDJlMjU0NjBiMWQxMWM0OGEzNzUxZjNkMTI1MyJ9"
+          "resource": "repo://packaging/PKGBUILD#L48-L58",
+          "version": "repo-lines-v1:sha256:83b74a7c6d8a411110854744ea7ef4bdb19e73ba7df8cb03ae1173dc71ca46ea:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1MWRhNjQ4ZDIyZGEyMTI0YWE0OGI0NGYxZjIzZGYxM2MzZDUwODlhZjQ3ZGMzNDhjYjIyZWRjNjZiYmYwNjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlN2UzZTkzZmQyMzI0MTU4NGE0OWNmNTMyMGY5NzM4YWMzMjAzMmEwMzZmMTc3ZDRiOThjZWMyNDJjNmNmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkMzM0OTkxM2ZhMjQzNDJhN2RlMzAzYWMzNTYyZWE1NTI3NTdjNGFhNzM5MmI3M2VjMzRjNjdhNzYxYTQ1NmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         }
       ]
     },
     {
       "id": "claim_73fb5a40d3774e27abc651af63982d83",
-      "statement": "A test in the `rusty` command's crate reads every file git tracks under `omarchy/` and `packaging/`, subfolders included, refuses the `rusty-session` wrapper's invocations in any of them, and refuses `rusty-app`, `rusty session run`, `rusty session stop`, `qmltermwidget` and the app id in every file but a README, so the shipped files describe only what ships.",
+      "statement": "A test in the `rusty` command's crate reads every file git tracks in `install.sh`, `service/` and `packaging/`, subfolders included, refuses the `rusty-session` wrapper's invocations in any of them, and refuses `rusty-app`, `rusty session run`, `rusty session stop`, `qmltermwidget` and the app id in every file but a README, so the shipped files describe only what ships.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-cmd/src/session.rs#L274-L320",
-          "version": "repo-lines-v1:sha256:489126754cfb1d43f20fae7dea9bb817f1c7e7984ddab289b01fd5c5fa8c1c35:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiNzc0NDA4ZTU4ZTlmZjAyODQ1ODlmMDE1NGNhNWVhZjJiODMwYjgyYzkyYWE4YmQ4YzU4MWQ3ZGU5NTg5NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhmZDcyOTVhZDAwNzYzZmEyYTI5NzU0OThhODI4NmI4YjM1OTRhNGM4MDg3ZjRhZWM4NmNhYWI2ZWFiMmI0OTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://crates/rusty-cmd/src/session.rs#L283-L329",
+          "version": "repo-lines-v1:sha256:128e67d04d824b9cc6a47a12c7b991c0e16d5ecc9e8df5134fc2dc5320560ab0:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2MjZjMjM3OTk0NTNkY2QxOGUzMTZiNTViOTRlMTg5OTcxY2UyY2UyOGU4ZDUyNGFhZGEyNmVkNmJjNDQ3NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhmZDcyOTVhZDAwNzYzZmEyYTI5NzU0OThhODI4NmI4YjM1OTRhNGM4MDg3ZjRhZWM4NmNhYWI2ZWFiMmI0OTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         }
       ]
     },
@@ -84,7 +80,7 @@
       "evidence": [
         {
           "resource": "repo://crates/rusty-cmd/tests/command.rs#L1-L120",
-          "version": "repo-lines-v1:sha256:2eec0405232a1ced3750e3b72553a69d64fcd81c5f438b17be0ca384325accea:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzY2JmYzVhMTI5YjI2ZjYyMjkzNGRkNDllZDc2NTA0ZjIxZTI4YjQyYjIzODViMDBlMzNmMjVmMzIwMjllMDQ5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+          "version": "repo-lines-v1:sha256:c93ef451a8cd155c92c807248be150349f2294b011e49c8e18d6999bb3522fed:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzY2JmYzVhMTI5YjI2ZjYyMjkzNGRkNDllZDc2NTA0ZjIxZTI4YjQyYjIzODViMDBlMzNmMjVmMzIwMjllMDQ5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
         }
       ]
     },
@@ -104,11 +100,11 @@
     },
     {
       "id": "claim_49cfd10ee30e43728b927ee1aebb01f1",
-      "statement": "`bin/package-release.sh` builds the three binaries with `cargo build --release --locked` and writes `dist/rusty-<version>-<arch>-linux.tar.gz` (the binaries under `bin/`, the installer, the unit, the MCP config, the compositor drop-in, README, LICENSE, THIRD_PARTY_NOTICES, CHANGELOG, SECURITY and the `docs/` references) with a `.sha256` beside it; the release workflow runs it on a `v*` tag after checking the tag against `Cargo.toml` and running the tests, and attaches both files to a GitHub release whose notes are the CHANGELOG section headed exactly `## [<version>]`.",
+      "statement": "`bin/package-release.sh` builds the three binaries with `cargo build --release --locked` and writes `dist/rusty-<version>-<arch>-linux.tar.gz` (the binaries under `bin/`, `install.sh` at its top, the unit, the MCP config and the compositor drop-in under `service/`, README, LICENSE, THIRD_PARTY_NOTICES, CHANGELOG, SECURITY and the `docs/` references) with a `.sha256` beside it; the release workflow runs it on a `v*` tag after checking the tag against `Cargo.toml` and running the tests, and attaches both files to a GitHub release whose notes are the CHANGELOG section headed exactly `## [<version>]`.",
       "evidence": [
         {
           "resource": "repo://bin/package-release.sh",
-          "version": "repo-file-v1:sha256:bd2512dffaf547239a502a3920d78db6f38be44893a763ea099c44c38c593c5e"
+          "version": "repo-file-v1:sha256:3f0f4ad2462d36bb69bb2a407a82640d9f3c917364d8b55c068b864a6c66c0ce"
         },
         {
           "resource": "repo://.github/workflows/release.yml",
@@ -122,7 +118,7 @@
       "evidence": [
         {
           "resource": "repo://packaging/rusty-bin/PKGBUILD",
-          "version": "repo-file-v1:sha256:332c8d63e8f0f4df6da9b730d252ea71a70b959e247d150d4829068c25f64fb0"
+          "version": "repo-file-v1:sha256:d96d72ef2674e80ea613b012ee8d26fe1c03c4ebcbed2aa278794feeec1f54ea"
         },
         {
           "resource": "repo://packaging/rusty-bin/rusty-bin.install",
@@ -157,6 +153,6 @@
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T19:17:18.990Z"
+    "at": "2026-10-09T20:38:22.093Z"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:7cb05c9cf0c2231d06606258050da65baa4b055f5d187c1555b14045ddc40e20",
+  "pageVersion": "sha256:f0bf67259b1a5e072a76725aea711731605fc1357910399fc3f07aca3dbdf849",
   "claims": [
     {
       "id": "claim_ba5269afe6054bbbaef8c6effa948261",
@@ -32,11 +32,11 @@
     },
     {
       "id": "claim_962c34f7ef834dc4bffeddef57061b10",
-      "statement": "The completion receipt is written by the PostToolUse hook only when `openwiki_finish` returned `complete` and `openwiki/.last-update.json` records a complete run at the current HEAD.",
+      "statement": "The completion receipt is written by the PostToolUse hook only when `openwiki_finish` returned `complete` and `openwiki/.last-update.json` records a complete run at the current HEAD; it names the active pipeline's id, or `none` when the pair is already archived.",
       "evidence": [
         {
           "resource": "repo://.claude/hooks/record-pipeline-tool-use.sh",
-          "version": "repo-file-v1:sha256:f90178d223843717a6363824187761df877732ba31ef4ff54c6d76fe77fa265e"
+          "version": "repo-file-v1:sha256:14bdb7b4cccb62bb0f8e195c82a0335198ddd7b967c1d91b546e6e0722a50ee5"
         }
       ]
     },
@@ -139,6 +139,6 @@
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T19:17:18.990Z"
+    "at": "2026-10-09T20:39:38.727Z"
   }
 }

@@ -1414,7 +1414,7 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "rusty-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "dirs",
@@ -1426,11 +1426,11 @@ dependencies = [
 
 [[package]]
 name = "rusty-cmd"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "rusty-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "argon2",
  "chrono",
@@ -1454,7 +1454,7 @@ dependencies = [
 
 [[package]]
 name = "rusty-mcp"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "axum",

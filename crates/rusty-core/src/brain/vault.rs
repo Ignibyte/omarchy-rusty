@@ -8,6 +8,10 @@
 
 use std::path::{Path, PathBuf};
 
+/// How recently written a file is left to the process that wrote it by a sweep of outside
+/// edits.
+const IN_FLIGHT_GRACE: std::time::Duration = std::time::Duration::from_secs(3);
+
 /// The soft-delete bin at the vault root. Nothing in it is a page (TICKET-040).
 pub const ARCHIVE_DIR: &str = "archive";
 
@@ -234,9 +238,20 @@ impl VaultManager {
             mine.iter()
                 .any(|m| path == m || path.starts_with(&format!("{m}/")))
         };
+        // Another process's write is claimed only in that process; a file written in the
+        // last few seconds is probably one it is about to commit under its own message.
+        // The sweep runs seconds after a burst settles, so an edit made outside the tools
+        // is older than this by then, and a later sweep takes anything skipped.
+        let recent = |path: &str| {
+            std::fs::metadata(self.root.join(path))
+                .and_then(|m| m.modified())
+                .ok()
+                .and_then(|written| written.elapsed().ok())
+                .is_some_and(|age| age < IN_FLIGHT_GRACE)
+        };
         let changed: Vec<String> = changed_paths(&self.root, &[])?
             .into_iter()
-            .filter(|p| !claimed(p))
+            .filter(|p| !claimed(p) && !recent(p))
             .collect();
         if changed.is_empty() {
             return Ok(Vec::new());

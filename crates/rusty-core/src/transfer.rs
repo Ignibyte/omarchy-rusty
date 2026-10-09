@@ -570,6 +570,23 @@ fn target_of(name: &str, rel: &Path, is_dir: bool, loc: &StoreLocation) -> Resul
 /// `<home>.before-import-<time>` first, never deleted. A home that holds a store is
 /// replaced only with `replace`. Its `hooks/` folder is carried into the new home.
 pub fn import(zip_path: &Path, home: &Path, opts: ImportOptions) -> Result<ImportReport, String> {
+    // A home that is a symbolic link (a store kept on another disk) is replaced where it
+    // lives: the staging and the old store's move happen beside the real folder, and the
+    // link keeps pointing at the same path, which then holds the new store.
+    let real_home;
+    let home = if home.is_symlink() {
+        real_home = fs::canonicalize(home)
+            .or_else(|_| {
+                fs::read_link(home).map(|target| match home.parent() {
+                    Some(parent) if target.is_relative() => parent.join(target),
+                    _ => target,
+                })
+            })
+            .map_err(|e| format!("resolve {}: {e}", home.display()))?;
+        real_home.as_path()
+    } else {
+        home
+    };
     let mut archive = open_archive(zip_path)?;
     let manifest = manifest_of(&mut archive)?;
     let target = StoreLocation::defaults(home);
@@ -1090,6 +1107,41 @@ mod tests {
         }
         zip.finish().unwrap();
         path
+    }
+
+    /// A home that is a link to a store on another disk is replaced on that disk; the
+    /// link stays.
+    #[test]
+    fn a_symlinked_home_is_replaced_where_it_lives() {
+        let src = Scratch::new("link_src");
+        let (loc, db) = store(src.path());
+        let zip = src.path().join("out.zip");
+        export(&loc, &db, &zip, ExportOptions::default()).unwrap();
+
+        let dst = Scratch::new("link_dst");
+        let real = dst.path().join("disk/.rusty");
+        fs::create_dir_all(&real).unwrap();
+        fs::write(real.join("rusty.db"), b"old").unwrap();
+        let link = dst.path().join("home/.rusty");
+        fs::create_dir_all(link.parent().unwrap()).unwrap();
+        std::os::unix::fs::symlink(&real, &link).unwrap();
+        let opts = ImportOptions {
+            replace: true,
+            ..ImportOptions::default()
+        };
+        import(&zip, &link, opts).unwrap();
+        assert!(link.is_symlink(), "the link stays");
+        assert!(real.join("brain/projects/orbit.md").is_file());
+        let aside: Vec<_> = fs::read_dir(dst.path().join("disk"))
+            .unwrap()
+            .flatten()
+            .filter(|e| {
+                e.file_name()
+                    .to_string_lossy()
+                    .starts_with(".rusty.before-import-")
+            })
+            .collect();
+        assert_eq!(aside.len(), 1, "the old store sits beside the real folder");
     }
 
     #[test]

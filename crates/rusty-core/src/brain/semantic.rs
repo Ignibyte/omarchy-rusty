@@ -40,6 +40,12 @@ const CHUNK_CHARS: usize = 900;
 const CHUNK_OVERLAP: usize = 120;
 const BATCH: usize = 16;
 const RRF_K: f64 = 60.0;
+/// How long a search waits for its query's vector. Indexing may take minutes over a batch;
+/// a search should not, so a provider that does not answer in time costs only the vector
+/// half of the results.
+pub const QUERY_TIMEOUT: Duration = Duration::from_secs(5);
+/// How long an indexing request may take: a batch of chunks on a slow machine.
+const INDEX_TIMEOUT: Duration = Duration::from_secs(120);
 
 /// Something that turns text into vectors.
 pub trait Embedder: Send + Sync {
@@ -47,6 +53,14 @@ pub trait Embedder: Send + Sync {
     fn id(&self) -> String;
     /// One vector per input, all the same length.
     fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String>;
+    /// The vector for a search query, under [`QUERY_TIMEOUT`] where the provider is
+    /// remote. The default asks [`Embedder::embed`].
+    fn embed_query(&self, text: &str) -> Result<Vec<f32>, String> {
+        self.embed(&[text.to_string()])?
+            .into_iter()
+            .next()
+            .ok_or_else(|| "embedding provider returned nothing for the query".to_string())
+    }
 }
 
 fn agent(timeout: Duration) -> ureq::Agent {
@@ -74,8 +88,28 @@ impl OllamaEmbedder {
         Self {
             url: url.into().trim_end_matches('/').to_string(),
             model: model.into(),
-            agent: agent(Duration::from_secs(120)),
+            agent: ureq::Agent::new_with_defaults(),
         }
+    }
+
+    fn request(&self, limit: Duration, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
+        if texts.is_empty() {
+            return Ok(Vec::new());
+        }
+        let url = format!("{}/api/embed", self.url);
+        let body = serde_json::json!({ "model": self.model, "input": texts });
+        let parsed: OllamaEmbedResponse = within(limit, |left| {
+            self.agent
+                .post(&url)
+                .config()
+                .timeout_global(Some(left))
+                .build()
+                .send_json(&body)?
+                .body_mut()
+                .read_json()
+        })
+        .map_err(|e| format!("ollama embed: {e}"))?;
+        check_count(parsed.embeddings, texts.len())
     }
 
     /// Whether an Ollama server answers at `url` (one quick request).
@@ -91,20 +125,11 @@ impl Embedder for OllamaEmbedder {
     }
 
     fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
-        if texts.is_empty() {
-            return Ok(Vec::new());
-        }
-        let url = format!("{}/api/embed", self.url);
-        let body = serde_json::json!({ "model": self.model, "input": texts });
-        let parsed: OllamaEmbedResponse = self
-            .agent
-            .post(&url)
-            .send_json(&body)
-            .map_err(|e| format!("ollama embed: {e}"))?
-            .body_mut()
-            .read_json()
-            .map_err(|e| format!("ollama embed: bad reply: {e}"))?;
-        check_count(parsed.embeddings, texts.len())
+        self.request(INDEX_TIMEOUT, texts)
+    }
+
+    fn embed_query(&self, text: &str) -> Result<Vec<f32>, String> {
+        first(self.request(QUERY_TIMEOUT, &[text.to_string()])?)
     }
 }
 
@@ -132,8 +157,30 @@ impl OpenAiEmbedder {
         Self {
             key: key.into(),
             model: model.into(),
-            agent: agent(Duration::from_secs(120)),
+            agent: ureq::Agent::new_with_defaults(),
         }
+    }
+
+    fn request(&self, limit: Duration, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
+        if texts.is_empty() {
+            return Ok(Vec::new());
+        }
+        let body = serde_json::json!({ "model": self.model, "input": texts });
+        let parsed: OpenAiEmbedResponse = within(limit, |left| {
+            self.agent
+                .post("https://api.openai.com/v1/embeddings")
+                .config()
+                .timeout_global(Some(left))
+                .build()
+                .header("Authorization", &format!("Bearer {}", self.key))
+                .send_json(&body)?
+                .body_mut()
+                .read_json()
+        })
+        .map_err(|e| format!("openai embeddings: {e}"))?;
+        let mut data = parsed.data;
+        data.sort_by_key(|d| d.index);
+        check_count(data.into_iter().map(|d| d.embedding).collect(), texts.len())
     }
 }
 
@@ -143,23 +190,38 @@ impl Embedder for OpenAiEmbedder {
     }
 
     fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>, String> {
-        if texts.is_empty() {
-            return Ok(Vec::new());
-        }
-        let body = serde_json::json!({ "model": self.model, "input": texts });
-        let parsed: OpenAiEmbedResponse = self
-            .agent
-            .post("https://api.openai.com/v1/embeddings")
-            .header("Authorization", &format!("Bearer {}", self.key))
-            .send_json(&body)
-            .map_err(|e| format!("openai embeddings: {e}"))?
-            .body_mut()
-            .read_json()
-            .map_err(|e| format!("openai embeddings: bad reply: {e}"))?;
-        let mut data = parsed.data;
-        data.sort_by_key(|d| d.index);
-        check_count(data.into_iter().map(|d| d.embedding).collect(), texts.len())
+        self.request(INDEX_TIMEOUT, texts)
     }
+
+    fn embed_query(&self, text: &str) -> Result<Vec<f32>, String> {
+        first(self.request(QUERY_TIMEOUT, &[text.to_string()])?)
+    }
+}
+
+/// Send a request, and send it again when a signal interrupted it (`EINTR`), until `limit`
+/// has passed since the first try; each try gets only the time left. A socket read under a
+/// timeout is never restarted after a signal handler runs, so a busy process can see one
+/// cut short several times in a row, and that is no failure of the provider.
+fn within<T>(
+    limit: Duration,
+    mut call: impl FnMut(Duration) -> Result<T, ureq::Error>,
+) -> Result<T, ureq::Error> {
+    let started = std::time::Instant::now();
+    loop {
+        match call(limit.saturating_sub(started.elapsed())) {
+            Err(ureq::Error::Io(e))
+                if e.kind() == std::io::ErrorKind::Interrupted && started.elapsed() < limit => {}
+            other => return other,
+        }
+    }
+}
+
+/// The one vector a query asked for.
+fn first(vectors: Vec<Vec<f32>>) -> Result<Vec<f32>, String> {
+    vectors
+        .into_iter()
+        .next()
+        .ok_or_else(|| "embedding provider returned nothing for the query".to_string())
 }
 
 fn check_count(vectors: Vec<Vec<f32>>, wanted: usize) -> Result<Vec<Vec<f32>>, String> {
@@ -483,11 +545,7 @@ impl SemanticIndex {
                 _ => return Ok(Vec::new()),
             }
         }
-        let vector = embedder
-            .embed(&[query.to_string()])?
-            .into_iter()
-            .next()
-            .ok_or_else(|| "embedding provider returned nothing for the query".to_string())?;
+        let vector = embedder.embed_query(query)?;
         let conn = self.db.conn()?;
         let mut stmt = conn
             .prepare("SELECT chunk_id, distance FROM brain_vec WHERE embedding MATCH ?1 AND k = ?2 ORDER BY distance")
@@ -553,6 +611,32 @@ impl SemanticIndex {
 
 #[cfg(test)]
 mod tests {
+
+    /// A provider that takes the connection and never answers costs a search at most the
+    /// query timeout, not the indexing timeout.
+    #[test]
+    fn a_silent_provider_fails_a_query_within_the_query_timeout() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            let mut held = Vec::new();
+            for stream in listener.incoming().flatten() {
+                held.push(stream);
+            }
+        });
+        let embedder = OllamaEmbedder::new(format!("http://{addr}"), "m");
+        let started = std::time::Instant::now();
+        let failed = embedder.embed_query("hello");
+        let took = started.elapsed();
+        assert!(failed.is_err());
+        // It waited for the provider (not a refusal), and no longer than the query
+        // timeout allows, with room for a loaded machine.
+        assert!(
+            took >= QUERY_TIMEOUT / 2 && took < QUERY_TIMEOUT * 3,
+            "{took:?}: {failed:?}"
+        );
+    }
+
     use super::*;
     use rusqlite::Connection;
     use std::io::{Read, Write};

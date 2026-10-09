@@ -1173,9 +1173,18 @@ fn run_import(rest: &[String]) {
 /// The pids of the `rusty-mcp` processes that hold the database at `db` open, from
 /// `/proc`: those would keep writing to the store an import replaces.
 fn servers_holding(db: &std::path::Path) -> Vec<String> {
-    let Ok(db) = db.canonicalize() else {
-        return Vec::new();
-    };
+    // The file may be gone (deleted or replaced) while a server still holds it open; the
+    // kernel then names it `<path> (deleted)`, and that server still counts.
+    let db = db.canonicalize().unwrap_or_else(|_| {
+        match (
+            db.parent().and_then(|p| p.canonicalize().ok()),
+            db.file_name(),
+        ) {
+            (Some(parent), Some(name)) => parent.join(name),
+            _ => db.to_path_buf(),
+        }
+    });
+    let deleted = std::path::PathBuf::from(format!("{} (deleted)", db.display()));
     let Ok(entries) = std::fs::read_dir("/proc") else {
         return Vec::new();
     };
@@ -1190,7 +1199,7 @@ fn servers_holding(db: &std::path::Path) -> Vec<String> {
             let holds = std::fs::read_dir(e.path().join("fd"))
                 .ok()?
                 .flatten()
-                .any(|fd| std::fs::read_link(fd.path()).is_ok_and(|t| t == db));
+                .any(|fd| std::fs::read_link(fd.path()).is_ok_and(|t| t == db || t == deleted));
             holds.then_some(pid)
         })
         .collect();
@@ -1329,7 +1338,25 @@ fn run_bookmarks(sub: Option<&str>, rest: &[String]) {
     let result = match sub {
         None | Some("list") => bm.bookmarks(),
         Some("add") => bm.add_bookmark(target(rest)),
-        Some("rm") | Some("remove") => bm.remove_bookmark(&target(rest)),
+        // The kind is guessed from the disk, which no longer has a folder deleted outside
+        // Rusty: a path bookmarked under the other kind is removed too.
+        Some("rm") | Some("remove") => {
+            let wanted = target(rest);
+            match bm.remove_bookmark(&wanted) {
+                Err(_) if wanted.kind != "search" => {
+                    let other = if wanted.kind == "folder" {
+                        "file"
+                    } else {
+                        "folder"
+                    };
+                    bm.remove_bookmark(&Bookmark {
+                        kind: other.into(),
+                        ..wanted
+                    })
+                }
+                done => done,
+            }
+        }
         Some(other) => fail(&format!("bookmarks: unknown subcommand '{other}'")),
     };
     bm.flush_commits();

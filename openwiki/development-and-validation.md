@@ -21,20 +21,20 @@ sources:
     resource: repo://crates/rusty-core/src/skills/mod.rs
   - id: openwiki-source-8dd50c7304f494c3114c8599
     resource: repo://crates/rusty-core/tests/docs.rs
-  - id: openwiki-source-4d8ab597958b0e5c2507d7fd
-    resource: repo://omarchy/install.sh
-  - id: openwiki-source-40bfddd6b1c627968cf41f77
-    resource: repo://omarchy/wayland-wm-oom.conf
+  - id: openwiki-source-03ffc32a0ca502ab67c54b25
+    resource: repo://install.sh
   - id: openwiki-source-74bdf832aa1ee5e3f40cd980
     resource: repo://packaging/PKGBUILD
   - id: openwiki-source-0e798ceb3f0435c95b002613
     resource: repo://packaging/rusty-bin/PKGBUILD
   - id: openwiki-source-484d3bfc1c9bd344c2b3a5f9
     resource: repo://packaging/rusty-bin/rusty-bin.install
+  - id: openwiki-source-3b113a8b1d4b3cbff8a329f0
+    resource: repo://service/wayland-wm-oom.conf
 generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T19:17:18.990Z
+    at: 2026-10-09T20:38:22.093Z
 ---
 
 # Development and validation
@@ -50,8 +50,9 @@ change, and the ways the machine's state is kept out of the record.
   `cargo build` builds all; a stable toolchain and a C compiler are enough.
 - One cargo command at a time, never killed: a killed or concurrent cargo corrupts the
   incremental cache.
-- `omarchy/install.sh` needs `systemctl`, `curl` and `git`. From a release tarball it
-  copies the three binaries in `bin/` beside its folder into `~/.local/bin`; from a
+- `install.sh`, at the top of a checkout and of a release, needs `systemctl`, `curl` and
+  `git`. From a release tarball it copies the three binaries in `bin/` beside it into
+  `~/.local/bin`, and installs the unit from `service/`; from a
   checkout it builds them with `cargo install --force --locked` (`--force` replaces a
   binary an older install left under a name). Then the back end's user unit (installed,
   enabled, restarted, probed over HTTP with two seconds a try, and checked active), the
@@ -82,14 +83,14 @@ change, and the ways the machine's state is kept out of the record.
   with the `gh` CLI and the job's own token.
 - The tarball's binaries are built on GitHub's Ubuntu runner and link only the C runtime
   (rustls, bundled SQLite), so they run on Arch and other current distributions.
-- Proof that a release installs is a disposable Omarchy VM: unpack, `omarchy/install.sh`,
+- Proof that a release installs is a disposable Omarchy VM: unpack, `install.sh`,
   then the service, the tools over stdio and HTTP, the CLI, and an export and import.
   The installer restarts the user unit, so it is never tried on a machine whose back end
   is in use.
 
 ## Running as a service
 
-- `omarchy/rusty-mcp.service` is wanted by `default.target`, so the back end serves with
+- `service/rusty-mcp.service` is wanted by `default.target`, so the back end serves with
   or without a desktop. `Restart=always` brings it back two seconds after any exit but
   `systemctl --user stop`; a session teardown and earlyoom both send SIGTERM, which
   `on-failure` would treat as clean. `OOMScoreAdjust=100` is the lowest a user unit can
@@ -97,13 +98,13 @@ change, and the ways the machine's state is kept out of the record.
 - `rusty session` is the way in from a terminal: a noun of the `rusty` command, decided in
   `crates/rusty-cmd/src/session.rs`. `start` starts the back end's unit and prints the
   status; `status` reads the unit and posts an `initialize` to the port; any other verb
-  prints the usage. A test reads every file git tracks under `omarchy/` and `packaging/`,
+  prints the usage. A test reads every file git tracks in `install.sh`, `service/` and `packaging/`,
   subfolders included, and refuses
   invocations of a `rusty-session` script and, outside a README, the names of a desktop
   app, so the shipped files describe only what ships.
-- `omarchy/wayland-wm-oom.conf` is a drop-in for the compositor unit (`OOMScoreAdjust=100`)
+- `service/wayland-wm-oom.conf` is a drop-in for the compositor unit (`OOMScoreAdjust=100`)
   that the installer points at and never applies, being another program's unit; the
-  earlyoom avoid line, which needs root, is documented in `omarchy/README.md`.
+  earlyoom avoid line, which needs root, is documented in `service/README.md`.
 
 ## Testing
 
@@ -145,10 +146,10 @@ the full layout. Tests never use these paths: they run in a scratch `HOME`.
 
 ## Primary sources
 
-- `bin/gate.sh`, `.github/workflows/ci.yml`, `omarchy/install.sh`, `packaging/PKGBUILD`
+- `bin/gate.sh`, `.github/workflows/ci.yml`, `install.sh`, `packaging/PKGBUILD`
 - `bin/package-release.sh`, `.github/workflows/release.yml`, `packaging/rusty-bin/PKGBUILD`,
   `CHANGELOG.md`
 - `crates/rusty-cmd/src/session.rs`, `crates/rusty-cmd/src/main.rs`,
-  `crates/rusty-cmd/tests/command.rs`, `omarchy/rusty-mcp.service`,
-  `omarchy/wayland-wm-oom.conf`
+  `crates/rusty-cmd/tests/command.rs`, `service/rusty-mcp.service`,
+  `service/wayland-wm-oom.conf`
 - `crates/rusty-mcp/tests/smoke.rs`

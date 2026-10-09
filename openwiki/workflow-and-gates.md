@@ -34,7 +34,7 @@ sources:
 generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T19:17:18.990Z
+    at: 2026-10-09T20:39:38.727Z
 ---
 
 # Workflow and gates: how a change moves through this repository
@@ -96,11 +96,12 @@ recall → plan → design → implement → inspect → validate → complete �
   syntax, a secrets scan over the gated files, a whitespace check, and on green write
   `.git/rusty-gate-receipt`: `version`, `fingerprint`, `mode`, `at`.
 - The fingerprint is a sha256 over `HEAD` and every gated file's path and content. Gated
-  paths: `crates`, `Cargo.toml`, `Cargo.lock`, `bin`, `scripts`,
-  `omarchy`, `packaging`, `.claude`, `.codex`, `.mcp.json`, `.github`,
-  `CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`. `docs/` and the roadmap are exempt, so a
-  pipeline can write notes while a gate runs and docs-only changes commit without a
-  receipt.
+  paths: `crates`, `Cargo.toml`, `Cargo.lock`, `install.sh`, `bin`, `scripts`,
+  `service`, `packaging`, `.claude`, `.codex`, `.mcp.json`, `.github`,
+  `CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, and the three references tests check
+  (`docs/tools.md`, `docs/cli.md`, `docs/configuration.md`). The rest of `docs/` and the
+  roadmap are exempt, so a pipeline can write notes while a gate runs and docs-only
+  changes commit without a receipt.
 - `.git/rusty-openwiki-receipt` holds `version`, `fingerprint`, the pipeline id and `at`
   (no `mode`). The PostToolUse hook writes it when `openwiki_finish` returns `complete`
   and `openwiki/.last-update.json` records that complete run at the current `HEAD`.

@@ -1,11 +1,12 @@
-# Omarchy integration
+# The service
 
-How Rusty runs on Omarchy. `install.sh` ties it together, and every step in it is
-idempotent.
+How Rusty runs as a user service on any systemd Linux, and the two memory-pressure steps
+for an Omarchy (Hyprland under uwsm) desktop. `install.sh`, at the top of a checkout or an
+unpacked release, ties it together, and every step in it is idempotent.
 
 | File | Purpose |
 |---|---|
-| `install.sh` | the three binaries into `~/.local/bin` (`rusty-mcp`, `rusty-cli`, and `rusty`, the command: built with cargo from a checkout, copied from a release's `bin/`), the back end's user service, and the two memory-pressure steps below printed for you to apply |
+| `../install.sh` | the three binaries into `~/.local/bin` (`rusty-mcp`, `rusty-cli`, and `rusty`, the command: built with cargo from a checkout, copied from a release's `bin/`), the back end's user service from this folder, and the two memory-pressure steps below printed for you to apply |
 | `rusty-mcp.service` | the back end over Streamable HTTP on localhost, wanted by `default.target`, restarted after any exit but a stop |
 | `wayland-wm-oom.conf` | a drop-in for uwsm's compositor unit so Hyprland is the last of the session to go under memory pressure; pointed at, never applied |
 | `mcp-config.json` | the `mcpServers` entries for a JSON MCP config such as Claude Code's `.mcp.json` (stdio) and for HTTP clients; Codex takes TOML (see the README) |
@@ -43,7 +44,7 @@ Neither is applied by `install.sh`: one is another program's unit, the other nee
    a user unit can set; a request for less comes out at 100.
 
    ```bash
-   install -Dm644 omarchy/wayland-wm-oom.conf \
+   install -Dm644 service/wayland-wm-oom.conf \
      ~/.config/systemd/user/wayland-wm@hyprland.desktop.service.d/60-oom.conf
    systemctl --user daemon-reload      # takes effect at the next login
    ```

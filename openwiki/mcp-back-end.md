@@ -41,12 +41,12 @@ sources:
     resource: repo://crates/rusty-mcp/src/main.rs
   - id: openwiki-source-84acb13abf83511312610cd3
     resource: repo://crates/rusty-mcp/tests/smoke.rs
-  - id: openwiki-source-f47a49d22d041953f356ca04
-    resource: repo://omarchy/rusty-mcp.service
+  - id: openwiki-source-21e08c04e1a1eb05137c81aa
+    resource: repo://service/rusty-mcp.service
 generated: {by: "claude-code", at: "2026-10-09T19:17:18.990Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T19:17:18.990Z
+    at: 2026-10-09T20:35:14.973Z
 ---
 
 # MCP back end: one server for Marley and the agents
@@ -210,10 +210,13 @@ fails the test, every tool must carry a description, and every tool must fit a f
 
 - No tool reaches the database directly; managers do.
 - A renamed or removed tool is a versioned break; new tools are additive.
-- `brain_search`, `brain_ask`, re-embedding, the semantic status and `script_run` run in
-  `spawn_blocking`, so the server keeps answering while they work. `source_capture` (up to
-  a twenty-second fetch), `brain_import`, `brain_rename`, `source_search` and
-  `search_conversations` run on the request's own task.
+- `brain_search`, `brain_ask`, re-embedding, the semantic status, `script_run`,
+  `source_capture` (up to a twenty-second fetch), `brain_import` and `brain_rename` run
+  in `spawn_blocking` (the `blocking` helper), so the server keeps answering while they
+  work. `source_search` and `search_conversations` are quick reads on the request's task.
+- The change notifier copies the client list and sends to each client outside the lock,
+  five seconds at most a client, then drops the ones that failed, so a stalled client
+  holds up neither the others nor a new connection.
 - A secret's value leaves the server only against the live PIN token, and no call logs a
   PIN, a token or a value.
 - A script runs only from an approved skill. Both execution paths check the status, so
@@ -264,4 +267,4 @@ fails the test, every tool must carry a description, and every tool must fit a f
 ## Primary sources
 
 - `crates/rusty-mcp/src/main.rs`, `crates/rusty-mcp/tests/smoke.rs`, `docs/tools.md`
-- `omarchy/rusty-mcp.service`, `omarchy/mcp-config.json`
+- `service/rusty-mcp.service`, `service/mcp-config.json`

@@ -1,18 +1,26 @@
 //! `rusty <noun> <verb>`: the commands the `rusty` binary answers. The first noun is
-//! `session`, the back end under its systemd user unit (`omarchy/rusty-mcp.service`).
+//! `session`, the back end under its systemd user unit (`service/rusty-mcp.service`).
 //! Built-in nouns come before store scripts.
 
 use std::io::{Read, Write};
-use std::net::{SocketAddr, TcpStream};
+use std::net::{TcpStream, ToSocketAddrs};
 use std::process::Command;
 use std::time::Duration;
 
 /// The back end's unit.
 pub const MCP_UNIT: &str = "rusty-mcp.service";
-/// Where the back end serves HTTP (see `omarchy/rusty-mcp.service`).
+/// Where the back end serves HTTP (see `service/rusty-mcp.service`).
 const MCP_ADDR: &str = "127.0.0.1:4174";
-/// The same endpoint as the docs name it.
-const MCP_URL: &str = "http://127.0.0.1:4174/mcp";
+
+/// The address the back end is probed at: `RUSTY_MCP_ADDR` (a port of one's own, a
+/// drop-in's address, a test's), else the service's default.
+fn mcp_addr() -> String {
+    std::env::var("RUSTY_MCP_ADDR")
+        .ok()
+        .map(|a| a.trim().to_string())
+        .filter(|a| !a.is_empty())
+        .unwrap_or_else(|| MCP_ADDR.to_string())
+}
 
 /// The MCP `initialize` the probe posts; the back end answers 200 when it is serving.
 const INITIALIZE: &str = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"rusty session","version":"0"}}}"#;
@@ -83,7 +91,7 @@ pub fn status() -> i32 {
     } else {
         "not answering"
     };
-    println!("{:<18} {word} on {MCP_URL}", "back end");
+    println!("{:<18} {word} on http://{}/mcp", "back end", mcp_addr());
     0
 }
 
@@ -101,12 +109,13 @@ pub fn answers_ok(head: &str) -> bool {
 
 /// Post an MCP `initialize` to the back end and read the status line.
 fn back_end_answers() -> bool {
-    // `RUSTY_MCP_ADDR` points a test at a port of its own, never the live back end.
-    let host = std::env::var("RUSTY_MCP_ADDR")
+    // A name (`localhost:4174`) is resolved; an address is taken as it is.
+    let host = mcp_addr();
+    let Some(addr) = host
+        .to_socket_addrs()
         .ok()
-        .filter(|a| !a.is_empty())
-        .unwrap_or_else(|| MCP_ADDR.to_string());
-    let Ok(addr) = host.parse::<SocketAddr>() else {
+        .and_then(|mut addrs| addrs.next())
+    else {
         return false;
     };
     let timeout = Duration::from_secs(2);
@@ -271,7 +280,7 @@ mod tests {
         assert!(!USAGE.contains("rusty agent"));
     }
 
-    /// Nothing shipped from `omarchy/` or `packaging/` invokes the wrapper TICKET-009
+    /// Nothing shipped in `install.sh`, `service/` or `packaging/` invokes the wrapper TICKET-009
     /// installed (the installer may still name it, once, to delete a stale copy), and
     /// nothing but a README names the app that retired with TICKET-053.
     #[test]
@@ -294,7 +303,7 @@ mod tests {
         // What git tracks under the two folders is what ships; a local makepkg leaves
         // build folders there that git ignores.
         let listed = std::process::Command::new("git")
-            .args(["ls-files", "--", "omarchy", "packaging"])
+            .args(["ls-files", "--", "install.sh", "service", "packaging"])
             .current_dir(&root)
             .output()
             .expect("git ls-files");

@@ -89,7 +89,7 @@ the lessons in the AAR, the knowledge register and the brain.
 bin/gate.sh --fast     # fmt, clippy, tests; no receipt
 bin/gate.sh --diff     # also docs, shell syntax, secrets, whitespace; green writes .git/rusty-gate-receipt
 bin/gate.sh --verify   # does the receipt match this worktree
-omarchy/install.sh     # build (or copy a release's) binaries, install and restart the service
+./install.sh           # build (or copy a release's) binaries, install and restart the service
 ```
 
 Run cargo commands one at a time. Never kill a running cargo.
@@ -97,7 +97,7 @@ Run cargo commands one at a time. Never kill a running cargo.
 ## Tools and hosts
 
 - `.mcp.json` (Claude Code) and `.codex/config.toml` (Codex) wire three MCP servers:
-  `rusty` (needs `rusty-mcp` on `PATH`, which `omarchy/install.sh` provides), CodeGraph and
+  `rusty` (needs `rusty-mcp` on `PATH`, which `install.sh` provides), CodeGraph and
   OpenWiki. `scripts/setup-pipeline-tools.sh` installs CodeGraph and OpenWiki pinned under
   `.dev/` (ignored), and a `.git/hooks/pre-commit` that checks the receipts for every
   committer. `scripts/codegraph.sh` is CodeGraph's CLI. OpenWiki runs only through its MCP

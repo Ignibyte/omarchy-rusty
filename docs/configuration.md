@@ -100,12 +100,12 @@ read `.secret`. You can also edit the file by hand; the next read sees the chang
 |---|---|---|
 | `HOME` | all | The store is `$HOME/.rusty`. |
 | `RUSTY_SKILLS` | all | The skills store, over the `skills_path` setting. |
-| `RUSTY_MCP_ADDR` | `rusty session status` | The address it probes (default `127.0.0.1:4174`). |
+| `RUSTY_MCP_ADDR` | `rusty session status` | The address it probes and reports, an address or a name (default `127.0.0.1:4174`). |
 | `VISUAL`, `EDITOR` | `rusty-cli scripts edit` | The editor it opens. |
 
 ## The service
 
-`omarchy/install.sh` installs `~/.config/systemd/user/rusty-mcp.service`, which runs
+`install.sh` installs `~/.config/systemd/user/rusty-mcp.service`, which runs
 `rusty-mcp --http 127.0.0.1:4174` for clients that speak Streamable HTTP. It starts with
 your user session (or at boot with lingering enabled), restarts two seconds after any exit
 but a stop, and logs to the journal:

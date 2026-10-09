@@ -54,10 +54,20 @@ impl Bookmark {
             "heading" if self.heading.trim().is_empty() => Some("heading"),
             _ => self.path.trim().is_empty().then_some("path"),
         };
-        match missing {
-            Some(field) => Err(format!("a {} bookmark needs a {field}", self.kind)),
-            None => Ok(()),
+        if let Some(field) = missing {
+            return Err(format!("a {} bookmark needs a {field}", self.kind));
         }
+        // A file, folder or heading bookmark names a place in the vault: a vault-relative
+        // path, never an absolute one or one that climbs out.
+        let path = self.path.trim();
+        if self.kind != "search"
+            && (path.starts_with('/') || path.split('/').any(|part| part == ".."))
+        {
+            return Err(format!(
+                "a bookmark's path is inside the vault, relative to it; {path:?} is not"
+            ));
+        }
+        Ok(())
     }
 
     /// Whether the bookmark points at `path` or, for a folder move or delete, anything

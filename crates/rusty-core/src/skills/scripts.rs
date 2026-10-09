@@ -128,12 +128,13 @@ fn read_capped(mut stream: impl Read) -> String {
     text
 }
 
-/// End a script's whole process group: the script and every job it started.
+/// End a child's whole process group: the child and every job it started. The caller
+/// started the child with `process_group(0)`, so the group is that child's alone.
 #[cfg(unix)]
-fn kill_group(pgid: u32) {
+pub(crate) fn kill_group(pgid: u32) {
     if let Ok(pgid) = libc::pid_t::try_from(pgid) {
         // SAFETY: kill(2) with a negative pid signals a process group and touches no
-        // memory; the group is the one `run_script` created for this script alone.
+        // memory; the group is the one the caller created for this child alone.
         unsafe {
             libc::kill(-pgid, libc::SIGKILL);
         }

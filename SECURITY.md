@@ -38,7 +38,9 @@ that one of them fails is welcome:
   untrusted data in every MCP answer that carries its text (search, reads, renders,
   `brain_ask`, link context, the page resource) and in `rusty-cli brain context`, so an
   agent does not take it as instructions. Its HTML is shown as text and its links keep only
-  safe schemes. A capture reads at most 8 MiB after decompression.
+  safe schemes. A capture reads at most 8 MiB after decompression; a PDF's text comes from
+  `pdftotext`, which gets thirty seconds and 8 MiB of output, from a copy only you can
+  read.
 - **What leaves the machine.** Page text goes to the embedding provider: Ollama at
   `ollama_url` (this machine unless you change it) or OpenAI when you choose `openai`.
   `source_capture` fetches the URL it is given. The vault and the skills store commit to

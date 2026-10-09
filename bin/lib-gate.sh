@@ -8,7 +8,7 @@
 # since an edit to one can turn the tests red.
 rusty_gated_paths=(
   crates Cargo.toml Cargo.lock
-  bin scripts omarchy packaging
+  install.sh bin scripts service packaging
   .claude .codex .mcp.json .github
   CONSTITUTION.md AGENTS.md CLAUDE.md
   docs/tools.md docs/cli.md docs/configuration.md

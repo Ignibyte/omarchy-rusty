@@ -18,7 +18,8 @@ rusty <script> [args...]   run an approved store script (a *.sh beside a skill)
 rusty help                 the usage; `rusty` alone prints it too
 ```
 
-`rusty session status` probes `RUSTY_MCP_ADDR` when it is set. A store script is looked up
+`rusty session status` probes `RUSTY_MCP_ADDR` when it is set (an address or a name such
+as `localhost:4180`) and says which address it probed; it exits 0 either way. A store script is looked up
 in `RUSTY_SKILLS`, else `~/.rusty/skills`; a store moved with the `skills_path` setting
 runs its scripts through `rusty-cli scripts run`.
 
@@ -52,6 +53,9 @@ rusty-cli bookmarks [add|rm <path or search:query>]
   `--to inbox` to the one inbox page (`inbox/inbox`), creating the page when needed.
 - `context` prints the pages that best match a prompt as one block, the way a hook would
   hand them to an agent.
+- `bookmarks add` takes a vault path (a page or a folder) or `search:<query>`; a path
+  outside the vault is refused. `bookmarks rm` removes a bookmark by its path, also one
+  whose folder was deleted outside Rusty.
 
 ### Brain upkeep
 

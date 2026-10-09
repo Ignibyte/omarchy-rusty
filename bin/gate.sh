@@ -43,7 +43,7 @@ check_shell_syntax() {
   local f rc=0
   while IFS= read -r f; do
     bash -n "$f" || rc=1
-  done < <(git ls-files -co --exclude-standard -- 'bin/*.sh' 'scripts/*.sh' 'omarchy/*.sh' '.claude/hooks/*.sh' | grep -v '^$')
+  done < <(git ls-files -co --exclude-standard -- 'install.sh' 'bin/*.sh' 'scripts/*.sh' '.claude/hooks/*.sh' | grep -v '^$')
   return $rc
 }
 

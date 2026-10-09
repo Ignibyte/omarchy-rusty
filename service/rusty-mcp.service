@@ -1,7 +1,7 @@
 # Rusty's back end as a user service: Streamable HTTP on localhost for Marley and any
 # other HTTP client. Agents keep using stdio through their own mcpServers entry.
 #
-#   install -Dm644 omarchy/rusty-mcp.service ~/.config/systemd/user/rusty-mcp.service
+#   install -Dm644 service/rusty-mcp.service ~/.config/systemd/user/rusty-mcp.service
 #   systemctl --user daemon-reload && systemctl --user enable --now rusty-mcp
 #   journalctl --user -u rusty-mcp -f
 #

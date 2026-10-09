@@ -30,7 +30,7 @@ if ! jq -e --arg head "$head" '.status == "complete" and .gitHead == $head' "$la
   echo "OpenWiki receipt not written: openwiki/.last-update.json shows no complete run at HEAD" >&2
   exit 0
 fi
-pipeline=$(ls "$root"/docs/planning/pipeline/active/*.spec.md 2>/dev/null | head -1)
+pipeline=$(ls "$root"/docs/planning/pipeline/active/*.spec.md 2>/dev/null | head -1) || true
 pipeline_id="none"
 if [[ -n "$pipeline" ]]; then
   pipeline_id=$(sed -n 's/^pipeline_id:[[:space:]]*//p' "$pipeline" | head -1)

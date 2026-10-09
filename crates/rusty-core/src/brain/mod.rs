@@ -1281,6 +1281,7 @@ impl BrainManager {
     /// Sync a single page from the filesystem into the SQLite index.
     #[allow(dead_code)] // Public API for future phases (file watcher, manual sync)
     pub fn sync_page(&self, slug: &str) -> Result<(), String> {
+        use rusqlite::{OptionalExtension, TransactionBehavior};
         let raw = self
             .vault
             .read_page(slug)?
@@ -1289,58 +1290,68 @@ impl BrainManager {
         let hash = compute_hash(&raw);
         let mut parsed = parse_lenient(&raw);
         parsed.frontmatter.fill_defaults(slug);
-
-        // Already indexed with the same hash: only the link rows are refreshed, so rows
-        // written by an older scanner (raw targets, no context) catch up.
-        let known = self.get_content_hash(slug);
-        let op = if known.is_some() {
-            "updated"
-        } else {
-            "created"
-        };
-        if let Some(existing_hash) = known {
-            if existing_hash == hash {
-                let full_content = if parsed.timeline.is_empty() {
-                    parsed.compiled_truth.clone()
-                } else {
-                    format!("{}\n\n{}", parsed.compiled_truth, parsed.timeline)
-                };
-                let conn = self.db.conn()?;
-                // A row indexed before TICKET-047 holds `{}`; fill it in.
-                conn.execute(
-                    "UPDATE brain_pages SET frontmatter = ?1 WHERE slug = ?2 AND frontmatter IS NOT ?1",
-                    rusqlite::params![properties_json(&raw), slug],
-                )
-                .map_err(|e| format!("Failed to store properties: {e}"))?;
-                return index_links(&conn, slug, &full_content);
-            }
-        }
-        let now = unix_now();
-        let created = self.get_timestamps(slug).map(|(c, _)| c).unwrap_or(now);
-
         let full_content = if parsed.timeline.is_empty() {
             parsed.compiled_truth.clone()
         } else {
             format!("{}\n\n{}", parsed.compiled_truth, parsed.timeline)
         };
+        let properties = properties_json(&raw);
 
-        self.remove_from_index(slug)?;
-        self.index_page(&IndexEntry {
-            slug,
-            page_type: &parsed.frontmatter.page_type,
-            title: &parsed.frontmatter.title,
-            content: &full_content,
-            hash: &hash,
-            created_at: created,
-            updated_at: now,
-            properties: &properties_json(&raw),
-            op,
-        })?;
-
-        self.sync_aliases(slug, &parsed.frontmatter.aliases)?;
-        self.sync_tags(slug, &parsed.frontmatter.tags, &full_content)?;
-
-        Ok(())
+        // One write transaction from the hash check to the last row. Every process indexes
+        // the edits it sees, so two may sync one file at once; the second waits here, then
+        // finds the hash the first wrote and only refreshes the link rows: one index
+        // entry, one change row.
+        let mut conn = self.db.conn()?;
+        let tx = conn
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .map_err(|e| format!("Failed to start indexing {slug}: {e}"))?;
+        let known: Option<(String, i64)> = tx
+            .query_row(
+                "SELECT content_hash, created_at FROM brain_pages WHERE slug = ?1",
+                rusqlite::params![slug],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .optional()
+            .map_err(|e| format!("Failed to read the index for {slug}: {e}"))?;
+        match &known {
+            // Already indexed with the same hash: only the link rows are refreshed, so
+            // rows written by an older scanner (raw targets, no context) catch up.
+            Some((existing, _)) if *existing == hash => {
+                // A row indexed before properties were stored holds `{}`; fill it in.
+                tx.execute(
+                    "UPDATE brain_pages SET frontmatter = ?1 WHERE slug = ?2 AND frontmatter IS NOT ?1",
+                    rusqlite::params![properties, slug],
+                )
+                .map_err(|e| format!("Failed to store properties: {e}"))?;
+                index_links(&tx, slug, &full_content)?;
+            }
+            _ => {
+                let now = unix_now();
+                remove_rows(&tx, slug)?;
+                index_rows(
+                    &tx,
+                    &IndexEntry {
+                        slug,
+                        page_type: &parsed.frontmatter.page_type,
+                        title: &parsed.frontmatter.title,
+                        content: &full_content,
+                        hash: &hash,
+                        created_at: known.as_ref().map_or(now, |(_, created)| *created),
+                        updated_at: now,
+                        properties: &properties,
+                        op: if known.is_some() {
+                            "updated"
+                        } else {
+                            "created"
+                        },
+                    },
+                )?;
+                alias_rows(&tx, slug, &parsed.frontmatter.aliases)?;
+                tag_rows(&tx, slug, &parsed.frontmatter.tags, &full_content)?;
+            }
+        }
+        tx.commit()
+            .map_err(|e| format!("Failed to finish indexing {slug}: {e}"))
     }
 
     /// Sync all files in the vault to the SQLite index.
@@ -3049,32 +3060,7 @@ impl BrainManager {
     /// Insert a page into the brain_pages table and brain_fts index.
     fn index_page(&self, entry: &IndexEntry) -> Result<(), String> {
         let conn = self.db.conn()?;
-
-        conn.execute(
-            "INSERT OR REPLACE INTO brain_pages (slug, page_type, title, frontmatter, content_hash, created_at, updated_at) \
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-            rusqlite::params![entry.slug, entry.page_type, entry.title, entry.properties, entry.hash, entry.created_at, entry.updated_at],
-        )
-        .map_err(|e| format!("Failed to index page: {e}"))?;
-
-        // Two processes indexing one outside edit can both get past the hash check; the
-        // delete keeps the page to one full-text row whichever inserts last.
-        conn.execute(
-            "DELETE FROM brain_fts WHERE slug = ?1",
-            rusqlite::params![entry.slug],
-        )
-        .map_err(|e| format!("Failed to index FTS: {e}"))?;
-        conn.execute(
-            "INSERT INTO brain_fts (slug, title, content, page_type) VALUES (?1, ?2, ?3, ?4)",
-            rusqlite::params![entry.slug, entry.title, entry.content, entry.page_type],
-        )
-        .map_err(|e| format!("Failed to index FTS: {e}"))?;
-
-        // For other processes, on this connection (TICKET-035).
-        changes::record(&conn, "page", entry.slug, entry.op, "", entry.hash);
-
-        // The wiki links, on the same connection guard (a second take would deadlock).
-        index_links(&conn, entry.slug, entry.content)
+        index_rows(&conn, entry)
     }
 
     /// A page that left the vault: its index rows and every link it made, typed edges
@@ -3095,39 +3081,7 @@ impl BrainManager {
     /// Remove a page from the brain_pages table, brain_fts, aliases, and tags.
     fn remove_from_index(&self, slug: &str) -> Result<(), String> {
         let conn = self.db.conn()?;
-        conn.execute(
-            "DELETE FROM brain_fts WHERE slug = ?1",
-            rusqlite::params![slug],
-        )
-        .map_err(|e| format!("Failed to remove FTS: {e}"))?;
-        conn.execute(
-            "DELETE FROM brain_aliases WHERE slug = ?1",
-            rusqlite::params![slug],
-        )
-        .map_err(|e| format!("Failed to remove aliases: {e}"))?;
-        conn.execute(
-            "DELETE FROM brain_tags WHERE slug = ?1",
-            rusqlite::params![slug],
-        )
-        .map_err(|e| format!("Failed to remove tags: {e}"))?;
-        conn.execute(
-            "DELETE FROM brain_pages WHERE slug = ?1",
-            rusqlite::params![slug],
-        )
-        .map_err(|e| format!("Failed to remove page: {e}"))?;
-        Ok(())
-    }
-
-    /// Get the stored content hash for a slug.
-    #[allow(dead_code)] // Used by sync_page which is reserved for future phases
-    fn get_content_hash(&self, slug: &str) -> Option<String> {
-        let conn = self.db.conn().ok()?;
-        conn.query_row(
-            "SELECT content_hash FROM brain_pages WHERE slug = ?1",
-            rusqlite::params![slug],
-            |row| row.get(0),
-        )
-        .ok()
+        remove_rows(&conn, slug)
     }
 
     /// Get created_at and updated_at timestamps for a slug.
@@ -3162,55 +3116,14 @@ impl BrainManager {
     /// Sync aliases from frontmatter into brain_aliases table.
     fn sync_aliases(&self, slug: &str, aliases: &[String]) -> Result<(), String> {
         let conn = self.db.conn()?;
-        conn.execute(
-            "DELETE FROM brain_aliases WHERE slug = ?1",
-            rusqlite::params![slug],
-        )
-        .map_err(|e| format!("Failed to clear aliases: {e}"))?;
-
-        for alias in aliases {
-            conn.execute(
-                "INSERT OR IGNORE INTO brain_aliases (slug, alias) VALUES (?1, ?2)",
-                rusqlite::params![slug, alias],
-            )
-            .map_err(|e| format!("Failed to insert alias: {e}"))?;
-        }
-        Ok(())
+        alias_rows(&conn, slug, aliases)
     }
 
     /// Sync a page's tags into `brain_tags`: the frontmatter list and the inline `#tags`
     /// of `content`, deduplicated without case, stored as first written.
     fn sync_tags(&self, slug: &str, tags: &[String], content: &str) -> Result<(), String> {
-        let mut all: Vec<String> = Vec::new();
-        let mut seen = std::collections::HashSet::new();
-        for tag in tags
-            .iter()
-            .map(|t| {
-                t.trim()
-                    .trim_start_matches('#')
-                    .trim_end_matches('/')
-                    .to_string()
-            })
-            .chain(links::tags(content))
-        {
-            if !tag.is_empty() && seen.insert(tag.to_lowercase()) {
-                all.push(tag);
-            }
-        }
         let conn = self.db.conn()?;
-        conn.execute(
-            "DELETE FROM brain_tags WHERE slug = ?1",
-            rusqlite::params![slug],
-        )
-        .map_err(|e| format!("Failed to clear tags: {e}"))?;
-        for tag in all {
-            conn.execute(
-                "INSERT OR IGNORE INTO brain_tags (slug, tag) VALUES (?1, ?2)",
-                rusqlite::params![slug, tag],
-            )
-            .map_err(|e| format!("Failed to insert tag: {e}"))?;
-        }
-        Ok(())
+        tag_rows(&conn, slug, tags, content)
     }
 }
 
@@ -3380,6 +3293,105 @@ fn unix_now() -> i64 {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs() as i64
+}
+
+/// The page row, the full-text row, the change row and the link rows of one page, on a
+/// connection the caller holds (a plain guard, or a transaction).
+fn index_rows(conn: &rusqlite::Connection, entry: &IndexEntry) -> Result<(), String> {
+    conn.execute(
+        "INSERT OR REPLACE INTO brain_pages (slug, page_type, title, frontmatter, content_hash, created_at, updated_at) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        rusqlite::params![entry.slug, entry.page_type, entry.title, entry.properties, entry.hash, entry.created_at, entry.updated_at],
+    )
+    .map_err(|e| format!("Failed to index page: {e}"))?;
+    // One full-text row per page, whatever was there.
+    conn.execute(
+        "DELETE FROM brain_fts WHERE slug = ?1",
+        rusqlite::params![entry.slug],
+    )
+    .map_err(|e| format!("Failed to index FTS: {e}"))?;
+    conn.execute(
+        "INSERT INTO brain_fts (slug, title, content, page_type) VALUES (?1, ?2, ?3, ?4)",
+        rusqlite::params![entry.slug, entry.title, entry.content, entry.page_type],
+    )
+    .map_err(|e| format!("Failed to index FTS: {e}"))?;
+    // For other processes, on this connection.
+    changes::record(conn, "page", entry.slug, entry.op, "", entry.hash);
+    index_links(conn, entry.slug, entry.content)
+}
+
+/// A page's rows in `brain_pages`, `brain_fts`, `brain_aliases` and `brain_tags`; its
+/// link rows stay, for the re-index or [`BrainManager::forget_page`] to settle.
+fn remove_rows(conn: &rusqlite::Connection, slug: &str) -> Result<(), String> {
+    for (table, what) in [
+        ("brain_fts", "FTS"),
+        ("brain_aliases", "aliases"),
+        ("brain_tags", "tags"),
+        ("brain_pages", "page"),
+    ] {
+        conn.execute(
+            &format!("DELETE FROM {table} WHERE slug = ?1"),
+            rusqlite::params![slug],
+        )
+        .map_err(|e| format!("Failed to remove {what}: {e}"))?;
+    }
+    Ok(())
+}
+
+/// A page's aliases from its frontmatter, replacing what `brain_aliases` held.
+fn alias_rows(conn: &rusqlite::Connection, slug: &str, aliases: &[String]) -> Result<(), String> {
+    conn.execute(
+        "DELETE FROM brain_aliases WHERE slug = ?1",
+        rusqlite::params![slug],
+    )
+    .map_err(|e| format!("Failed to clear aliases: {e}"))?;
+    for alias in aliases {
+        conn.execute(
+            "INSERT OR IGNORE INTO brain_aliases (slug, alias) VALUES (?1, ?2)",
+            rusqlite::params![slug, alias],
+        )
+        .map_err(|e| format!("Failed to insert alias: {e}"))?;
+    }
+    Ok(())
+}
+
+/// A page's tags into `brain_tags`: the frontmatter list and the inline `#tags` of
+/// `content`, deduplicated without case, stored as first written.
+fn tag_rows(
+    conn: &rusqlite::Connection,
+    slug: &str,
+    tags: &[String],
+    content: &str,
+) -> Result<(), String> {
+    let mut all: Vec<String> = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    for tag in tags
+        .iter()
+        .map(|t| {
+            t.trim()
+                .trim_start_matches('#')
+                .trim_end_matches('/')
+                .to_string()
+        })
+        .chain(links::tags(content))
+    {
+        if !tag.is_empty() && seen.insert(tag.to_lowercase()) {
+            all.push(tag);
+        }
+    }
+    conn.execute(
+        "DELETE FROM brain_tags WHERE slug = ?1",
+        rusqlite::params![slug],
+    )
+    .map_err(|e| format!("Failed to clear tags: {e}"))?;
+    for tag in all {
+        conn.execute(
+            "INSERT OR IGNORE INTO brain_tags (slug, tag) VALUES (?1, ?2)",
+            rusqlite::params![slug, tag],
+        )
+        .map_err(|e| format!("Failed to insert tag: {e}"))?;
+    }
+    Ok(())
 }
 
 /// Replace a page's wiki-link rows from its content: every distinct target, resolved
@@ -3605,6 +3617,48 @@ mod tests {
     use crate::engine::db::Database;
     use rusqlite::Connection;
     use std::fs;
+
+    /// Two processes (two connections to one database) syncing one outside edit at the
+    /// same moment leave one full-text row and record the page as created once.
+    #[test]
+    fn concurrent_syncs_of_one_edit_index_it_once() {
+        let dir = std::env::temp_dir().join(format!("rusty_brain_race_{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let vault = dir.join("brain");
+        fs::create_dir_all(vault.join("concepts")).unwrap();
+        let db_path = dir.join("rusty.db");
+        let a = BrainManager::new(
+            Arc::new(Database::open_path(&db_path).unwrap()),
+            vault.clone(),
+        );
+        let b = BrainManager::new(
+            Arc::new(Database::open_path(&db_path).unwrap()),
+            vault.clone(),
+        );
+        for round in 0..20 {
+            fs::write(
+                vault.join("concepts/edited.md"),
+                format!("# Edited\n\nround {round}\n"),
+            )
+            .unwrap();
+            std::thread::scope(|scope| {
+                scope.spawn(|| a.sync_page("concepts/edited").unwrap());
+                scope.spawn(|| b.sync_page("concepts/edited").unwrap());
+            });
+        }
+        let conn = a.db.conn().unwrap();
+        let count = |sql: &str| -> i64 { conn.query_row(sql, [], |r| r.get(0)).unwrap() };
+        assert_eq!(
+            count("SELECT COUNT(*) FROM brain_fts WHERE slug = 'concepts/edited'"),
+            1
+        );
+        assert_eq!(
+            count("SELECT COUNT(*) FROM changes WHERE key = 'concepts/edited' AND op = 'created'"),
+            1
+        );
+        drop(conn);
+        let _ = fs::remove_dir_all(&dir);
+    }
 
     fn test_brain(name: &str) -> (PathBuf, BrainManager) {
         let dir =
@@ -3865,10 +3919,22 @@ mod tests {
         cleanup(&dir);
     }
 
+    /// Set a file's modification time a minute back: an edit the sweep takes as settled.
+    fn backdate(path: &std::path::Path) {
+        let file = fs::File::options().write(true).open(path).unwrap();
+        file.set_modified(std::time::SystemTime::now() - std::time::Duration::from_secs(60))
+            .unwrap();
+    }
+
     #[test]
     fn an_outside_edit_gets_its_own_commit() {
         let (dir, bm) = committed_brain("commit_outside");
         fs::write(dir.join("ideas/outside.md"), "Typed in an editor.\n").unwrap();
+        assert!(
+            bm.commit_outside_edits().unwrap().is_empty(),
+            "a file written this moment is left to whoever wrote it"
+        );
+        backdate(&dir.join("ideas/outside.md"));
         let committed = bm.commit_outside_edits().unwrap();
         assert_eq!(committed, vec!["ideas/outside.md"]);
         assert_eq!(
@@ -3904,6 +3970,7 @@ mod tests {
         let second = BrainManager::new(Arc::new(db), dir.clone());
         let before = git(&dir, &["rev-list", "--count", "HEAD"]);
         fs::write(dir.join("ideas/outside.md"), "Once.\n").unwrap();
+        backdate(&dir.join("ideas/outside.md"));
         assert_eq!(first.commit_outside_edits().unwrap().len(), 1);
         assert!(second.commit_outside_edits().unwrap().is_empty());
         let after = git(&dir, &["rev-list", "--count", "HEAD"]);
@@ -3923,6 +3990,8 @@ mod tests {
         bm.write_raw("ideas/mine", "Mine.\n").unwrap();
         bm.flush_commits();
         fs::write(dir.join("ideas/outside.md"), "Typed.\n").unwrap();
+        backdate(&dir.join("ideas/outside.md"));
+        backdate(&dir.join("ideas/mine.md"));
         let err = bm.commit_outside_edits().unwrap_err();
         assert!(err.contains("index.lock"), "{err}");
         fs::remove_file(&lock).unwrap();
@@ -3930,6 +3999,18 @@ mod tests {
         committed.sort();
         assert_eq!(committed, vec!["ideas/mine.md", "ideas/outside.md"]);
         assert_eq!(git(&dir, &["status", "--porcelain"]), "");
+        cleanup(&dir);
+    }
+
+    /// A file or folder bookmark stays inside the vault.
+    #[test]
+    fn bookmarks_outside_the_vault_are_refused() {
+        let (dir, bm) = test_brain("bookmark_outside");
+        assert!(bm.add_bookmark(bookmark("folder", "/etc")).is_err());
+        assert!(bm
+            .add_bookmark(bookmark("file", "../elsewhere/page"))
+            .is_err());
+        assert!(bm.add_bookmark(bookmark("folder", "projects")).is_ok());
         cleanup(&dir);
     }
 
