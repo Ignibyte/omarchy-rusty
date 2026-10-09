@@ -8,9 +8,9 @@ Before opening or resuming work:
 - Search `docs/planning/knowledge/INDEX.md`, the nearest completed pipeline notes,
   `openwiki/quickstart.md` and the wiki pages the work touches, and the relevant
   `docs/architecture/` documents.
-- Search the brain (`brain_search`, `brain_context` on the `rusty` MCP server) for the
-  project's pages and lessons.
-- Inspect the affected code, callers and tests. CodeGraph for Rust; QML and shell by hand.
+- Search the maintainer's brain (`brain_search` on the `rusty` MCP server, and `brain_ask`
+  before a decision) for the project's pages and lessons.
+- Inspect the affected code, callers and tests. CodeGraph for Rust; shell scripts by hand.
 - Run `scripts/check-pipeline.sh` and `scripts/check-pipeline-tools.sh`.
 
 Record what recall turned up in the notes and the AAR's recall log.
@@ -29,22 +29,24 @@ No application code. Keep the request to one shippable slice.
 5. Open the AAR under `docs/planning/knowledge/aar/` and seed its recall log.
 
 Set the spec status to `Phase 1 — Plan PASS; ready for Phase 2 — Design`. A spec that
-changes what Rusty is (a new tab, a new store, a new dependency) is **sealed** by the
-maintainer before Phase 3: their words and the date go on the spec's `sealed:` line.
+changes what Rusty is (a new kind of data, a new tool family, a new dependency) is sealed
+by the maintainer before Phase 3: their words and the date go on the spec's `sealed:` line.
 
 ## Phase 2: Design
 
 No application code. Re-read the spec, the ticket, the architecture doc and the actual
 producers and consumers of what changes. Add to the notes:
 
-1. Architecture and data flow (which crate owns what; tool, resource and QML surfaces).
+1. Architecture and data flow (which crate owns what; the tools, resources and
+   notifications that change).
 2. The exact file manifest, one purpose per file.
 3. Store consequences: schema changes in `engine/db.rs` are additive and migrated in
    `migrate()`; the vault's file format stays readable by any markdown tool.
 4. Tool contract and compatibility (a renamed or removed tool is a versioned break).
 5. A regression table mapping every requirement to its evidence.
-6. Risks: data safety, concurrency on the single SQLite connection, theme, keyboard,
-   what happens with no back end.
+6. Risks: data safety, concurrency on the single SQLite connection and between copies of
+   the server (the service and agents' stdio servers share one store), what a client sees
+   when a call fails.
 7. Decisions made and the alternatives set aside.
 
 Run `codegraph_explore` over the relevant symbols after the plan is stable (or
@@ -57,9 +59,9 @@ Set the status to `Phase 2 — Design PASS; ready for Phase 3 — Implement`.
 Build the manifest, inside the confirmed scope.
 
 - Managers in `rusty-core` own the logic; tools in `rusty-mcp` are thin and emit
-  `DataChanged` through `mutate()` on every write; QML pages call tools and render.
-- Keep every page's loading, empty, error and disconnected states, and its keyboard
-  path.
+  `DataChanged` through `mutate()` on every write; the CLI calls the same managers.
+- A tool's description is documentation agents read: say what it does, what it returns
+  and what it refuses. `docs/tools.md` is generated from them (its test says how).
 - Run `cargo fmt --all` and focused checks as you go; `bin/gate.sh --fast` before
   claiming the phase.
 - Record deviations from the manifest and why.
@@ -74,7 +76,7 @@ Review the whole diff adversarially through the lenses that apply:
 - data safety (never touches real data; migrations additive; no data loss on error);
 - the single-connection SQLite lock (no guard held across a call that takes it again);
 - secrets, paths, and anything that leaves the machine;
-- keyboard first, theme tokens, empty and error states in QML;
+- the tool contract: names, parameters, results and errors a client already relies on;
 - unnecessary complexity and missed reuse;
 - prose (docs, strings, commit message) against `no-ai-slop`.
 
@@ -92,7 +94,8 @@ confirmed findings are resolved.
 2. Run the tests and record the commands and their real output.
 3. Run `bin/gate.sh --diff` after the last gated edit. Fix red at the source and rerun
    until it prints `GATE GREEN [diff]` and writes the receipt.
-4. For UI work, verify against the running service with throwaway data and record how.
+4. For a change a client will see, probe a scratch server (the smoke test's pattern) or
+   the running service with throwaway rows, and record how.
 
 Set the status to `Phase 4 — Validate PASS; ready for Phase 5 — Complete`.
 
@@ -100,12 +103,14 @@ Set the status to `Phase 4 — Validate PASS; ready for Phase 5 — Complete`.
 
 1. Audit every requirement: satisfied with named evidence, split to a follow-up ticket,
    or waived with a reason.
-2. Run the `openwiki` skill: `init` when `openwiki/quickstart.md` is absent, `update`
+2. Update `docs/architecture.md`, the references in `docs/`, `README.md`, `CHANGELOG.md`
+   (under the unreleased version), `ROADMAP.md` (move what landed under the release) and
+   any operator docs the change touched.
+3. Run the `openwiki` skill: `init` when `openwiki/quickstart.md` is absent, `update`
    otherwise. Reconcile the pages the change touched through claims with source
    evidence, then call `openwiki_finish` until it returns `complete`; the hook writes
-   `.git/rusty-openwiki-receipt`. Delivery of the completed pair needs that receipt.
-3. Update `docs/architecture.md`, `README.md`, `ROADMAP.md` (tick what landed) and any
-   operator docs the change touched.
+   `.git/rusty-openwiki-receipt` (a host without it feeds the script, `AGENTS.md`).
+   Delivery of the completed pair needs that receipt.
 4. Write the AAR (outcomes, what went well, what went poorly, surprises, lessons, time).
    Put every new `PR-`, `BF-` and `AD-` ID in the AAR and in
    `docs/planning/knowledge/INDEX.md`.

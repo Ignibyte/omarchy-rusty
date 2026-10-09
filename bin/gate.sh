@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# The quality gate. --fast: fmt, clippy, tests. --diff (default) and --full: those plus the
-# doc build, shell syntax, a secrets scan and a whitespace check; green writes the receipt
-# .git/rusty-gate-receipt bound to the worktree. --verify checks the receipt (and reports
-# the OpenWiki completion receipt) and exits 0 or 1. Cargo steps run strictly one after
-# another.
+# The quality gate. --fast: fmt, clippy, tests. --diff (default; --full is the same run):
+# those plus the doc build, shell syntax, a secrets scan and a whitespace check; green writes
+# the receipt .git/rusty-gate-receipt bound to the worktree. --verify checks the receipt
+# (and, where the work record is checked out, reports the OpenWiki completion receipt) and
+# exits 0 or 1. Cargo steps run strictly one after another. CI runs --diff.
 set -Eeuo pipefail
 
 mode=diff
@@ -14,7 +14,9 @@ case "${1:-}" in
   --verify)
     # shellcheck source=bin/lib-gate.sh
     source "$(dirname "${BASH_SOURCE[0]}")/lib-gate.sh"
-    if wiki=$(rusty_verify_openwiki_receipt); then echo "OPENWIKI OK: $wiki"; else echo "OPENWIKI RECEIPT MISSING: $wiki"; fi
+    if rusty_has_record; then
+      if wiki=$(rusty_verify_openwiki_receipt); then echo "OPENWIKI OK: $wiki"; else echo "OPENWIKI RECEIPT MISSING: $wiki"; fi
+    fi
     if msg=$(rusty_verify_receipt); then echo "RECEIPT OK: $msg"; exit 0; else echo "RECEIPT MISSING: $msg" >&2; exit 1; fi
     ;;
   *) echo "Usage: $0 [--fast|--diff|--full|--verify]" >&2; exit 2 ;;
@@ -62,7 +64,7 @@ check_secrets() {
 
 check_whitespace() {
   local hits
-  hits=$(rusty_gated_files | grep -E '\.(rs|toml|sh|md|json|qml|yml|yaml)$' | while IFS= read -r f; do
+  hits=$(rusty_gated_files | grep -E '\.(rs|toml|sh|md|json|yml|yaml)$' | while IFS= read -r f; do
     [[ -f "$f" ]] || continue
     grep -nE '[[:space:]]+$' "$f" 2>/dev/null | sed "s|^|$f:|" | head -3 || true
   done)

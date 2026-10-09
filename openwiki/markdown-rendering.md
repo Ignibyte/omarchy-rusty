@@ -1,32 +1,32 @@
 ---
 type: "Reference"
-title: "Markdown rendering: Obsidian's flavour to Qt rich text"
+title: "Markdown rendering: HTML and typed blocks"
 openwiki_generated: true
 sources:
   - id: openwiki-source-8237034823c8af0c3889096c
     resource: repo://crates/rusty-core/src/brain/blocks.rs
   - id: openwiki-source-b0fccdb632d2710022a80345
     resource: repo://crates/rusty-core/src/brain/render.rs
-generated: {by: "claude-code", at: "2026-10-09T17:29:16.068Z"}
+generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
 verified:
   - by: openwiki/0.3.3
-    at: 2026-10-09T17:29:16.068Z
+    at: 2026-10-09T18:25:07.825Z
 ---
 
-# Markdown rendering: Obsidian's flavour to Qt rich text
+# Markdown rendering: HTML and typed blocks
 
 ## Purpose
 
-A client shows a page the way Obsidian's reading view does, without a web engine. One
-renderer in the core turns Obsidian-flavoured markdown into the HTML subset Qt's rich
-text engine understands, and the same parser builds typed blocks for a client that draws
-its own, as Marley does.
+A client shows a page the way Obsidian's reading view does. `brain_render` returns the
+page as HTML with inline styles, a conservative subset that also suits rich-text engines
+such as Qt's, for any client that wants HTML; with `blocks: true` it also returns typed
+blocks built by the same parser, for a client that draws its own widgets, as Marley does.
 
 ## Ownership
 
 - `crates/rusty-core/src/brain/render.rs`: `render(body, &Style, &dyn Resolver,
   self_slug)` on pulldown-cmark 0.13 with tables, footnotes, strikethrough, task lists,
-  wikilinks and math enabled; `Style` (colours, fonts and the base size, the skin's
+  wikilinks and math enabled; `Style` (colours, fonts and the base size, the colour
   roles the page is painted with, and two switches, `marks` and `code_head`, every
   field with a default so a partial JSON fills the rest); the `Resolver` trait (link targets to
   slugs, page text for embeds, file URLs for images); `Rendered` (html, outline, links,
@@ -55,10 +55,10 @@ its own, as Marley does.
    the link colour; a missing page becomes `rusty:new/<target>` in the unresolved colour.
 5. A marker (`<!--h-->`) precedes every top-level heading so a client can split the
    reading view into blocks and scroll the outline to one.
-6. The client routes the `rusty:` links: page navigation, page creation, task toggling
-   by index in the raw source, tag search.
+6. A client routes the `rusty:` links: page navigation, page creation, task toggling by
+   index in the raw source, tag search.
 
-### Blocks for clients that cannot draw rich text (TICKET-036)
+### Blocks for clients that draw their own widgets
 
 `brain_render` with `blocks: true` adds the body as typed blocks (`brain/blocks.rs`):
 headings, paragraphs, lists whose items may be tasks (`{done, index}`, the index a
@@ -75,18 +75,20 @@ answer without the flag is unchanged.
 
 ## Invariants
 
-- The renderer needs no Qt; every construct has a unit test.
+- The renderer has no UI dependency, and every construct has a unit test.
 - Colours are parameters: a client sends its theme's tokens as the `style` argument of
   `brain_render`; without one the renderer's defaults apply.
 - Code, fenced or inline, is never scanned for links, tags or highlights.
-- Task indexes in the HTML count the same items the source-side toggle counts
-  (list markers, including inside quotes; never inside fences).
+- `rusty:task/<n>` numbers task items in source order, counting list markers inside
+  quotes and never inside fenced code, so a client that toggles the n-th item in the raw
+  source toggles the one the reader clicked.
 
 ## Failure modes
 
-- Rich text has no stylesheet, so a construct without an inline style falls back to
-  the `Text` item's font and colour.
-- Anchors inside a page (`#footnote`, `[[page#heading]]`) render but do not scroll yet.
+- The HTML carries no stylesheet, so a construct without an inline style takes the
+  client's own default font and colour.
+- Anchors inside a page (`#footnote`, `[[page#heading]]`) render as links; scrolling to
+  them is the client's job.
 
 ## Extension points
 

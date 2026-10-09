@@ -26,8 +26,8 @@ type EmbedderCache = Mutex<Option<(Instant, Option<Arc<dyn Embedder>>)>>;
 pub struct Core {
     /// Broadcasts [`crate::events::AppEvent`]s to whoever is listening.
     pub events: EventBus,
-    /// The conversations of earlier versions' agent runs, which `search_conversations`
-    /// reads.
+    /// The conversations of earlier versions' built-in agent runs, which
+    /// `search_conversations` still lists beside the transcript archive.
     pub task_manager: Arc<TaskManager>,
     /// Long-term memories.
     pub memory_manager: Arc<MemoryManager>,
@@ -37,9 +37,9 @@ pub struct Core {
     pub user_task_manager: Arc<UserTaskManager>,
     /// Key/value settings.
     pub settings_manager: Arc<SettingsManager>,
-    /// The secrets vault.
+    /// The secrets file.
     pub secrets_manager: Arc<SecretsManager>,
-    /// The PIN behind the Secrets tab and its unlock.
+    /// The PIN that guards the secrets tools, and its unlock.
     pub pin_lock: Arc<PinLock>,
     /// The brain vault and its index.
     pub brain_manager: Arc<BrainManager>,

@@ -952,3 +952,56 @@ async fn memory_importance_is_one_set_in_order() {
     client.cancel().await.unwrap();
     let _ = std::fs::remove_dir_all(&home);
 }
+
+/// `search_conversations` finds a transcript that `rusty-cli ingest-conversation` kept.
+#[tokio::test]
+async fn search_conversations_finds_an_ingested_transcript() {
+    use std::sync::Arc;
+    let home = scratch_home();
+    {
+        let store = home.join(".rusty");
+        std::fs::create_dir_all(&store).unwrap();
+        let db =
+            Arc::new(rusty_core::engine::db::Database::open_path(&store.join("rusty.db")).unwrap());
+        let brain = Arc::new(rusty_core::brain::BrainManager::new(
+            Arc::clone(&db),
+            store.join("brain"),
+        ));
+        brain.ensure_vault().unwrap();
+        let transcript = home.join("sid-smoke.jsonl");
+        std::fs::write(
+            &transcript,
+            [
+                r#"{"type":"ai-title","aiTitle":"Plan the quokka migration","sessionId":"sid-smoke"}"#,
+                r#"{"type":"user","sessionId":"sid-smoke","cwd":"/proj","timestamp":"2026-06-27T10:00:00.000Z","message":{"role":"user","content":"We should migrate the Quokkanaut service to Rust."}}"#,
+            ]
+            .join("\n"),
+        )
+        .unwrap();
+        rusty_core::engine::conversation_archive::ConversationArchive::new(db, brain)
+            .ingest(&transcript)
+            .unwrap();
+    }
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-mcp"));
+    cmd.env("HOME", &home)
+        .env("XDG_CONFIG_HOME", home.join(".config"))
+        .env("XDG_RUNTIME_DIR", home.join("run"));
+    let client =
+        ().serve(TokioChildProcess::new(cmd).expect("spawn rusty-mcp"))
+            .await
+            .expect("initialize");
+    let found = client
+        .call_tool(
+            CallToolRequestParams::new("search_conversations")
+                .with_arguments(args(serde_json::json!({ "query": "Quokkanaut" }))),
+        )
+        .await
+        .expect("search_conversations");
+    let found: serde_json::Value = serde_json::from_str(&text_of(&found)).unwrap();
+    let transcripts = found["transcripts"].as_array().expect("transcripts");
+    assert_eq!(transcripts.len(), 1, "{found}");
+    assert_eq!(transcripts[0]["session_id"], "sid-smoke");
+    assert_eq!(found["agent_runs"].as_array().map(Vec::len), Some(0));
+    client.cancel().await.unwrap();
+    let _ = std::fs::remove_dir_all(&home);
+}

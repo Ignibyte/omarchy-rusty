@@ -22,10 +22,9 @@ for server in codegraph openwiki; do
   grep -q "\"$server\"" .mcp.json || fail "MCP server not wired in .mcp.json: $server"
   grep -q "\[mcp_servers.$server\]" .codex/config.toml || fail "MCP server not wired in .codex/config.toml: $server"
 done
-# One guide in two names: identical outside OpenWiki's managed block, which the lifecycle
-# writes in full into AGENTS.md and as a pointer into CLAUDE.md.
-strip_managed() { awk '/<!-- OPENWIKI:START -->/{skip=1} !skip{print} /<!-- OPENWIKI:END -->/{skip=0}' "$1"; }
-cmp -s <(strip_managed AGENTS.md) <(strip_managed CLAUDE.md) || fail "AGENTS.md and CLAUDE.md differ outside OpenWiki's managed block; they are one guide in two names"
+# One guide: AGENTS.md, which Codex reads; CLAUDE.md imports it for Claude Code and adds
+# only what Claude Code alone does.
+head -1 CLAUDE.md | grep -qx '@AGENTS.md' || fail "CLAUDE.md must start with the line @AGENTS.md; AGENTS.md is the one guide"
 
 if [[ ! -d docs/planning/pipeline ]]; then
   echo "Tools check passed; no work record at docs/planning (a contributor's clone), so the pipeline steps aside"

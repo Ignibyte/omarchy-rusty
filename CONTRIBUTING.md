@@ -15,16 +15,20 @@ saves both of us time.
 
    Run cargo commands one at a time; two at once, or a killed one, corrupt the incremental
    cache and force a full rebuild.
-4. Open a pull request. CI runs the same gate.
+4. Open a pull request. CI runs `bin/gate.sh --diff` too.
 
 ## What a change should look like
 
 - Idiomatic Rust: `Result` for errors, no panics on a user's path, no `unsafe` without a
   safety comment, doc comments on public items. No `#[allow]` without the reason on the
   line above.
-- The managers in `rusty-core` own the logic; a tool in `rusty-mcp` is a thin wrapper and
-  every write goes through `mutate()`. A new or renamed tool is a change to the tool
-  contract; say so in the pull request and in `CHANGELOG.md`.
+- The managers in `rusty-core` own the logic; a tool in `rusty-mcp` is a thin wrapper, and
+  every write goes through `Rusty::mutate()` in `crates/rusty-mcp/src/main.rs`, which tells
+  connected clients that the data changed. A new or renamed tool is a change to the tool
+  contract; say so in the pull request and in `CHANGELOG.md`, and regenerate
+  `docs/tools.md` (`RUSTY_UPDATE_DOCS=1 cargo test -p rusty-mcp tools_reference_is_current`).
+  A new `rusty-cli` command goes in `docs/cli.md` and a new setting in
+  `docs/configuration.md`; tests check both.
 - The vault stays a folder of markdown any tool can open; SQLite holds what can be rebuilt
   from it, plus the data that has no file. A schema change is additive and migrated in
   `engine/db.rs`.
@@ -36,9 +40,12 @@ saves both of us time.
 
 `CONSTITUTION.md`, `AGENTS.md` and `.claude/` describe how the maintainers and their agents
 work: a phase-gated pipeline with a private work record at `docs/planning/`. A
-contributor's clone has no record; the hooks and the checks step aside, and the gate and CI
-are what apply. `openwiki/` is the generated engineering wiki; you do not need to update it
-in a pull request.
+contributor's clone has no record, and `AGENTS.md`'s "Without `docs/planning`" section is
+what applies. In short: the phase gate and the pipeline checks step aside; under Claude
+Code two hooks still act, one refusing a commit of gated files until `bin/gate.sh --diff`
+has passed on that exact tree, one refusing a write that looks like a credential. Do not
+create `docs/planning/`; the hooks would take it for the record. `openwiki/` is the
+generated engineering wiki; you do not need to update it in a pull request.
 
 ## Releasing (maintainers)
 

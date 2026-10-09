@@ -1,7 +1,7 @@
 //! Integration tests for Rusty's core systems.
 //!
 //! These tests exercise full workflows across multiple managers,
-//! simulating real user scenarios without requiring the Tauri GUI.
+//! the way a client would use them, against a scratch database and vault.
 
 use rusqlite::Connection;
 use rusty_core::brain::BrainManager;

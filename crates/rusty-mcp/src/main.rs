@@ -1,7 +1,7 @@
 //! `rusty-mcp`: Rusty's back end as a Model Context Protocol server.
 //!
-//! One process, built on [`rusty_core::Core`], serves the agents over stdio and the
-//! desktop app over Streamable HTTP on localhost. Every tool is a thin wrapper around
+//! One process, built on [`rusty_core::Core`], serves agents over stdio and front ends
+//! over Streamable HTTP on localhost. Every tool is a thin wrapper around
 //! a manager call; the managers own the rules. Nothing is written to stdout except the
 //! protocol, so all diagnostics go to stderr.
 //!
@@ -24,6 +24,7 @@ use rmcp::{
     },
     ErrorData as McpError, RoleServer, ServerHandler, ServiceExt,
 };
+use rusty_core::engine::conversation_archive::ConversationArchive;
 use rusty_core::events::AppEvent;
 use rusty_core::Core;
 use std::sync::Arc;
@@ -309,7 +310,7 @@ pub struct ResolveSlugParams {
 /// Parameters for `search_conversations`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct SearchConversationsParams {
-    /// Words to look for in past prompts and results.
+    /// Words to look for in the conversations.
     pub query: String,
     /// Maximum results (default 10).
     pub limit: Option<usize>,
@@ -477,7 +478,7 @@ pub struct PinSetParams {
 /// Parameters for `secret_unlock`.
 #[derive(serde::Deserialize, schemars::JsonSchema)]
 pub struct PinParams {
-    /// The PIN or passphrase, typed in the app.
+    /// The PIN or passphrase, typed by a person into their client; an agent never holds it.
     pub pin: String,
 }
 
@@ -1311,7 +1312,7 @@ impl Rusty {
     }
 
     #[tool(
-        description = "What changed in the store after `cursor`, from any process (an agent's server, the CLI, the app): oldest first, each with its kind (page, task, task_group, memory, note, setting, secret, skill, script, bookmarks), key, operation and time, and the cursor to pass next. Without a cursor it returns the current one and no rows. `reset: true` means the cursor is older than the log keeps: re-read everything. `more: true` means call again with the returned cursor"
+        description = "What changed in the store after `cursor`, from any process (an agent's server, the CLI, a front end): oldest first, each with its kind (page, task, task_group, memory, note, setting, secret, skill, script, bookmarks), key, operation and time, and the cursor to pass next. Without a cursor it returns the current one and no rows. `reset: true` means the cursor is older than the log keeps: re-read everything. `more: true` means call again with the returned cursor"
     )]
     fn changes_since(
         &self,
@@ -1782,16 +1783,26 @@ impl Rusty {
         json_result(self.core.brain_manager.resolve_slug(&p.partial))
     }
 
-    #[tool(description = "Search past agent conversations (prompts and results) by keyword")]
+    #[tool(
+        description = "Search the conversation archive by keyword: the Claude Code transcripts kept with `rusty-cli ingest-conversation`, each with its title, project, start time, brain page and a matching snippet (`transcripts`). `agent_runs` lists matching conversations from earlier versions' built-in agent runs, when the store holds any"
+    )]
     fn search_conversations(
         &self,
         Parameters(p): Parameters<SearchConversationsParams>,
     ) -> Result<CallToolResult, McpError> {
-        json_result(
-            self.core
+        let limit = p.limit.unwrap_or(10);
+        let archive = ConversationArchive::new(
+            Arc::clone(&self.core.db),
+            Arc::clone(&self.core.brain_manager),
+        );
+        let found = archive.search(&p.query, limit).and_then(|transcripts| {
+            let agent_runs = self
+                .core
                 .task_manager
-                .search_conversations(&p.query, p.limit.unwrap_or(10)),
-        )
+                .search_conversations(&p.query, limit)?;
+            Ok(serde_json::json!({ "transcripts": transcripts, "agent_runs": agent_runs }))
+        });
+        json_result(found)
     }
 
     #[tool(description = "Create a skill (a SKILL.md in the store), active or staged for approval")]
@@ -1856,7 +1867,7 @@ impl Rusty {
         }))
     }
 
-    #[tool(description = "List the keys in the secrets vault; values are never returned")]
+    #[tool(description = "List the keys in the secrets file; values are never returned")]
     fn secret_list(&self) -> Result<CallToolResult, McpError> {
         json_result(
             self.core
@@ -1867,7 +1878,7 @@ impl Rusty {
     }
 
     #[tool(
-        description = "Set a secret in the vault. Once a PIN is set this needs the live unlock token from secret_unlock on this same server process"
+        description = "Set a secret in the secrets file. Once a PIN is set this needs the live unlock token from secret_unlock on this same server process"
     )]
     fn secret_set(
         &self,
@@ -1883,7 +1894,7 @@ impl Rusty {
     }
 
     #[tool(
-        description = "Delete a secret from the vault. Once a PIN is set this needs the live unlock token from secret_unlock on this same server process"
+        description = "Delete a secret from the secrets file. Once a PIN is set this needs the live unlock token from secret_unlock on this same server process"
     )]
     fn secret_delete(
         &self,
@@ -1899,14 +1910,14 @@ impl Rusty {
     }
 
     #[tool(
-        description = "Whether a PIN is set for the Secrets tab, whether the vault is unlocked right now, and any lockout left"
+        description = "Whether a PIN guards the secrets, whether they are unlocked right now, and any lockout left"
     )]
     fn secret_pin_status(&self) -> Result<CallToolResult, McpError> {
         json_result(Ok::<_, String>(self.core.pin_lock.status()))
     }
 
     #[tool(
-        description = "Set the PIN behind the Secrets tab (six characters or more); changing an existing one needs the live unlock token. The PIN is typed in the app; never give it to an agent"
+        description = "Set the PIN that guards the secrets (six characters or more); changing an existing one needs the live unlock token. A person types the PIN into their client; never give it to an agent"
     )]
     fn secret_pin_set(
         &self,
@@ -1921,7 +1932,7 @@ impl Rusty {
     }
 
     #[tool(
-        description = "Unlock the secrets vault with the PIN for a few minutes (the pin_timeout_minutes setting): returns the token secret_set, secret_delete, secret_reveal and secret_update need, good only on the server process that issued it. Five wrong PINs in a row lock it for a minute. The PIN is typed in the app; never give it to an agent"
+        description = "Unlock the secrets with the PIN for a few minutes (the pin_timeout_minutes setting): returns the token secret_set, secret_delete, secret_reveal and secret_update need, good only on the server process that issued it. Five wrong PINs in a row lock it for a minute. A person types the PIN into their client; never give it to an agent"
     )]
     fn secret_unlock(
         &self,
@@ -1943,7 +1954,7 @@ impl Rusty {
         )
     }
 
-    #[tool(description = "Lock the secrets vault now; the unlock token stops working")]
+    #[tool(description = "Lock the secrets now; the unlock token stops working")]
     fn secret_lock(&self) -> Result<CallToolResult, McpError> {
         self.core.pin_lock.lock();
         json_result(Ok::<_, String>("locked"))
@@ -2045,9 +2056,9 @@ impl ServerHandler for Rusty {
         )
         .with_server_info(server_identity())
         .with_instructions(format!(
-            "Rusty is the user's local assistant store: to-do lists, notes, long-term \
-                 memories, the brain vault (a markdown wiki with a full-text index) and \
-                 skills, exposed as {tool_count} tools. Slugs include their folder \
+            "Rusty is the user's local memory and knowledge store: to-do lists, notes, \
+                 long-term memories, the brain vault (a markdown wiki with a full-text index) \
+                 and skills, exposed as {tool_count} tools. Slugs include their folder \
                  (projects/name). Search is all-terms; use plain words. Resources under \
                  rusty:// mirror the same data and a list_changed notification follows every \
                  change this server makes; changes_since returns every change after a cursor, \
@@ -2064,26 +2075,7 @@ impl ServerHandler for Rusty {
         _request: Option<PaginatedRequestParams>,
         _: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, McpError> {
-        let entries = [
-            (
-                "rusty://tasks",
-                "tasks",
-                "Every to-do list with its open tasks (JSON)",
-            ),
-            ("rusty://memories", "memories", "Long-term memories (JSON)"),
-            (
-                "rusty://skills",
-                "skills",
-                "Skills in the store, active and staged (JSON)",
-            ),
-            (
-                "rusty://notes",
-                "notes",
-                "The notes folder as a tree (JSON)",
-            ),
-            ("rusty://brain", "brain", "Brain pages, newest first (JSON)"),
-        ];
-        let resources = entries
+        let resources = RESOURCES
             .into_iter()
             .map(|(uri, name, description)| {
                 let mut r = Resource::new(uri, name);
@@ -2102,26 +2094,14 @@ impl ServerHandler for Rusty {
         _request: Option<PaginatedRequestParams>,
         _: RequestContext<RoleServer>,
     ) -> Result<ListResourceTemplatesResult, McpError> {
-        let templates = [
-            (
-                "rusty://tasks/{group_id}",
-                "tasks-in-list",
-                "Open tasks in one list (JSON)",
-            ),
-            (
-                "rusty://brain/{slug}",
-                "brain-page",
-                "One brain page with its frontmatter (JSON)",
-            ),
-            ("rusty://notes/{path}", "note", "One note's markdown"),
-        ]
-        .into_iter()
-        .map(|(uri, name, description)| {
-            let mut t = ResourceTemplate::new(uri, name);
-            t.description = Some(description.into());
-            t
-        })
-        .collect();
+        let templates = RESOURCE_TEMPLATES
+            .into_iter()
+            .map(|(uri, name, description)| {
+                let mut t = ResourceTemplate::new(uri, name);
+                t.description = Some(description.into());
+                t
+            })
+            .collect();
         Ok(ListResourceTemplatesResult {
             resource_templates: templates,
             ..Default::default()
@@ -2230,6 +2210,42 @@ fn spawn_change_notifier(mut events: tokio::sync::broadcast::Receiver<AppEvent>,
 /// Default address for the HTTP transport: loopback only, the port v2 used.
 const DEFAULT_HTTP_ADDR: &str = "127.0.0.1:4174";
 
+/// The resources `resources/list` advertises: URI, name, description.
+const RESOURCES: [(&str, &str, &str); 5] = [
+    (
+        "rusty://tasks",
+        "tasks",
+        "Every to-do list with its open tasks (JSON)",
+    ),
+    ("rusty://memories", "memories", "Long-term memories (JSON)"),
+    (
+        "rusty://skills",
+        "skills",
+        "Skills in the store, active and staged (JSON)",
+    ),
+    (
+        "rusty://notes",
+        "notes",
+        "The notes folder as a tree (JSON)",
+    ),
+    ("rusty://brain", "brain", "Brain pages, newest first (JSON)"),
+];
+
+/// The resource templates `resources/templates/list` advertises.
+const RESOURCE_TEMPLATES: [(&str, &str, &str); 3] = [
+    (
+        "rusty://tasks/{group_id}",
+        "tasks-in-list",
+        "Open tasks in one list (JSON)",
+    ),
+    (
+        "rusty://brain/{slug}",
+        "brain-page",
+        "One brain page with its frontmatter (JSON)",
+    ),
+    ("rusty://notes/{path}", "note", "One note's markdown"),
+];
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let core = Arc::new(Core::init());
@@ -2275,7 +2291,8 @@ async fn main() -> anyhow::Result<()> {
 mod tests {
     use super::*;
 
-    /// Every tool the router advertises; keep in sync with the README.
+    /// Every tool the router advertises. `docs/tools.md` is generated from the router; see
+    /// `tools_reference_is_current`.
     const EXPECTED: &[&str] = &[
         "list_task_groups",
         "create_task_group",
@@ -2412,5 +2429,218 @@ mod tests {
             let description = tool.description.as_deref().unwrap_or("");
             assert!(description.len() > 10, "{} has no description", tool.name);
         }
+    }
+
+    /// The tool families of `docs/tools.md`, in the order the page lists them.
+    const FAMILIES: [&str; 13] = [
+        "To-do lists",
+        "Memories",
+        "Notes",
+        "Brain pages and search",
+        "The brain loop",
+        "Bookmarks",
+        "Sources",
+        "Skills",
+        "Scripts",
+        "Secrets",
+        "Settings",
+        "Change feed",
+        "Conversation archive",
+    ];
+
+    /// The family a tool is listed under. A new tool that fits none fails
+    /// `tools_reference_is_current` until it is given one here.
+    fn family(name: &str) -> Option<&'static str> {
+        const LOOP: [&str; 5] = [
+            "brain_ask",
+            "brain_decide",
+            "brain_follow_up",
+            "brain_no_decision",
+            "brain_due",
+        ];
+        Some(match name {
+            n if LOOP.contains(&n) => "The brain loop",
+            n if n.starts_with("brain_") => "Brain pages and search",
+            n if n.starts_with("bookmark_") => "Bookmarks",
+            n if n.starts_with("source_") => "Sources",
+            n if n.starts_with("skill_") => "Skills",
+            n if n.starts_with("script_") => "Scripts",
+            n if n.starts_with("secret_") => "Secrets",
+            n if n.starts_with("setting") => "Settings",
+            "changes_since" => "Change feed",
+            "search_conversations" => "Conversation archive",
+            n if n.contains("task") => "To-do lists",
+            n if n.contains("memor") => "Memories",
+            n if n.contains("note") => "Notes",
+            _ => return None,
+        })
+    }
+
+    /// A GitHub heading anchor.
+    fn anchor(heading: &str) -> String {
+        heading
+            .to_lowercase()
+            .chars()
+            .filter(|c| c.is_alphanumeric() || *c == ' ' || *c == '-')
+            .map(|c| if c == ' ' { '-' } else { c })
+            .collect()
+    }
+
+    /// Text for one table cell: one line, no bare pipes.
+    fn cell(text: &str) -> String {
+        text.split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .replace('|', "\\|")
+    }
+
+    /// A parameter's type in words, from its JSON schema.
+    fn schema_type(v: &serde_json::Value) -> String {
+        use serde_json::Value;
+        let named = |t: &str| -> String {
+            if t == "array" {
+                let item = v.get("items").map(schema_type);
+                format!("array of {}", item.unwrap_or_else(|| "any".into()))
+            } else {
+                t.to_string()
+            }
+        };
+        let mut out = match v.get("type") {
+            Some(Value::String(t)) => named(t),
+            Some(Value::Array(ts)) => ts
+                .iter()
+                .filter_map(Value::as_str)
+                .filter(|t| *t != "null")
+                .map(named)
+                .collect::<Vec<_>>()
+                .join(" or "),
+            _ => {
+                let members = v.get("anyOf").or_else(|| v.get("oneOf"));
+                match members.and_then(Value::as_array) {
+                    Some(ms) => ms
+                        .iter()
+                        .filter(|m| m.get("type").and_then(Value::as_str) != Some("null"))
+                        .map(schema_type)
+                        .collect::<Vec<_>>()
+                        .join(" or "),
+                    None if v.get("$ref").is_some() => "object".into(),
+                    None => "any".into(),
+                }
+            }
+        };
+        if let Some(values) = v.get("enum").and_then(Value::as_array) {
+            let values: Vec<String> = values
+                .iter()
+                .filter_map(Value::as_str)
+                .map(|s| format!("`{s}`"))
+                .collect();
+            out = format!("{out}: {}", values.join(", "));
+        }
+        out
+    }
+
+    /// `docs/tools.md`, rendered from the router and the resource lists.
+    fn tools_reference() -> String {
+        let mut tools = Rusty::tool_router().list_all();
+        tools.sort_by(|a, b| a.name.cmp(&b.name));
+        let mut out = String::new();
+        out.push_str("# Tool reference\n\n");
+        out.push_str(
+            "Generated from the tool router by the test `tools_reference_is_current` in\n\
+             `crates/rusty-mcp/src/main.rs`; do not edit it by hand. After changing a tool, run\n\
+             `RUSTY_UPDATE_DOCS=1 cargo test -p rusty-mcp tools_reference_is_current`.\n\n",
+        );
+        out.push_str(&format!(
+            "`rusty-mcp` serves {} tools over stdio, when an agent starts it, and over Streamable\n\
+             HTTP with `--http <addr>` (the user service listens on `127.0.0.1:4174/mcp`). Every\n\
+             write sends `notifications/resources/list_changed` to the clients connected to that\n\
+             process; `changes_since` returns changes made by any process. Slugs are vault paths\n\
+             without `.md` (`projects/orbit`).\n\n",
+            tools.len()
+        ));
+        out.push_str("## Resources\n\n| URI | What |\n|---|---|\n");
+        for (uri, _, what) in RESOURCES.iter().chain(RESOURCE_TEMPLATES.iter()) {
+            out.push_str(&format!("| `{uri}` | {what} |\n"));
+        }
+        out.push_str("\n## Tools by family\n\n");
+        for fam in FAMILIES {
+            let names: Vec<String> = tools
+                .iter()
+                .filter(|t| family(&t.name) == Some(fam))
+                .map(|t| format!("`{}`", t.name))
+                .collect();
+            out.push_str(&format!(
+                "- [{fam}](#{}): {}\n",
+                anchor(fam),
+                names.join(", ")
+            ));
+        }
+        for fam in FAMILIES {
+            out.push_str(&format!("\n## {fam}\n"));
+            for tool in tools.iter().filter(|t| family(&t.name) == Some(fam)) {
+                out.push_str(&format!("\n### `{}`\n\n", tool.name));
+                let description = tool.description.as_deref().unwrap_or("");
+                out.push_str(&cell(description).replace("\\|", "|"));
+                out.push_str("\n\n");
+                let schema = &tool.input_schema;
+                let required: Vec<&str> = schema
+                    .get("required")
+                    .and_then(|r| r.as_array())
+                    .map(|r| r.iter().filter_map(|v| v.as_str()).collect())
+                    .unwrap_or_default();
+                let props = schema.get("properties").and_then(|p| p.as_object());
+                match props {
+                    Some(props) if !props.is_empty() => {
+                        out.push_str("| Parameter | Type | Required | Description |\n");
+                        out.push_str("|---|---|---|---|\n");
+                        for (name, prop) in props {
+                            let what = prop
+                                .get("description")
+                                .and_then(|d| d.as_str())
+                                .unwrap_or("");
+                            out.push_str(&format!(
+                                "| `{name}` | {} | {} | {} |\n",
+                                cell(&schema_type(prop)),
+                                if required.contains(&name.as_str()) {
+                                    "yes"
+                                } else {
+                                    "no"
+                                },
+                                cell(what)
+                            ));
+                        }
+                    }
+                    _ => out.push_str("No parameters.\n"),
+                }
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn every_tool_has_a_family() {
+        for tool in Rusty::tool_router().list_all() {
+            assert!(
+                family(&tool.name).is_some(),
+                "{} fits no family in docs/tools.md; add it to `family`",
+                tool.name
+            );
+        }
+    }
+
+    /// `docs/tools.md` matches the router. `RUSTY_UPDATE_DOCS=1` rewrites it instead.
+    #[test]
+    fn tools_reference_is_current() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/tools.md");
+        let rendered = tools_reference();
+        if std::env::var_os("RUSTY_UPDATE_DOCS").is_some() {
+            std::fs::write(&path, &rendered).unwrap();
+            return;
+        }
+        let current = std::fs::read_to_string(&path).unwrap_or_default();
+        assert!(
+            current == rendered,
+            "docs/tools.md is out of date; run RUSTY_UPDATE_DOCS=1 cargo test -p rusty-mcp tools_reference_is_current"
+        );
     }
 }

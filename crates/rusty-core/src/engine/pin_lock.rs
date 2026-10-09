@@ -1,7 +1,7 @@
-//! The PIN behind the Secrets tab: an argon2id hash on disk, one short-lived unlock token
-//! in memory, and a lockout after repeated wrong PINs. The PIN protects the screen, not
-//! the file: `~/.rusty/.secret` stays owner-readable, because the back end reads it
-//! headless and an agent with a shell reads it regardless. Nothing here logs a PIN, a
+//! The PIN that guards the secrets tools: an argon2id hash on disk, one short-lived unlock
+//! token in memory per server process, and a lockout after repeated wrong PINs. The PIN
+//! protects the tools, not the file: `~/.rusty/.secret` stays owner-readable, because the
+//! back end reads it headless and an agent with a shell reads it regardless. Nothing here logs a PIN, a
 //! token or a value.
 
 use std::path::{Path, PathBuf};
@@ -32,7 +32,7 @@ pub struct Unlock {
     pub expires_in_seconds: u64,
 }
 
-/// What the app asks before it draws the tab.
+/// What a client asks before it offers to reveal or change a secret.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PinStatus {
     /// A PIN exists.
@@ -100,7 +100,7 @@ impl PinLock {
     /// refuse every try for a minute.
     pub fn unlock(&self, pin: &str, ttl: Duration) -> Result<Unlock, String> {
         if !self.is_set() {
-            return Err("no PIN is set; set one in the app first".to_string());
+            return Err("no PIN is set; set one with secret_pin_set first".to_string());
         }
         let mut state = self.state();
         let now = Instant::now();

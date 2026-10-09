@@ -25,9 +25,9 @@ impl Database {
         let conn = Connection::open(&db_path)
             .map_err(|e| format!("Failed to open database at {}: {e}", db_path.display()))?;
 
-        // Enable WAL mode for concurrent reads, and a busy timeout so writes
-        // from a second process (the rusty-mcp server) wait instead of failing
-        // with SQLITE_BUSY when the GUI app is also running.
+        // WAL for concurrent reads, and a busy timeout so a write from a second
+        // process (the service, an agent's stdio server, the CLI) waits instead of
+        // failing with SQLITE_BUSY.
         Self::prepare(&conn)?;
 
         let db = Self {
@@ -341,7 +341,7 @@ impl Database {
     }
 
     /// The settings every connection runs with: WAL for concurrent reads, a busy timeout
-    /// so a write from a second process (the app, the CLI, an agent's server) waits
+    /// so a write from a second process (the service, the CLI, an agent's server) waits
     /// instead of failing with `SQLITE_BUSY`, and foreign keys enforced (TICKET-045).
     fn prepare(conn: &Connection) -> Result<(), String> {
         conn.execute_batch(

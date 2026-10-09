@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # OpenWiki, pinned and project-local: what it is pinned to, how it is built, and how a
 # build is verified against its provenance. Sourced by scripts/setup-pipeline-tools.sh
-# and scripts/check-pipeline-tools.sh. The pins are the ones OmarchyGS verified.
+# and scripts/check-pipeline-tools.sh.
 #
 # Two local patches are applied to the checkout (ignored generated state, never
 # upstreamed): the scheduled refresh workflow is never created, and the guidance

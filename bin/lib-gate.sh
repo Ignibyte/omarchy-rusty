@@ -6,7 +6,7 @@
 # pipeline writes notes while a gate run is in flight, and docs-only changes stay
 # committable without a receipt.
 rusty_gated_paths=(
-  crates Cargo.toml Cargo.lock rust-toolchain.toml
+  crates Cargo.toml Cargo.lock
   bin scripts omarchy packaging
   .claude .codex .mcp.json .github
   CONSTITUTION.md AGENTS.md CLAUDE.md

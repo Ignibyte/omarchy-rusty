@@ -3,7 +3,7 @@
 //!
 //! Vectors need an embedding provider. Ollama is used when it is running locally
 //! (`embedding_provider = auto`, the default) or asked for; OpenAI is used only when the
-//! setting says `openai` and the secrets vault holds `openai_api_key`, because that sends
+//! setting says `openai` and the secrets file holds `openai_api_key`, because that sends
 //! page text off the machine. With no provider there are no vectors and search stays
 //! full-text. The provider and model are stored with the vectors, so changing either
 //! rebuilds the index.

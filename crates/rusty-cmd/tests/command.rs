@@ -1,7 +1,6 @@
 //! The `rusty` binary run as a user would, with stand-ins: a logging `systemctl` first on
 //! `PATH` and a back-end probe pointed at a closed port, so nothing on the machine's own
-//! user manager or back end is touched (TICKET-038). The window these tests once looked
-//! for retired with TICKET-053.
+//! user manager or back end is touched.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;

@@ -1,9 +1,9 @@
 {
-  "_comment": "Guardrails for the rusty-workflow (CONSTITUTION.md). enforce-phase-gate: gated paths change only inside an implementing pipeline or under a waiver. enforce-secrets: no credential-looking bytes are written. enforce-commit-gate: no commit of gated files without a matching bin/gate.sh receipt, no delivery of a completed pipeline without a matching OpenWiki completion receipt, never --no-verify. record-pipeline-tool-use: an openwiki_finish that returns complete writes that completion receipt. Hooks are guardrails; the receipts are the proof.",
+  "_comment": "Guardrails for the rusty-workflow (CONSTITUTION.md). enforce-phase-gate: with the work record checked out, gated paths change only inside an implementing pipeline or under a waiver. enforce-secrets: no credential-looking bytes are written. enforce-commit-gate: no commit of gated files without a matching bin/gate.sh receipt, no delivery of a completed pipeline without a matching OpenWiki completion receipt, never --no-verify. record-pipeline-tool-use: an openwiki_finish that returns complete writes that completion receipt. Hooks are guardrails; the receipts are the proof.",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/enforce-phase-gate.sh\"", "timeout": 10 },
           { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/enforce-secrets.sh\"", "timeout": 10 }

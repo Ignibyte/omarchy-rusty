@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:650d96cfad45c161a15575422217e1219e4d9259ac3daa30619498508123aaa4",
+  "pageVersion": "sha256:1a533194f4cee86e031318aceea59d650ec034f980d54ff0e295de8887414ec9",
   "claims": [
     {
       "id": "claim_68adc19bbd9b421d94fac143f471d633",
@@ -156,7 +156,7 @@
         },
         {
           "resource": "repo://crates/rusty-core/src/brain/import.rs#L1-L250",
-          "version": "repo-lines-v1:sha256:d31b6049d2184d94190cc88a5fd9902d15f57a76faf42ec788dd40c9e6f50a26:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzMjM5MzIxZTllZGM2ZjJmOTM4YzUxMTI3NjI5ZDEyODU2MGYwMzVjNTIwNzRiOThlNjA2NGI2NmMyZjdhZTVkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2FjMThiNTAwMDMxM2JhMTU4NTJmOTRjMDY5YjAyZjEwMmFlZTNhYTViYWEyNzQ3NDEyNDg4YjIyZTU1MjA5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4MTYwZjBhZWU0YWY3MTIxZTk4NzU4YTlhNTQ0MDI2MWUwZDU4M2RkZGY2MzcxN2VkODE5ZjUxNjIzZGZlODhkIn0"
+          "version": "repo-lines-v1:sha256:286a6330a8456cc095cf4df534d17234482e19fa89e2d1bb14fd6c6f3edfa92e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzMjM5MzIxZTllZGM2ZjJmOTM4YzUxMTI3NjI5ZDEyODU2MGYwMzVjNTIwNzRiOThlNjA2NGI2NmMyZjdhZTVkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2FjMThiNTAwMDMxM2JhMTU4NTJmOTRjMDY5YjAyZjEwMmFlZTNhYTViYWEyNzQ3NDEyNDg4YjIyZTU1MjA5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4MTYwZjBhZWU0YWY3MTIxZTk4NzU4YTlhNTQ0MDI2MWUwZDU4M2RkZGY2MzcxN2VkODE5ZjUxNjIzZGZlODhkIn0"
         }
       ]
     },
@@ -317,18 +317,46 @@
       "statement": "Bookmarks (file, folder, search, heading; the file and folder ones are the favourites) live in the vault at `.rusty/bookmarks.json`, a JSON array git tracks and the page walk skips; the core lists, adds, removes and replaces them, follows a rename and drops them with a delete, after that write's own commit, and records each write in the change log.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-core/src/brain/bookmarks.rs#L1-L161",
-          "version": "repo-lines-v1:sha256:937192b50543730fbac9a1a2faadf28eaa06179eee9ff8e403d655d4616cef14:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4YzhkZTJlYjEzOTRhN2YzYTgzYmRlYjk3MjBjODQ2NjY2MTc2YjVmOGRjNGZjNWRlZjQwMzBkN2M5NzIxZTM2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+          "resource": "repo://crates/rusty-core/src/brain/bookmarks.rs#L1-L160",
+          "version": "repo-lines-v1:sha256:5ea0ee2b0213b5b139cd36ec6c56eb62908efbe61617effea061a42dddc1f6f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4YzhkZTJlYjEzOTRhN2YzYTgzYmRlYjk3MjBjODQ2NjY2MTc2YjVmOGRjNGZjNWRlZjQwMzBkN2M5NzIxZTM2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
         },
         {
           "resource": "repo://crates/rusty-core/src/brain/vault.rs#L296-L320",
-          "version": "repo-lines-v1:sha256:dedc544bdd397300687b8987721acca24976720849f0e537815bfc968bde5f1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkMjM0YWEwZmNiNjQyZGU2NzkwYzRlOGU1ODFlZDc3MTlhMGJhYTZlYzIxODRlMWIxMzBhMWYzNjlkMDAyM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyY2Y4YzE2OTE5MTEyOTUzMzU1MWRhY2M4YTY0NzM4ZDM0MDExM2M4Nzg3YTQ1OTk3MTI2MGY3YjlhYWY3MTgifQ"
+          "version": "repo-lines-v1:sha256:c84cce43b2103af060c312dd4aee318abfa464b78ee926febe2a17a65957527a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwZGYzZTZkZDAwMGY4NTU3NmVhNmQ2ZTcyNDdkNzBjYTE0ZDM3YTRiM2IzZTAwYzMyMWRkYzBmYTg5ZmFhYzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2ZTdhOGNjM2MxMzUyNWVlNzkyYzk2MmQ2ZmVkZDk0NDUxMzA2YTA2ZDJjODg5YjM1YjY0YjMwYjNlNzg3YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJhZDM2Yjk0MTVmODhjMjdlMGIxYjE1NGI0NGNjMjZiMmNlZjZkZTRlOTJiODdhMjNiZTZkYzZhNWMzNjgyMzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_245307ff170640a08a74b8012b39c09f",
+      "statement": "The page index and the vectors can be rebuilt from the vault, but page snapshots (`brain_versions`, written before an update or a whole-file write) and the brain loop's consultations (`brain_consultations`) cannot.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/engine/db.rs#L246-L265",
+          "version": "repo-lines-v1:sha256:9bfb8c49bda40222c92ce1d5d8f32fcb2231b44211081c2ca2b1c6d327ac2632:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmMDFkODQ5MDM1Mzg0YWM2OWIyYmZjZjZkY2QyZGM1MjQ5OTE2MDY0YjAwN2M0MDQyNTRjNmJjZGQxYTgxMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyOTkwZWM4YTdkYWE4OTg0NjZmNWQwNTU3OTg5ZGQ2ZGYzZjRhZmE1NjkyNzlkODlmOTI0MWU1ZjA4NDRjZDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5YTNkZDAxMzAxNzc2MzgyOTA3OTE2OTMxNDgwMTIwMjUyMTBhMmIzZTM3MmI5MmI0MjA3YTk5ZjMzM2FhOTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5NWE2YTI3NmE2ZmU2YzFjMzFlNWYxNzdhZjU4ODNiMGVmZTMxNjdhMWYxYmE3ZGI2MTk2MmVkNjRjMWMwNjcifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L3091-L3106",
+          "version": "repo-lines-v1:sha256:2187155a18fc6f7db1698e1600489454044c4ca4a34a804a18558a4dd538287b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlZWUyYTBiZThiNTZlMGU5MGZhNTZjYWM3MjQ5M2E3YjkyNjY5ZTJjYjBhMmQ4ZTA5OWIzYTU0OTdjMmM5NWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzNzkwMjUzN2VhY2U2MDI4NDc4ZTJkY2MyMmVmMTMzMWQ2YjgyMGRmMmExNDljYjNhYTAwYTc0MWI4MzM5MzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI3MWYyNDBlNGFlYTY0YjUzMGM3YmUxZTcwZjQyZjg1ZDUxNjBjMzQ4ZDY1ZmUwOTMxN2MxNGY4MmYzZjg3NmYifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/src/brain/mod.rs#L532-L545",
+          "version": "repo-lines-v1:sha256:b24b63591e0270a54f8201402c27b46ad9533a52d3f5a41b536631d0ad8355ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxODM5ZWZkMGQ3YmJjMmE3NjRhMjhkODE4NGY1ZWYzOGJjOTFiNTM2NTJkZmY1YWYxZDFkNGIzYWVmNTU4ZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0MmU5MzY5ZTRiNjAyMzhjMjExYzU0YTU4ZDJlOWFiMzMwYzg0NGJkOWNlOWM2MjA0YjlkY2NmMWNmNTM2OTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmMTZmMDBjNDY1NzczMjZkZDc3YzUwNzA1MzgxOGIwNmE4NDMzYWMyMWMzOTBhMjIwYjNjNzkxZDJmY2E2NDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyYmIxZGRhNWRiNTZkYjJhZWRkOGNmNzNiYzY2NjFhZWRiMDEzYjZiMzVhOWJhZGI0ZGM2MWVhYjkzMTE1NDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6b40ac610f8e4a99a4791eb358e12d33",
+      "statement": "The type folders are `people`, `companies`, `projects`, `concepts`, `meetings`, `ideas`, `daily`, `inbox`, `decisions`, `conversations` and `sources`; any other folder and the root imply the type `note`.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-core/src/brain/vault.rs#L38-L54",
+          "version": "repo-lines-v1:sha256:daaeffb85889713c250f44f9fedf9d9c0c2a7d1d143fb3358e76eac0fa6222b0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ZDE4MTkyOWRiNWFjOTZlM2NkMTJmNDVmZTM0M2NiNGFiMjQ4NDE1NWZjZjU0NzAzMGNkNWY3ODg5NmYyZGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhNDJkNzJhNDVjZWQ1YjllMDg2OTk0ZGNhNDY3NTAyZGU2MzYwNGMxZWQyOTIwODM0Y2NkOGY3ZjRkZDBkNzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1ZjZmNDY2ZTU5Y2ZjMzA3MDNjNDVmNzJhZjY1ZGU1NGFjMzYzZDM1NGNjMWEzMzMwMzUwYWNkNDUyNDM0YzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlMTVmNjM4NmI5ZGFmOTYyYzAwMGYxZTk0MzljYTRkNmUzNDZhYjA1MjVlY2YxZDJhODg0OWI1MjkwMTcxNjQifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T17:39:34.627Z"
+    "at": "2026-10-09T18:25:07.825Z"
   }
 }

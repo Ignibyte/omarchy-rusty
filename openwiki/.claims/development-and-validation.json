@@ -1,14 +1,18 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:28d26771f330c327939c843202f0fdc5eb8742c097c3119b63447b007f5d0198",
+  "pageVersion": "sha256:2b213f7798f5aca136281119805d9feecbe08a6382373b621d8f373c659ca894",
   "claims": [
     {
       "id": "claim_c0c6eafaea2d400b8beffe873825065f",
-      "statement": "GitHub Actions runs the same gate set on every push as a second witness, on a runner with no Qt packages since the workspace links none.",
+      "statement": "GitHub Actions runs `bin/gate.sh --diff` on every push to `main` and every pull request, so CI reruns the local checks (fmt, clippy, tests, docs, shell syntax, secrets, whitespace).",
       "evidence": [
         {
-          "resource": "repo://.github/workflows/ci.yml#L8-L27",
-          "version": "repo-lines-v1:sha256:9472ca1a8b31f8518a40cf382bc2ea28f6d3d41c4be5c911c481544354662714:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZDgwMTU0ZWQ0MmZjNWM3NzliMTMzMTU3OGI1OGI4OWM4MDFlYWNlNzRmMjRjZDQ4ZWI0YTIzNTc5NDBhOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxOWIxZGJjNjE2MjAyYjI1MjY5OGRhYTA5OGJkMjBmN2I2ZTU0MmJjYTA4OGYzZTdiODZlNjc5MjU5M2QwZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjOWJkYTZmMzNiOGM3ZTIzZTE3OGMxNjhjN2NjMmU0M2YwNzU0MGRiMDVlNmEzM2NhNzEwMTc5Y2U4OGJhM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://.github/workflows/ci.yml#L1-L25",
+          "version": "repo-lines-v1:sha256:ced6a07808fad6e73845e9c1938f19321331573a1f8216774751c7e72759c267:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZTFiMzJmYTA5MDc5YWUyZjAwMDFmZmYwZWNhMjdiNDk4NTk1N2Q0ZWI0ODU3OTI5YjNjZjA1OGZhYWU1NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllNmQzNzMwM2QyZWI2ZDU2MTg2ZDQ4NDg1YjJlMGFkOWFlNDZkMzVhMTJmYWMxYTBjNjdkYzczNTMzMGI2YjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://bin/gate.sh#L76-L90",
+          "version": "repo-lines-v1:sha256:657542e8d7c88ec27744f787d37bf39fbd9542bfb884e89c6c686bed15185272:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwM2YwMWQ5NDFkNjc5ZDE0OGFmM2ViNjM3NWI0NTc5MTY0NmRlMDM0ZmNiZTYyOTU1OGRmMmU0ZjMwMTU0YTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlMmQ4NWIyODQ4MjY1ZTk0ZWEzZmEyMmI5MmE2OTQwY2IwNWU4MjYwM2ZkNzgzNWEyNjU3ZTIyY2RhM2IxZWUifQ"
         }
       ]
     },
@@ -41,8 +45,8 @@
       "statement": "The installer applies neither the compositor drop-in (`OOMScoreAdjust=100` on uwsm's `wayland-wm@hyprland.desktop.service`) nor the earlyoom avoid line; it prints both as pointers.",
       "evidence": [
         {
-          "resource": "repo://omarchy/install.sh#L51-L54",
-          "version": "repo-lines-v1:sha256:1656dad4fdb4675587edd5448ca844735b2fd3f5e6a2eb1ba7fdf3f70f63ef70:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzM4NzdiMGY5NzA3MjBlNDdlYjlhZDM4MWYzNTNlYmJhOGY1YmU2YzkyZTgwMDQzNDc1ZWM5YjZlZjEwMzdjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTkyMmExMjY1YjI3NmNlNDUwNzU4ZTUxZmUxNTRmZDA0MjJlYTQwZTUzYWQxMDE4YTBlOGYzNGQ3NTc2ZmU3YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmY0OWYzMmVjYjNiMmVlMTI5YjRlZTU3OTYzNWZkMGVlYjdlZWE2NDFkMmQ3ZWVjYmI3ZTQ2NmYwYjRjZDVjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDMyYzM3YzQwMWVkYWM3ZWM3MzczNDUxZDBkYjVjOGI0NWJiMDIxYjM5ODgzMTBmNzVkZGMyYWVhZDgwYWRiMSJ9"
+          "resource": "repo://omarchy/install.sh#L62-L65",
+          "version": "repo-lines-v1:sha256:5c413281e8fb0db494b3d98549817ab327f58a612b6b3d6e026b470dc8e1ab10:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzM4NzdiMGY5NzA3MjBlNDdlYjlhZDM4MWYzNTNlYmJhOGY1YmU2YzkyZTgwMDQzNDc1ZWM5YjZlZjEwMzdjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTAxNzBkOThiZGUxZWM3MmJmODM1YmU4MDNiZDk4MTc1ZWRjZjYyOTk1ZWQzYjBjODY2OWFkZWY4NGMzNjc0MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmY0OWYzMmVjYjNiMmVlMTI5YjRlZTU3OTYzNWZkMGVlYjdlZWE2NDFkMmQ3ZWVjYmI3ZTQ2NmYwYjRjZDVjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDMyYzM3YzQwMWVkYWM3ZWM3MzczNDUxZDBkYjVjOGI0NWJiMDIxYjM5ODgzMTBmNzVkZGMyYWVhZDgwYWRiMSJ9"
         },
         {
           "resource": "repo://omarchy/wayland-wm-oom.conf#L12-L13",
@@ -79,8 +83,8 @@
       "statement": "Five tests run the built `rusty` binary with a logging stand-in `systemctl` first on `PATH` and the probe on a closed port: `session start` starts only `rusty-mcp.service`, `session status` reports the back end alone, `rusty` alone prints the usage and exits 0, `session stop`, `session run` and a flag exit 2 without calling systemctl, and an unknown word prints the usage and exits 2.",
       "evidence": [
         {
-          "resource": "repo://crates/rusty-cmd/tests/command.rs#L1-L121",
-          "version": "repo-lines-v1:sha256:aaae55e22875bc26d5ce98d43556e35e06e6ba912ecb9a8cb410806f90a9e762:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzY2JmYzVhMTI5YjI2ZjYyMjkzNGRkNDllZDc2NTA0ZjIxZTI4YjQyYjIzODViMDBlMzNmMjVmMzIwMjllMDQ5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+          "resource": "repo://crates/rusty-cmd/tests/command.rs#L1-L120",
+          "version": "repo-lines-v1:sha256:2eec0405232a1ced3750e3b72553a69d64fcd81c5f438b17be0ca384325accea:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzY2JmYzVhMTI5YjI2ZjYyMjkzNGRkNDllZDc2NTA0ZjIxZTI4YjQyYjIzODViMDBlMzNmMjVmMzIwMjllMDQ5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
         }
       ]
     },
@@ -100,11 +104,11 @@
     },
     {
       "id": "claim_49cfd10ee30e43728b927ee1aebb01f1",
-      "statement": "`bin/package-release.sh` builds the three binaries with `cargo build --release --locked` and writes `dist/rusty-<version>-<arch>-linux.tar.gz` (the binaries under `bin/`, the installer, the unit, the MCP config, the compositor drop-in, README, LICENSE, CHANGELOG) with a `.sha256` beside it; the release workflow runs it on a `v*` tag after checking the tag against `Cargo.toml` and running the tests, and attaches both files to a GitHub release whose notes are that version's CHANGELOG section.",
+      "statement": "`bin/package-release.sh` builds the three binaries with `cargo build --release --locked` and writes `dist/rusty-<version>-<arch>-linux.tar.gz` (the binaries under `bin/`, the installer, the unit, the MCP config, the compositor drop-in, README, LICENSE, THIRD_PARTY_NOTICES, CHANGELOG) with a `.sha256` beside it; the release workflow runs it on a `v*` tag after checking the tag against `Cargo.toml` and running the tests, and attaches both files to a GitHub release whose notes are that version's CHANGELOG section.",
       "evidence": [
         {
           "resource": "repo://bin/package-release.sh",
-          "version": "repo-file-v1:sha256:f10c640013e2d71d8139b96dc5425a65fb36c7bc18c614ed139184998b1fd0d9"
+          "version": "repo-file-v1:sha256:a38aac903519d7c24db79372006a0b1ed62aa9aa08ee15dbb225e21936d839ab"
         },
         {
           "resource": "repo://.github/workflows/release.yml",
@@ -114,17 +118,35 @@
     },
     {
       "id": "claim_fc8ba08b13a94c919cced8456f3b4e10",
-      "statement": "The `rusty-bin` package installs a release tarball's binaries to `/usr/bin` with the unit rewritten to match, depends on the C runtime and `git`, and conflicts with `rusty-git`.",
+      "statement": "The `rusty-bin` package installs a release tarball's binaries to `/usr/bin` with the unit rewritten to match, ships the licence and the third-party notices, depends on the C runtime and `git`, conflicts with `rusty-git`, and its install script prints the `systemctl --user` commands rather than running them, since pacman runs as root.",
       "evidence": [
         {
           "resource": "repo://packaging/rusty-bin/PKGBUILD",
-          "version": "repo-file-v1:sha256:392fc501812d73a9045041431724490ed36eda69beb27f9f4731e78279bf59dd"
+          "version": "repo-file-v1:sha256:332c8d63e8f0f4df6da9b730d252ea71a70b959e247d150d4829068c25f64fb0"
+        },
+        {
+          "resource": "repo://packaging/rusty-bin/rusty-bin.install",
+          "version": "repo-file-v1:sha256:938d1a52b4b11ba99be06c9914e98de806ba1838d0b8a603216d8c2850202db7"
+        }
+      ]
+    },
+    {
+      "id": "claim_50fb62945def41109584d9ad11a28f79",
+      "statement": "Two tests keep the hand-written references honest: `the_cli_reference_lists_every_usage_line` fails when `docs/cli.md` lacks a command line of `rusty-cli`'s usage text, and `the_configuration_reference_names_every_setting` fails when `docs/configuration.md` lacks a row for a setting the code reads.",
+      "evidence": [
+        {
+          "resource": "repo://crates/rusty-cli/src/main.rs#L1480-L1500",
+          "version": "repo-lines-v1:sha256:9a8047be8589688e223067f3ec0d1c06b0f84c5e3db04009954c5331fd4d8238:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyZTA1MWRhZjEzZmU2ZDE3MTU5NzhmYmU0MTUzOWZiNDRlZWVmYWMyMjQ3MmU0MjlhN2EzMmNmYTk4MDIwOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjMTc2OTVhY2UzZGY2MDg3MGVkOTdkNDk1OWUxMzZiNzdiODQyYTcxMjhjYTg1MzNjNDZiODcwZTVjNDJhY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0NWYxZGI3NWNiZmEyNjg5YjQ0MmYxMDA2MGI5Yzk1MDg0YjgzODE3NGU0MjI3OGU5OTlmNTkzZjgzMzgwODUifQ"
+        },
+        {
+          "resource": "repo://crates/rusty-core/tests/docs.rs",
+          "version": "repo-file-v1:sha256:66933932b94a7985b9324bb777586aac75c2f2785938147279329e0766b6cfc3"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T17:39:34.627Z"
+    "at": "2026-10-09T18:25:07.825Z"
   }
 }

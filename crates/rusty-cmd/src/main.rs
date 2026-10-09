@@ -1,13 +1,12 @@
-//! `rusty`: the command (TICKET-038). `rusty <noun> <verb>` (TICKET-029) and
-//! `rusty <script>` (TICKET-010) are answered here; `rusty` alone prints the usage, as
-//! `rusty help` does, since the window it used to open retired (TICKET-053).
+//! `rusty`: the command. `rusty <noun> <verb>` and `rusty <script>` are answered here;
+//! `rusty` alone prints the usage, as `rusty help` does.
 
 use std::os::unix::process::CommandExt;
 
 use rusty_cmd::session;
 
-/// Whether `<store>/.claude/skills/<skill>/<name>.sh` exists for `name` or `skill/name`
-/// (TICKET-010). The store is `RUSTY_SKILLS` or `~/.rusty/skills`; the CLI, which owns
+/// Whether `<store>/.claude/skills/<skill>/<name>.sh` exists for `name` or `skill/name`.
+/// The store is `RUSTY_SKILLS` or `~/.rusty/skills`; the CLI, which owns
 /// the resolver, decides the rest (a pending script, a clash between skills).
 fn store_script_exists(name: &str) -> bool {
     if name.is_empty() || name.starts_with('-') || name.contains("..") {

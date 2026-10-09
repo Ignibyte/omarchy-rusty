@@ -1,5 +1,5 @@
 {
-  "_comment": "Project MCP servers for Claude Code. rusty is the store (80 tools); codegraph is the code graph the workflow uses at design and inspect; openwiki is the generated wiki's lifecycle the workflow runs at complete (scripts/setup-pipeline-tools.sh installs both project-local).",
+  "_comment": "Project MCP servers for Claude Code. rusty is the store (90 tools; needs rusty-mcp on PATH); codegraph is the code graph the workflow uses at design and inspect; openwiki is the generated wiki's lifecycle the workflow runs at complete (scripts/setup-pipeline-tools.sh installs both project-local).",
   "mcpServers": {
     "rusty": { "type": "stdio", "command": "rusty-mcp" },
     "codegraph": { "type": "stdio", "command": "bash", "args": ["scripts/mcp-codegraph.sh"] },

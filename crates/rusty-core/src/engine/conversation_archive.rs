@@ -1,18 +1,14 @@
-//! Conversation archive — ingest Claude Code session transcripts into a
-//! full-text-searchable archive and the brain knowledge graph.
+//! The conversation archive: Claude Code session transcripts kept in a full-text index
+//! and as pages in the brain.
 //!
 //! Claude Code writes every session as a JSONL transcript at
-//! `~/.claude/projects/<cwd-slug>/<session_id>.jsonl`. Rusty's own tables only
-//! keep lossy GUI summaries (prompt + final answer), so terminal sessions — and
-//! the full turn-by-turn dialogue — were never captured. A thought shared in a
-//! terminal session (e.g. an article idea) could be lost forever.
-//!
-//! This module closes that gap. [`ConversationArchive::ingest`] parses a
+//! `~/.claude/projects/<cwd-slug>/<session_id>.jsonl` and prunes old ones. Nothing is
+//! read until `rusty-cli ingest-conversation` asks: [`ConversationArchive::ingest`] parses a
 //! transcript, stores the dialogue text in the `conversation_archive_fts` FTS5
 //! index (durable recall that survives the `.jsonl` being pruned), records
-//! metadata in `conversation_archive`, and creates a `conversation` brain page —
-//! a graph node that summarizes the session, points back to the transcript, and
-//! `[[links]]` to related entities already in the brain.
+//! metadata in `conversation_archive`, and creates a `conversation` brain page that
+//! summarizes the session, points back to the transcript, and links to related pages
+//! already in the brain.
 
 use crate::brain::{enrichment, BrainManager};
 use crate::engine::db::Database;

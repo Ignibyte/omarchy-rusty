@@ -1,8 +1,8 @@
 # The brain loop: Ask, Decide, Follow up
 
-*Decided on 2026-09-03. The aim: an agent always consults the brain before a decision and
-keeps it current after, a workflow like plan, code, test, document, but for decisions and
-on the MCP layer: Ask, Decide, Follow up.*
+The aim: an agent consults the brain before a decision and keeps it current after. Plan,
+code, test and document is the loop for code; Ask, Decide and Follow up is the same idea
+for decisions, on the MCP layer.
 
 ## The shape
 
@@ -20,10 +20,10 @@ on the MCP layer: Ask, Decide, Follow up.*
 - **Follow up.** `brain_follow_up(slug, outcome, status, successor, follow_up_by)` appends a
   dated Follow-up section, sets the status (`kept` clears the date, `revised` takes a new
   one, `superseded` needs the successor), and adds a timeline entry. `brain_due(days)`
-  lists what is due; the Decisions view and `/brief` show it. A follow-up also records
+  lists what is due, and the `morning-brief` seed skill reads it. A follow-up also records
   its day as `followed_up`, and every summary carries it and `superseded_by`.
-- **No decision.** `brain_no_decision(consultation, reason)` marks the outcome. It is the
-  honest exit the Stop hook accepts.
+- **No decision.** `brain_no_decision(consultation, reason)` marks the outcome, and the
+  Stop hook accepts it like a decision.
 - **Dates.** Every date the loop writes (`decided`, the Follow-up heading, timeline
   entries) and every comparison it makes is the machine's local day from
   `frontmatter::today_iso`. A decision is overdue when `follow_up_by` is
@@ -41,7 +41,7 @@ on the MCP layer: Ask, Decide, Follow up.*
    after any write lets the stop through. Scoped to a working directory whose `.mcp.json`
    names a rusty server. No jq, no transcript, an unreadable one: fail open.
 3. **The Stop rule refuses once.** `stop_hook_active` marks the second attempt, which
-   passes. The honest way out is `brain_no_decision` with the reason.
+   passes. A session with nothing to decide records `brain_no_decision` with the reason.
 4. **One decision page per question.** A topic's history is the decisions linked to its
    page, each of which left a timeline entry there.
 5. **Only `brain_ask` counts as consultation**, since it is the call that records the
@@ -50,10 +50,11 @@ on the MCP layer: Ask, Decide, Follow up.*
    frontmatter become `brain_graph` edges of kind `consulted`, `supersedes` and
    `follows_up` at graph time; the vault stays the truth and the index rebuildable.
 
-## Limits, on purpose
+## Limits
 
-- A write through a shell command is not a Write tool use; the hooks do not see it, and
-  neither hook pretends to. Mining decisions out of archived transcripts is a later ticket.
+- The hooks see Claude Code's file tools (Write, Edit, MultiEdit, NotebookEdit), not a
+  file written by a shell command.
+- Decisions are not mined from archived transcripts; that is not built.
 - Sessions not wired to Rusty are untouched.
 - Nothing leaves the machine: the loop is the vault, the database and the transcript on
   disk.

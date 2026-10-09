@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# PreToolUse on Edit and Write: a gated path may only change inside a pipeline that has
-# reached Phase 3 (Implement) or later, or under a waiver. Docs and planning files are
-# always writable, because that is how a pipeline advances. In a clone without the work
-# record (docs/planning is the maintainers' private checkout) there is no pipeline to
-# enforce, and the gate's receipt at commit is what applies.
+# PreToolUse on Edit, Write and MultiEdit: a gated path (rusty_gated_paths in
+# bin/lib-gate.sh) may only change inside a pipeline that has reached Phase 3 (Implement)
+# or later, or under a waiver. Every other path is always writable; the record's own files
+# are how a pipeline advances. In a clone without the work record (docs/planning is the
+# maintainers' private checkout) there is no pipeline to enforce, and the gate's receipt
+# at commit is what applies.
 set -Eeuo pipefail
 HOOK_INPUT=$(cat)
 command -v jq >/dev/null 2>&1 || exit 0

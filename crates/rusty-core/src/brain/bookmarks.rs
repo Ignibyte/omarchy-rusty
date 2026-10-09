@@ -1,7 +1,6 @@
 //! Bookmarks: the user's saved files, folders, searches and headings, kept in a file in
-//! the vault that git tracks, `.rusty/bookmarks.json` (TICKET-037). The file and folder
-//! bookmarks are the favourites (TICKET-013). Before this they lived in the Qt app's
-//! window state, where no other client could read them.
+//! the vault that git tracks, `.rusty/bookmarks.json`, so every client reads the same
+//! list. The file and folder bookmarks are the favourites.
 
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +13,7 @@ pub const FILE: &str = ".rusty/bookmarks.json";
 /// The kinds a bookmark may be.
 pub const KINDS: &[&str] = &["file", "folder", "search", "heading"];
 
-/// One bookmark, in the shape the app has always kept: `path` (a slug for a file or
+/// One bookmark: `path` (a slug for a file or
 /// heading, a vault path for a folder) for all but a search, `query` for a search,
 /// `heading` for a heading. Empty fields are left out of the file.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]

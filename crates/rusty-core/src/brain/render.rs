@@ -1,12 +1,13 @@
-//! Obsidian-flavoured markdown rendered to the HTML subset Qt's rich text engine
-//! understands, so the app shows a page the way Obsidian's reading view does: wikilinks
-//! with aliases and headings, page and image embeds, callouts, task lists, tables,
-//! footnotes, highlights, tags, hidden comments, fenced code. One renderer serves the
-//! app, the CLI and anything that wants HTML; it needs no Qt to test.
+//! Obsidian-flavoured markdown rendered to HTML the way Obsidian's reading view shows it:
+//! wikilinks with aliases and headings, page and image embeds, callouts, task lists,
+//! tables, footnotes, highlights, tags, hidden comments, fenced code. `brain_render`
+//! returns it to any client that wants HTML; a client that draws its own widgets asks for
+//! the typed blocks in [`super::blocks`] instead.
 //!
-//! Colours and fonts are inlined from a [`Style`] because rich text has no stylesheet.
-//! Links carry the `rusty:` scheme (`rusty:page/<slug>`, `rusty:new/<name>`,
-//! `rusty:task/<n>`, `rusty:tag/<tag>`), which the app routes.
+//! The HTML is a conservative subset with colours and fonts inlined from a [`Style`] and
+//! no stylesheet, so it also suits rich-text engines such as Qt's. Links carry the
+//! `rusty:` scheme (`rusty:page/<slug>`, `rusty:new/<name>`, `rusty:task/<n>`,
+//! `rusty:tag/<tag>`) for the client to route.
 
 use std::collections::HashMap;
 
@@ -17,7 +18,7 @@ use super::frontmatter::split_raw;
 use super::links::normalise_target;
 
 /// The colours and fonts the HTML is written with. Every field has a default, so a
-/// partial JSON object (what the app sends) fills the rest.
+/// partial JSON object (what a client sends) fills the rest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Style {
@@ -201,7 +202,8 @@ pub struct Rendered {
     pub links: Vec<LinkOut>,
     /// Distinct targets that resolved to no page.
     pub unresolved: Vec<String>,
-    /// Task items (`- [ ]`, `- [x]`) in order; the app toggles them by index.
+    /// Task items (`- [ ]`, `- [x]`) in order, outside fenced code; `rusty:task/<n>` numbers
+    /// them the same way, so a client can toggle the n-th item in the source.
     pub tasks: usize,
     /// Words in the body.
     pub words: usize,
@@ -333,7 +335,8 @@ pub fn strip_comments(body: &str) -> String {
     out
 }
 
-/// Written before every top-level heading in the HTML; the app splits on it.
+/// Written before every top-level heading in the HTML, so a client can split the page at
+/// its headings.
 pub const HEADING_MARK: &str = "<!--h-->";
 
 /// The markers a callout head is rewritten with before parsing, so `[!kind]` reaches
@@ -772,8 +775,8 @@ impl<'a> Writer<'a> {
                     && self.items.is_empty()
                     && !self.in_footnote
                 {
-                    // A marker the app splits the reading view on, so the outline can
-                    // scroll to a heading.
+                    // A marker a client can split the page on, so an outline can scroll
+                    // to a heading.
                     self.push(HEADING_MARK);
                 }
                 self.push(&format!(

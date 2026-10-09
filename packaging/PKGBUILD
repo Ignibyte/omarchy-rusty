@@ -1,8 +1,8 @@
 # Maintainer: Chad Peppers <chad@ignibyte.com>
-# Rusty: a local-first AI personal assistant for Omarchy. Builds the MCP back end, the CLI
-# and the `rusty` command from the main branch. Not yet submitted to the AUR.
+# Rusty, a local-first memory and knowledge store for AI agents, from the main branch: the
+# MCP back end, the CLI and the `rusty` command. Not yet submitted to the AUR.
 pkgname=rusty-git
-pkgver=r25.d5c4186
+pkgver=r1.ed9e139
 pkgrel=1
 pkgdesc="Local-first memory and knowledge store for AI agents: an MCP server over a markdown vault, tasks, memories and skills, with a CLI"
 arch=('x86_64')
@@ -54,5 +54,6 @@ package() {
   install -Dm644 omarchy/wayland-wm-oom.conf "$pkgdir/usr/share/rusty/wayland-wm-oom.conf"
   install -Dm644 omarchy/mcp-config.json "$pkgdir/usr/share/rusty/mcp-config.json"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 THIRD_PARTY_NOTICES.md "$pkgdir/usr/share/licenses/$pkgname/THIRD_PARTY_NOTICES.md"
   install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
 }

@@ -1,11 +1,11 @@
-//! Secrets vault: a sourceable `.env`-style key/value file.
+//! The secrets file: a sourceable `.env`-style key/value file.
 //!
 //! Each secret is a `KEY=VALUE` line. Values are single-quoted on write so the
 //! file stays `source`-able from a shell, and comment (`#`) / blank lines are
 //! preserved across edits. Default location: `~/.rusty/.secret`.
 //!
-//! This is localhost-only data — the web server it backs is bound to loopback —
-//! but values are still written with `0600` permissions.
+//! The file is written with `0600` permissions. The PIN in [`crate::engine::pin_lock`]
+//! guards the tools that reveal or change a value, not the file.
 
 use crate::engine::db::Database;
 use std::path::{Path, PathBuf};
@@ -58,8 +58,8 @@ impl SecretsManager {
 
     /// Read a single secret's value, or `None` if the key isn't set.
     ///
-    /// Reads through to the file rather than caching, so a value changed in the
-    /// GUI (or by editing `.secret` directly) takes effect on the next call.
+    /// Reads through to the file rather than caching, so a value changed by another process
+    /// (or by editing `.secret` directly) takes effect on the next call.
     pub fn get(&self, key: &str) -> Option<String> {
         self.list()
             .ok()?

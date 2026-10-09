@@ -4,29 +4,31 @@ A local-first memory and knowledge store for AI agents, built for
 [Omarchy](https://omarchy.org). Rusty runs on your machine as an MCP server and keeps your
 to-do lists, memories, notes, skills, secrets and a markdown knowledge vault in one place
 that Claude Code, Codex and any other MCP client can read and write. Nothing leaves the
-machine unless you turn on a setting that sends it.
+machine unless you set it up to.
 
 - **A brain you can open in any editor.** The vault is a folder of markdown with
   frontmatter and `[[wikilinks]]`, versioned with git, indexed in SQLite for full-text
   search, and optionally embedded for semantic search with a local Ollama model. Obsidian
   opens it as a vault.
 - **90 MCP tools** over stdio for agents and Streamable HTTP for long-running clients:
-  pages, links, tags, a graph, decisions with follow-ups, tasks, memories, notes, skills,
-  scripts, sources, settings and secrets.
+  pages, links, tags, a graph, decisions with follow-ups, to-do lists, memories, notes,
+  skills, scripts, sources, settings, secrets and a conversation archive.
 - **A terminal CLI** (`rusty-cli`) for the same store, and a small `rusty` command that
   starts the back end and runs your store scripts.
 
 **Status: 0.1.0, an early release.** It runs on Linux with systemd user services and is
-built and used daily on Omarchy (Arch, Hyprland). Expect rough edges and say what you hit.
+built and used daily on Omarchy (Arch, Hyprland). Expect rough edges, and please
+[open an issue](https://github.com/Ignibyte/omarchy-rusty/issues) for what you hit.
 
 ## Install
 
-You need `git`, `curl` and a systemd user session on x86_64 Linux. Optional:
-[Ollama](https://ollama.com) for semantic search, `pdftotext` (poppler) for capturing PDFs.
+You need x86_64 Linux with a systemd user session, `git` and `curl`. Optional:
+[Ollama](https://ollama.com) for semantic search, `pdftotext` (poppler) for capturing
+PDFs, and `jq` for the brain loop's Claude Code hooks.
 
-From a release (no Rust toolchain needed): download `rusty-<version>-x86_64-linux.tar.gz`
-from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases), check it
-against its `.sha256`, unpack it and run the installer inside:
+From a release, with no Rust toolchain: download `rusty-<version>-x86_64-linux.tar.gz`
+and its `.sha256` from the [releases page](https://github.com/Ignibyte/omarchy-rusty/releases),
+then:
 
 ```bash
 sha256sum -c rusty-0.1.0-x86_64-linux.tar.gz.sha256
@@ -34,7 +36,8 @@ tar xzf rusty-0.1.0-x86_64-linux.tar.gz
 rusty-0.1.0-x86_64-linux/omarchy/install.sh
 ```
 
-From source, with a Rust toolchain (stable):
+From source, with a stable Rust toolchain and a C compiler (SQLite, `ring` and
+`sqlite-vec` build C code):
 
 ```bash
 git clone https://github.com/Ignibyte/omarchy-rusty.git
@@ -45,16 +48,18 @@ omarchy/install.sh
 The installer puts `rusty-mcp`, `rusty-cli` and `rusty` in `~/.local/bin` (built with
 cargo from a checkout, copied from a release), installs the user service
 `rusty-mcp.service` (Streamable HTTP on `127.0.0.1:4174/mcp`), starts it and checks it
-answers. Run it again to upgrade; every step is idempotent. `omarchy/README.md` covers the
-service and two optional protections for low-memory machines. `packaging/` holds Arch
-packages: `rusty-git` from the main branch and `rusty-bin` from a release.
+answers. On its first start Rusty creates `~/.rusty/` with an empty vault, a skills store
+holding four seed skills, and the database. `omarchy/README.md` covers the service and two
+optional protections for low-memory machines; `packaging/` holds two Arch packages.
 
-On first start Rusty creates `~/.rusty/` with an empty vault, a skills store holding a
-few seed skills, and the database.
+**Upgrading** is the same command with a newer release or a pulled checkout. It restarts
+the service, so HTTP clients reconnect; an agent's own `rusty-mcp` keeps the old build
+until the agent restarts. Database migrations run when a program opens the store, and
+they only add. Run `rusty-cli export` first if you want a copy to go back to.
 
 ## Connect an agent
 
-Claude Code, for every project with `claude mcp add`, or per project in `.mcp.json`:
+Claude Code, for every project or per project in `.mcp.json`:
 
 ```bash
 claude mcp add --scope user rusty -- rusty-mcp
@@ -71,211 +76,184 @@ Codex, in `~/.codex/config.toml`:
 command = "rusty-mcp"
 ```
 
+Each agent starts its own `rusty-mcp` over stdio; every copy works on the same store. If
+the agent does not have `~/.local/bin` on its `PATH`, give the full path as the command.
 Any other MCP client can use the service over Streamable HTTP at
-`http://127.0.0.1:4174/mcp`; `omarchy/mcp-config.json` has both forms. Marley, a Zed fork,
-draws a knowledge workspace (pages, graph, tasks, decisions, memory, skills, secrets) over
-that endpoint.
+`http://127.0.0.1:4174/mcp`; `omarchy/mcp-config.json` has both forms.
+[Marley](https://github.com/Ignibyte/marley_ide), a Zed fork, draws a knowledge workspace
+(pages, graph, to-do lists, decisions, memories, skills, secrets) over that endpoint.
 
-## Use it from a terminal
+The store's skills live in `~/.rusty/skills/.claude/skills/`. Any agent reads them with
+`skill_list` and `skill_view`. Claude Code loads them as its own skills for a session
+started with `claude --add-dir ~/.rusty/skills`, or in every session for a skill you link
+into `~/.claude/skills/` (`ln -s ~/.rusty/skills/.claude/skills/<name> ~/.claude/skills/`).
+
+## First steps from a terminal
 
 ```bash
-rusty session start                  # start the back end's service; `status` checks it
-rusty-cli brain search "release plan"
+rusty session status                 # is the back end running and answering?
 rusty-cli brain new concept "Release plan"
+rusty-cli brain search "release plan"
 rusty-cli brain capture "call the bank about the card" --to inbox
 rusty-cli brain due                  # decisions due for a follow-up
 rusty-cli --help                     # everything else
 ```
 
+## Documentation
+
+| Read | For |
+|---|---|
+| [docs/tools.md](docs/tools.md) | every MCP tool with its parameters, and the `rusty://` resources |
+| [docs/cli.md](docs/cli.md) | `rusty-cli` and `rusty`, command by command |
+| [docs/configuration.md](docs/configuration.md) | the store's layout, settings, secrets, environment variables, the service, semantic search setup |
+| [docs/architecture.md](docs/architecture.md) | how the crates and the store fit together |
+| [docs/architecture/brain-loop.md](docs/architecture/brain-loop.md) | ask, decide, follow up |
+| [SECURITY.md](SECURITY.md) | what Rusty trusts, and how to report a vulnerability |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | proposing a change |
+| [CHANGELOG.md](CHANGELOG.md), [ROADMAP.md](ROADMAP.md) | what changed, what comes next |
+
 ## Where your data lives
 
-| Path | What |
-|---|---|
-| `~/.rusty/rusty.db` | SQLite: tasks, memories, settings, the change log, and the vault's search index (rebuildable from the files) |
-| `~/.rusty/brain/` | the vault: markdown pages, a git repository |
-| `~/.rusty/skills/` | the skills store (`.claude/skills/<name>/SKILL.md`), a git repository |
-| `~/.rusty/.secret` | the secrets file, plain text, mode 600 |
-| `~/.rusty/.pin` | the PIN's argon2id hash, when you set one |
-
-The vault and skills paths can move with the `brain_vault_path` and `skills_path`
-settings; notes live in the vault's `notes/` folder unless `notes_path` says otherwise.
+Everything is under `~/.rusty`: `rusty.db` (SQLite: to-do lists, memories, settings, the
+change log, the conversation archive, and the vault's search index), `brain/` (the vault,
+a git repository), `skills/` (the skills store, a git repository), `.secret` (plain text,
+mode 600) and `.pin` (the PIN's hash, once you set one).
+[docs/configuration.md](docs/configuration.md) has the full layout and the settings that
+move the vault, the notes or the skills store elsewhere.
 
 ## What leaves the machine
 
-Nothing, by default. Three things can reach the network, each because you asked:
+Nothing, by default. These can reach the network, each because you set it up:
 
-- **Embeddings.** `embedding_provider` is `auto`: Ollama on this machine when it answers,
-  otherwise none. Set it to `openai` with a key in the secrets file and page text goes to
-  OpenAI; Rusty never picks that by itself.
-- **Sources.** `source_capture` (and `rusty-cli source capture`) fetches the URL you give it.
+- **Embeddings.** `embedding_provider` is `auto`: Ollama at `ollama_url` (this machine by
+  default) when it answers, otherwise none. Page text goes wherever `ollama_url` points,
+  so keep it on a machine you trust. Set the provider to `openai` with a key in the secrets
+  file and page text goes to OpenAI; Rusty never picks that by itself.
+- **Sources.** `source_capture` (and `rusty-cli source capture`) fetches the URL it is
+  given.
 - **Your agents.** What an agent reads from Rusty goes to that agent's model; that is the
   agent's traffic, not Rusty's.
 
-The vault and skills store commit to their own local git repositories and push nowhere.
+The vault and the skills store commit to their own local git repositories and push
+nowhere.
 
 ## Moving to another machine
 
 One zip carries the whole store: the database (a consistent snapshot, taken while the
-server runs), the brain vault and the skills store with their git history, and a notes
-folder kept outside the vault.
+server runs), the vault and the skills store with their git history, and a notes folder
+kept outside the vault. On the old machine:
 
 ```bash
 rusty-cli export ~/rusty-backup.zip                     # secrets left out
 rusty-cli export ~/rusty-backup.zip --include-secrets   # the secrets file and the PIN too
 ```
 
-The zip is readable by its owner only. With `--include-secrets` it holds the secrets file
-in the clear, so keep it as carefully as the machine itself. Symbolic links and git's lock
-files are left out, and the export says so.
+The zip is readable by you alone and is not encrypted: with `--include-secrets` it holds
+your secrets in the clear. Symbolic links and git's lock files are left out, and the
+export says so.
 
-On the other machine, stop the back end first (an import refuses while a `rusty-mcp` holds
-the store open), then:
+On the new machine, install Rusty, then stop everything that holds the store open (the
+service, and any agent or editor running its own `rusty-mcp`) and import over the fresh
+store the installer created:
 
 ```bash
+systemctl --user stop rusty-mcp
 rusty-cli import ~/rusty-backup.zip --dry-run    # what is inside and what would happen
-rusty-cli import ~/rusty-backup.zip              # into an empty ~/.rusty
-rusty-cli import ~/rusty-backup.zip --replace    # an existing ~/.rusty moves aside, whole
+rusty-cli import ~/rusty-backup.zip --replace
 systemctl --user start rusty-mcp
 ```
 
 The import checks every entry before it writes anything, builds the store beside
-`~/.rusty` and renames it into place; with `--replace` the old home becomes
-`~/.rusty.before-import-<time>`, never deleted, and its Claude Code hook scripts come
-across. Path settings that named the old machine's folders are rewritten for the new
-layout. Merging two stores is not supported.
+`~/.rusty` and renames it into place. `--replace` moves the existing store aside as
+`~/.rusty.before-import-<time>`, whole, and carries its Claude Code hook scripts across;
+nothing is deleted. Path settings that named the old machine's folders are rewritten.
+Merging two stores is not supported.
 
-## Semantic search
+## The brain
 
-`brain_search` merges full-text hits with nearest neighbours from `sqlite-vec` when an
-embedding provider is configured; without one it stays full-text and nothing else changes.
-The settings (`setting_set`): `embedding_provider` is `auto` (the default: Ollama when it
-answers on this machine), `ollama`, `openai`, or `off`; `embedding_model` overrides the
-provider's default (`nomic-embed-text`, `text-embedding-3-small`); `ollama_url` defaults
-to `http://127.0.0.1:11434`. OpenAI needs `openai_api_key` (or `OPENAI_API_KEY`) in the
-secrets vault and sends page text to OpenAI, so it is never picked by itself. The server
-embeds new and changed pages a few seconds after they change; `rusty-cli brain embed
---all` or the `brain_reembed` tool rebuilds, and `rusty-cli brain semantic` shows the
-state. Changing the provider or model rebuilds the index, because vectors from different
-models do not compare.
+Pages are markdown files with YAML frontmatter, in folders by type (`people/`,
+`projects/`, `concepts/`, `decisions/`, `sources/`, …) or any folder you make. A file
+without frontmatter is a page too: its title is the file name and its type comes from its
+folder, or `note`. Wikilinks are vault paths (`[[projects/orbit]]`), and a page's history
+is its `## Timeline` section. Deletes are soft: the page moves to `archive/`. Rusty commits
+every change it makes, and the running server indexes and commits files another program
+changes (Obsidian, an editor, git) a few seconds after they change.
 
-## Notes
-
-Notes are markdown files in the vault under `notes/`, so search, links, the graph and the
-semantic index cover them like any page (a file there is a page of type
-`note`). The notes tools (`list_notes`, `read_note`, `write_note`, `create_note`,
-`rename_note`, `delete_note`) work on that folder, or on the folder the `notes_path`
-setting names.
-
-## Scripts as commands
-
-A `*.sh` file beside a skill in the store is a command: `rusty snapshot` runs
-`backup/snapshot.sh` from any terminal, with its arguments (the `rusty` command checks its
-own nouns, then the store, and hands the process to `rusty-cli scripts run`, which
-resolves the name and execs the script). A script is named by its basename without the
-suffix; `skill/name` picks one when two skills share a name. A script inside a pending
-skill does not run until the skill is approved, and the safety scan that reads a skill
-reads a script's text too. Every write commits the store. The binary's own nouns come
-first: `rusty session start|status` is built in, a script named `session` is shadowed, and
-a bare word or a flag that is neither a noun nor a script prints the usage and exits 2.
-
-```bash
-rusty-cli scripts list [--all]
-rusty-cli scripts new snapshot --skill backup      # a script without --skill gets a skill of its name
-rusty-cli scripts view|path|edit|rm snapshot
-rusty-cli scripts run snapshot [args...]
-rusty snapshot [args...]
-```
-
-The tools `script_list`, `script_view`, `script_update` and `script_run` (approved
-scripts only; status, stdout and stderr, cut after sixty seconds) serve agents. Both the
-dispatch and the CLI read `RUSTY_SKILLS` when it is set, so the script `rusty <name>` finds
-is the script that runs; after that the CLI honours the `skills_path` setting, while the bare
-`rusty <name>` dispatch, which has no database open yet, looks in `~/.rusty/skills`. A
-store moved with `skills_path` is reached through `rusty-cli scripts run`.
-
-The store is a git repository. Every skill and script write commits it before it
-returns, from the CLI or over MCP (`skill_create`, `skill_update`, `skill_delete`,
-`skill_approve`, `skill_reject`, `script_update`), with a subject naming the change
-(`skills: add`, `skills: stage`, `skills: approve`, and so on); a commit that fails
-leaves the change for the next one and never fails the write.
+Search is full text with operators (`tag:`, `path:`, `file:`, `type:`, quoted values, `-`
+to exclude), plus vectors when an embedding provider is set
+([docs/configuration.md](docs/configuration.md#semantic-search) shows the Ollama setup).
+Notes are the pages in the vault's `notes/` folder, and the notes tools work on that
+folder. Obsidian opens the vault as it is; its per-machine `.obsidian/` state stays out of
+the vault's history. An existing Obsidian vault comes in with
+`rusty-cli brain import <vault>` (`--dry-run` first): pages keep their paths, nothing in
+the brain is overwritten, and a report page lists what happened.
 
 ## The brain loop
 
-Ask, Decide, Follow up. Before a decision an agent calls `brain_ask` with the question:
-the answer is the pages that touch it (text, and vectors when a provider is set), the
-decisions already taken on the topic with their status, the follow-ups due, and a
-consultation id. `brain_decide` records the decision as a page under `decisions/` with the
-question, the choice, the rationale, the alternatives, a link to every consulted page (each
-of which gets a timeline entry) and a `follow_up_by` date; `supersedes` names the decision
-it replaces. When the date comes (`brain_due`, or the `morning-brief` seed skill),
-`brain_follow_up` appends the outcome and sets the status to kept, revised or superseded.
-`brain_no_decision` records that a consultation led nowhere, with the reason.
-`brain_graph` returns a decision's typed edges (consulted, supersedes, follows up) on
-request.
+Ask, decide, follow up. Before a decision an agent calls `brain_ask` with the question and
+gets the pages that touch it, the decisions already taken on the topic, the follow-ups
+due, and a consultation id. `brain_decide` records the decision as a page under
+`decisions/` linked to every page it rested on, with a `follow_up_by` date. When the date
+comes (`brain_due`, or the `morning-brief` seed skill), `brain_follow_up` records how it
+went. `brain_no_decision` records a consultation that led nowhere.
 
-Two Claude Code hooks make the first two steps happen in a repository wired to Rusty (a
-`.mcp.json` naming a `rusty` server): the first file write waits for a `brain_ask` that
-did not fail, and a session that wrote files is refused its stop once until a
-`brain_decide` or a `brain_no_decision` is in its transcript. They read the transcript,
-fail open when they cannot, and ship inside `rusty-cli`:
+Two optional Claude Code hooks hold a session to the first two steps:
+`rusty-cli hooks install` writes them to `~/.rusty/hooks/` and adds them to
+`~/.claude/settings.json`. They act only when the session's directory has a `.mcp.json`
+naming a server called `rusty` (a server added with `claude mcp add --scope user` alone
+does not count), and they need `jq`. The first file write is blocked until the session
+has called `brain_ask`; a session that wrote files is refused its first stop until it
+records a decision or `brain_no_decision`. They read the transcript and step aside when
+they cannot. [docs/architecture/brain-loop.md](docs/architecture/brain-loop.md) has the
+design.
 
-```bash
-rusty-cli hooks install      # ~/.rusty/hooks/*.sh, wired into ~/.claude/settings.json
-rusty-cli hooks status
-rusty-cli hooks uninstall
-rusty-cli brain ask "should the index move off SQLite"
-rusty-cli brain decide <id> --title "Keep SQLite" --choice "..." --rationale "..." --follow-up-by 2026-10-01
-rusty-cli brain follow-up decisions/keep-sqlite --status kept --outcome "..."
-rusty-cli brain due --days 7
-```
+## Skills and scripts
 
-The seed skill `ask-decide-follow-up` carries the loop for agents.
+A skill is a `SKILL.md` in the store. One created with `skill_create` or
+`rusty-cli skills new` is active at once; with `pending: true` it waits in `staging/`
+until someone approves it, and approval runs the safety scan first (`force` skips it).
+`skill_scan` scans any skill on demand. A `*.sh` file beside a skill is a script: run it
+as `rusty <name>` from a terminal, `rusty-cli scripts run`, or `script_run` (a script in a
+staged skill does not run). Every skill and script change commits the store.
+
+Any client that can reach the server can write a skill or a script and run an approved
+script as you; see [SECURITY.md](SECURITY.md).
 
 ## Secrets
 
-Keys for providers and services live in `~/.rusty/.secret`, mode 600. A client lists
-names; a value is written once. Behind a PIN the back end keeps (an argon2id hash in
-`~/.rusty/.pin`, mode 600), a client reveals one value at a time and edits it in place; the
-unlock lasts `pin_timeout_minutes` (five by default) and ends on `secret_lock` and when the
-back end restarts; five wrong PINs in a row lock it for a minute. The PIN protects the
-screen, not the file: the back
-end reads the file headless for the embeddings key, and an agent with a shell reads it
-regardless. Never type the PIN to an agent. The tools behind it are `secret_pin_status`,
-`secret_pin_set`, `secret_unlock`, `secret_lock`, `secret_reveal` and `secret_update`;
-`secret_list` stays name-only, and no tool returns a value without a live unlock token.
-Once a PIN is set, `secret_set` and `secret_delete` need that token too; with none set they
-need nothing. A token is good only on the server process that issued it.
-`settings_list` and `setting_get` show a setting whose key names a key, token, secret or
-password as `•••`, and `setting_set` refuses that mask written back; credentials a client
-must read belong in the vault.
+Keys for providers and services live in `~/.rusty/.secret`, mode 600; the tools list
+names, never values. Set a PIN with `secret_pin_set` to read and change values through
+the tools: `secret_unlock` returns a token that lasts `pin_timeout_minutes` (five by
+default) on that server process, and `secret_reveal` and `secret_update` need it, as do
+`secret_set` and `secret_delete` once a PIN exists. Five wrong PINs in a row lock unlocking
+for a minute. The PIN guards the tools, not the file: anything running as your user can
+read it. Never type the PIN to an agent. A setting whose key names a key, token, secret or
+password reads back as `•••`; credentials belong in the secrets file.
 
-## Vault tools
+## Conversations
 
-The tools an editor of the vault uses, Marley's workspace and agents alike: `brain_tree`
-(the folders and files), `brain_render` (a page as rich text, with its outline, links,
-unresolved targets, counts, properties and raw file), `brain_write_page` (the whole file,
-as an editor saves), `brain_new_page`, `brain_new_folder`, `brain_delete_folder` (soft,
-into `archive/`), `brain_rename` (page or folder, every link rewritten, index rows moved),
-`brain_unresolved`, `brain_tags` (every tag with its count), `brain_set_property` and
-`brain_remove_property` (one frontmatter key, typed), and `brain_graph` (pages and links
-as nodes and edges, tags and unresolved targets on request, or one page's neighbourhood).
-A vault file without frontmatter is a page too: its title is the file name and its type
-comes from its top folder (`people/` is `person`), or `note`. The server also indexes
-files changed by another program (Obsidian, an editor, git) a few seconds after they
-change.
+`rusty-cli ingest-conversation <transcript or session id>` keeps a Claude Code session:
+the dialogue goes into a full-text archive and a `conversation` page goes into the brain,
+linked to related pages. Nothing is read until you run it. `search_conversations` and
+`rusty-cli conversations search` search the archive.
 
-## Obsidian
+## Troubleshooting
 
-The brain folder is a plain Obsidian vault, and Obsidian opens it; Rusty's tools are where
-agents read and write it, and `brain_get_links`, `brain_unresolved` and `brain_rename`
-answer for links and renames. Obsidian's per-machine state in `.obsidian/` stays out of
-the vault's git history. An existing Obsidian vault comes in with `rusty-cli brain import
-<vault>` (`--dry-run` first): pages keep their paths, nothing is overwritten, and a report
-page lists what happened.
-
-Two vault rules keep the two writers agreeing. A page's timeline is its `## Timeline` section,
-and wikilinks are vault paths (`[[projects/orbit]]`). `rusty-cli brain migrate --dry-run` shows what
-an older vault would change; without the flag it rewrites the pages, reindexes, and commits.
+- **Is it running?** `rusty session status`, then `journalctl --user -u rusty-mcp -e`.
+- **An agent cannot start `rusty-mcp`.** Its `PATH` lacks `~/.local/bin`; use the full
+  path in its MCP config.
+- **Port 4174 is taken.** Change `--http` in the unit's `ExecStart`, then
+  `systemctl --user daemon-reload` and restart it.
+- **A client does not see a change another process made.** Each server tells its own
+  clients about its writes and about file changes it notices; a change another process
+  made only in the database (a to-do, a memory) shows up through `changes_since`. After
+  writing the database by hand, run `rusty-cli refresh`.
+- **Semantic search is off.** `rusty-cli brain semantic` shows the provider and the index;
+  with Ollama, run `ollama pull nomic-embed-text` and `rusty-cli brain embed --all`.
+- **The brain loop's hooks do nothing.** `rusty-cli hooks status`, then check for `jq` and
+  a `.mcp.json` naming `rusty` in the project.
+- **An import is refused.** Stop the service and every agent's `rusty-mcp`; add
+  `--replace` when the target already holds a store.
 
 ## Uninstall
 
@@ -294,16 +272,16 @@ folder when you are sure.
 ```bash
 cargo build
 cargo test
-bin/gate.sh --diff      # fmt, clippy (warnings as errors), tests, docs, shell and secrets checks
+bin/gate.sh --diff      # fmt, clippy (warnings as errors), tests, docs, shell, secrets, whitespace
 ```
 
-Run cargo commands one at a time. `CONTRIBUTING.md` says how to propose a change;
-`docs/architecture.md` describes the shape, and `openwiki/` is the generated engineering
-wiki. The repository also carries the agent workflow its maintainers use
-(`CONSTITUTION.md`, `AGENTS.md`, `.claude/`); a contributor's clone runs the gate and CI
-without it.
+Run cargo commands one at a time. [CONTRIBUTING.md](CONTRIBUTING.md) says how to propose a
+change, and `openwiki/` is the generated engineering wiki. The maintainers' agent workflow
+(`CONSTITUTION.md`, `AGENTS.md`, `.claude/`) is in the repository too; a contributor
+follows the "Without `docs/planning`" section of `AGENTS.md`.
 
 ## License
 
-MIT. The bundled `no-ai-slop` skill text is vendored from
-[petergyang/no-ai-slop](https://github.com/petergyang/no-ai-slop) (MIT).
+MIT; see `LICENSE`. The seed skill `no-ai-slop` is condensed from
+[petergyang/no-ai-slop](https://github.com/petergyang/no-ai-slop) (MIT); its notice is in
+`THIRD_PARTY_NOTICES.md`.

@@ -21,54 +21,70 @@ use std::path::PathBuf;
 use std::process::exit;
 use std::sync::Arc;
 
-const USAGE: &str = "rusty-cli — terminal access to Rusty's brain\n\
-\n\
-USAGE:\n\
-  rusty-cli brain search <query...> [--limit N] [--type TYPE]\n\
-  rusty-cli brain context <prompt...>\n\
-  rusty-cli brain read <slug>\n\
-  rusty-cli brain new <type> <title...> [--content <text>]\n\
-  rusty-cli brain append <slug> <summary...> [--detail <text>]\n\
-  rusty-cli brain set <slug> <content...>   (replace the page body / compiled truth)\n\
-  rusty-cli brain capture <text...> [--to daily|inbox] [--date YYYY-MM-DD]\n\
-  rusty-cli brain daily [--date YYYY-MM-DD]   (open or create the daily page)\n\
-  rusty-cli brain types                       (page types, folders, counts)\n\
-  rusty-cli brain migrate [--dry-run]         (timeline sections + vault-path links)\n\
-  rusty-cli brain import <vault> [--dry-run]  (bring an Obsidian vault in: pages, attachments, bookmarks; a report under inbox/)\n\
-  rusty-cli source capture <url>              (keep a web page, PDF or file as a source page under sources/)\n\
-  rusty-cli source search <query...> [--limit N]\n\
-  rusty-cli brain reindex\n\
-  rusty-cli brain embed [--all]               (vectors for stale pages, or every page)\n\
-  rusty-cli brain semantic                    (embedding provider and index state)\n\
-  rusty-cli brain stats\n\
-  rusty-cli notes path                        (the notes folder the tools use)\n\
-  rusty-cli notes adopt [--dry-run]           (move an older notes folder into the vault, once)\n\
-  rusty-cli hooks install|uninstall|status    (the brain loop's Claude Code hooks, in ~/.claude/settings.json)\n\
-  rusty-cli scripts list [--all]              (store scripts: a *.sh beside a skill is the command `rusty <name>`)\n\
-  rusty-cli scripts view|path|edit|rm <name>  (name, or skill/name when two skills share one)\n\
-  rusty-cli scripts new <name> [--skill S] [--body TEXT] [--force]\n\
-  rusty-cli scripts run <name> [args...]      (an approved script, in place of this process)\n\
-  rusty-cli brain ask <question>              (the brain loop: pages, decisions and follow-ups, a consultation id)\n\
-  rusty-cli brain decide <id> --title T --choice C --rationale R [--alt A]... [--follow-up-by DATE] [--supersedes SLUG]\n\
-  rusty-cli brain follow-up <slug> --status kept|revised|superseded --outcome O [--successor SLUG] [--follow-up-by DATE]\n\
-  rusty-cli brain no-decision <id> <reason>   (the honest way out of the loop)\n\
-  rusty-cli brain due [--days N]              (follow-ups due today and overdue, or within N days)\n\
-  rusty-cli skills list [--all]\n\
-  rusty-cli skills view <name>\n\
-  rusty-cli skills new <name> [--desc <text>] [--body <text>] [--force]\n\
-  rusty-cli skills rm <name>\n\
-  rusty-cli skills path\n\
-  rusty-cli skills review                 (list pending skills + safety-scan findings)\n\
-  rusty-cli skills approve <name> [--force]\n\
-  rusty-cli skills reject <name>\n\
-  rusty-cli ingest-conversation <path|session-id>   (archive a Claude Code transcript + brain node)\n\
-  rusty-cli ingest-conversation --all [--dir <path>] [--limit N]   (backfill a project's transcripts)\n\
-  rusty-cli conversations search <query...> [--limit N]\n\
-  rusty-cli changes [--since <cursor>] [--limit N]   (what changed, from any process)\n\
-  rusty-cli bookmarks [add|rm <path or search:query>]  (the vault's bookmarks)\n\
-  rusty-cli refresh   (tell running clients the data changed, after a raw write)\n\
-  rusty-cli export <file.zip> [--include-secrets]   (the whole store in one zip; secrets only when asked)\n\
-  rusty-cli import <file.zip> [--replace] [--dry-run]   (unpack an export into ~/.rusty; --replace moves an existing store aside)";
+const USAGE: &str = r#"rusty-cli: terminal access to Rusty's store
+
+USAGE:
+
+Brain pages
+  rusty-cli brain search <query...> [--limit N] [--type TYPE]
+  rusty-cli brain read <slug>
+  rusty-cli brain new <type> <title...> [--content <text>]
+  rusty-cli brain set <slug> <content...>      (replace the page body)
+  rusty-cli brain append <slug> <summary...> [--detail <text>]   (add a timeline entry)
+  rusty-cli brain capture <text...> [--to daily|inbox] [--date YYYY-MM-DD]
+  rusty-cli brain daily [--date YYYY-MM-DD]    (open or create the daily page)
+  rusty-cli brain context <prompt...>          (the pages that best match a prompt, as one block)
+  rusty-cli brain types                        (page types, folders, counts)
+  rusty-cli brain stats
+  rusty-cli bookmarks [add|rm <path or search:query>]   (the vault's bookmarks)
+
+Brain upkeep
+  rusty-cli brain reindex
+  rusty-cli brain embed [--all]                (vectors for stale pages, or every page)
+  rusty-cli brain semantic                     (embedding provider and index state)
+  rusty-cli brain migrate [--dry-run]          (timeline sections and vault-path links)
+  rusty-cli brain import <vault> [--dry-run]   (an Obsidian vault: pages, attachments, bookmarks; a report under inbox/)
+
+The brain loop
+  rusty-cli brain ask <question>               (pages, decisions, follow-ups due, and a consultation id)
+  rusty-cli brain decide <id> --title T --choice C --rationale R [--alt A]... [--follow-up-by DATE] [--supersedes SLUG]
+  rusty-cli brain follow-up <slug> --status kept|revised|superseded --outcome O [--successor SLUG] [--follow-up-by DATE]
+  rusty-cli brain no-decision <id> <reason>    (a consultation that led to no decision)
+  rusty-cli brain due [--days N]               (follow-ups due today and overdue, or within N days)
+  rusty-cli hooks install|uninstall|status     (the loop's Claude Code hooks, in ~/.claude/settings.json)
+
+Sources
+  rusty-cli source capture <url>               (keep a web page, PDF or text from a URL as a page under sources/)
+  rusty-cli source search <query...> [--limit N]
+
+Notes
+  rusty-cli notes path                         (the notes folder the tools use)
+  rusty-cli notes adopt [--dry-run]            (move a notes folder kept outside the vault into it, once)
+
+Skills and scripts
+  rusty-cli skills list [--all]
+  rusty-cli skills view <name>
+  rusty-cli skills new <name> [--desc <text>] [--body <text>] [--force]
+  rusty-cli skills rm <name>
+  rusty-cli skills path
+  rusty-cli skills review                      (pending skills and their safety-scan findings)
+  rusty-cli skills approve <name> [--force]
+  rusty-cli skills reject <name>
+  rusty-cli scripts list [--all]               (a *.sh beside a skill is the command `rusty <name>`)
+  rusty-cli scripts view|path|edit|rm <name>   (name, or skill/name when two skills share one)
+  rusty-cli scripts new <name> [--skill S] [--body TEXT] [--force]
+  rusty-cli scripts run <name> [args...]       (an approved script, in place of this process)
+
+Conversations
+  rusty-cli ingest-conversation <path|session-id>   (keep a Claude Code transcript: searchable text and a brain page)
+  rusty-cli ingest-conversation --all [--dir <path>] [--limit N]   (every transcript in this directory's Claude Code project)
+  rusty-cli conversations search <query...> [--limit N]
+
+The store
+  rusty-cli changes [--since <cursor>] [--limit N]   (what changed, from any process)
+  rusty-cli refresh                            (tell running clients the data changed, after a raw write)
+  rusty-cli export <file.zip> [--include-secrets]   (the whole store in one zip; secrets only when asked)
+  rusty-cli import <file.zip> [--replace] [--dry-run]   (unpack an export into ~/.rusty; --replace moves an existing store aside)"#;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -253,7 +269,7 @@ fn run_notes(sub: &str, rest: &[String]) {
     }
 }
 
-/// The embedding provider the settings and the secrets vault point at, if any.
+/// The embedding provider the settings and the secrets file point at, if any.
 fn configured_embedder() -> Option<std::sync::Arc<dyn semantic::Embedder>> {
     let db = Arc::new(Database::open().unwrap_or_else(|e| fail(&format!("open database: {e}"))));
     let settings = SettingsManager::new(Arc::clone(&db));
@@ -1460,7 +1476,26 @@ fn run_hooks(sub: Option<&str>) {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse, parse_with_bools};
+    use super::{parse, parse_with_bools, USAGE};
+
+    /// `docs/cli.md` shows every command line of the usage text exactly as `--help` prints
+    /// it, so the reference cannot fall behind the CLI.
+    #[test]
+    fn the_cli_reference_lists_every_usage_line() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/cli.md");
+        let doc = std::fs::read_to_string(&path).unwrap();
+        for line in USAGE
+            .lines()
+            .map(str::trim)
+            .filter(|l| l.starts_with("rusty-cli "))
+        {
+            let command = line.split("  (").next().unwrap().trim_end();
+            assert!(
+                doc.contains(command),
+                "docs/cli.md does not show `{command}`"
+            );
+        }
+    }
 
     fn argv(parts: &[&str]) -> Vec<String> {
         parts.iter().map(|s| s.to_string()).collect()

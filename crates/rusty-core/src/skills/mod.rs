@@ -1,25 +1,22 @@
-//! Agent Skills — reusable, self-improving procedures Rusty exposes to Claude Code.
-//!
-//! Rusty drives the Claude Code CLI as a subprocess, which natively supports
-//! [Agent Skills](https://code.claude.com/docs/en/skills): `SKILL.md` files that
-//! Claude discovers, lazily loads, and invokes via its built-in `Skill` tool. Rather
-//! than reimplement discovery/invocation, Rusty *rides* that mechanism — it owns
-//! authoring, governance, and surfacing, while Claude Code owns loading and invocation.
+//! Agent Skills: the `SKILL.md` procedures Rusty keeps for agents. Rusty owns authoring,
+//! staging, the safety scan and history; the agent loads and runs them.
+//! [Agent Skills](https://code.claude.com/docs/en/skills) are files Claude Code discovers
+//! under `.claude/skills/` in a directory it is given, so the store keeps its active skills
+//! at exactly that path. Any agent can also read them through `skill_list` and
+//! `skill_view`.
 //!
 //! ## On-disk layout
 //!
 //! ```text
-//! ~/.rusty/skills/                 # the `skills_path` setting; passed via `--add-dir`
-//! ├── .claude/skills/<name>/SKILL.md   # ACTIVE skills (the only discoverable location)
-//! ├── staging/<name>/SKILL.md          # PENDING auto-authored skills (NOT discoverable)
-//! └── .git/                            # version history (auto-commit, added in a later feature)
+//! ~/.rusty/skills/                     # the `skills_path` setting, or `RUSTY_SKILLS`
+//! ├── .claude/skills/<name>/SKILL.md   # active skills: the path Claude Code discovers
+//! ├── staging/<name>/SKILL.md          # pending skills, waiting for approval
+//! └── .git/                            # history; every write commits
 //! ```
 //!
-//! The `.claude/skills/` nesting is deliberate: it is exactly the path Claude Code
-//! discovers inside a directory added with `--add-dir`. Granting `--add-dir` the
-//! *root* (`~/.rusty/skills`) — not the whole `~/.rusty` — scopes the subprocess's
-//! native file tools to skills only (the database `~/.rusty/rusty.db` is a sibling,
-//! outside the grant). Note `--add-dir` grants read **and write** to that dir.
+//! `claude --add-dir ~/.rusty/skills` hands Claude Code the store root and no more: the
+//! database `~/.rusty/rusty.db` is a sibling, outside the grant, and staged skills are not
+//! discovered. `--add-dir` grants read and write to that folder.
 //!
 //! The read API ([`SkillsManager::list`], [`SkillsManager::get`], [`Skill`],
 //! [`parse_skill_md`], …) backs the CLI and the MCP tools; [`bootstrap`] makes the store
@@ -57,10 +54,11 @@ description: >-
   (brain_follow_up). Use before any change of direction, design choice or tool pick.
 ---
 
-Rusty's brain holds facts; this loop adds the reasoning. Two hooks make the first two
-steps happen in a repository wired to Rusty (a `.mcp.json` with a `rusty` server): the
-first file write waits for a `brain_ask`, and a session that wrote files cannot stop
-without a `brain_decide` or a `brain_no_decision`.
+Rusty's brain holds facts; this loop adds the reasoning. Two optional Claude Code hooks
+(`rusty-cli hooks install`) hold a session to the first two steps when its directory has a
+`.mcp.json` naming a `rusty` server: the first file write is blocked until the session has
+called `brain_ask`, and a session that wrote files is refused its first attempt to stop
+until it records a `brain_decide` or a `brain_no_decision`.
 
 ## Ask
 
@@ -79,11 +77,12 @@ to every consulted page, and each of those pages gets a timeline entry. To repla
 earlier decision, pass its slug as `supersedes`.
 
 When the consultation led to no decision, say so: `brain_no_decision` with the reason.
-That is the honest exit, and the Stop hook accepts it.
+The Stop hook accepts that too.
 
 ## Follow up
 
-When the date comes (`brain_due`, the Decisions view, `/brief`), call
+When the date comes (`brain_due` lists what is due, and the `morning-brief` skill reads
+it), call
 `brain_follow_up` with the slug, the outcome and a status: `kept` (clears the date),
 `revised` (a new `follow_up_by`), or `superseded` (with the successor's slug).
 
@@ -159,10 +158,9 @@ has anything, and one or two suggested focuses. Don't pad it.
 
 /// Seed: strip AI-slop patterns from prose without flattening the writer's voice.
 ///
-/// Vendored from <https://github.com/petergyang/no-ai-slop> (MIT, Peter Yang), condensed
-/// into one self-contained file — seeds ship as a single `SKILL.md`, so the upstream
-/// `eval.md` checklist is inlined here. The repo copy at `.claude/skills/no-ai-slop/`
-/// keeps the full upstream text; update both together.
+/// Vendored from <https://github.com/petergyang/no-ai-slop> (MIT, Peter Yang; the notice
+/// is in `THIRD_PARTY_NOTICES.md`), condensed into one file because a seed ships as a single
+/// `SKILL.md`: the upstream `eval.md` checklist is inlined here.
 const SEED_NO_AI_SLOP: &str = r#"---
 name: no-ai-slop
 description: >-

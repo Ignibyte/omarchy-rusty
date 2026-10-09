@@ -5,13 +5,14 @@ idempotent.
 
 | File | Purpose |
 |---|---|
-| `install.sh` | release builds of the three binaries into `~/.local/bin` (`rusty-mcp`, `rusty-cli`, and `rusty`, the command), the back end's user service, and the pointers below |
+| `install.sh` | the three binaries into `~/.local/bin` (`rusty-mcp`, `rusty-cli`, and `rusty`, the command: built with cargo from a checkout, copied from a release's `bin/`), the back end's user service, and the two memory-pressure steps below printed for you to apply |
 | `rusty-mcp.service` | the back end over Streamable HTTP on localhost, wanted by `default.target`, restarted after any exit but a stop |
 | `wayland-wm-oom.conf` | a drop-in for uwsm's compositor unit so Hyprland is the last of the session to go under memory pressure; pointed at, never applied |
 | `mcp-config.json` | the `mcpServers` entries for Claude Code and Codex (stdio) and for HTTP clients |
 
-Rusty has no window of its own. Marley, a Zed fork, draws a knowledge workspace over the
-back end's HTTP endpoint, and agents start their own `rusty-mcp` over stdio.
+Rusty has no window of its own. [Marley](https://github.com/Ignibyte/marley_ide), a Zed
+fork, draws a knowledge workspace over the back end's HTTP endpoint, and agents start
+their own `rusty-mcp` over stdio.
 
 ## The back end
 
@@ -20,8 +21,7 @@ it runs whether or not a desktop is up, and `Restart=always` brings it back afte
 except `systemctl --user stop`: a session teardown and earlyoom both send SIGTERM, which
 `on-failure` would have treated as clean.
 
-`rusty session` is the way in from a terminal (an early `rusty-session` script did this
-before, and the installer removes a stale copy). `start` starts the unit, which does
+`rusty session` is the way in from a terminal. `start` starts the unit, which does
 nothing when it runs already, and prints the status; `status` reads the unit and posts an
 `initialize` to the port. Every other bare word is a store script or an error; `rusty
 help`, or `rusty` alone, lists the nouns.
@@ -48,8 +48,9 @@ Neither is applied by `install.sh`: one is another program's unit, the other nee
    systemctl --user daemon-reload      # takes effect at the next login
    ```
 
-2. earlyoom's avoid list, root. In `/etc/default/earlyoom`, add `Hyprland` and
-   `rusty-mcp` to the `--avoid` pattern, then `sudo systemctl restart earlyoom`:
+2. If you run earlyoom: its avoid list, as root. In `/etc/default/earlyoom`, add
+   `Hyprland` and `rusty-mcp` to the `--avoid` pattern, then
+   `sudo systemctl restart earlyoom`:
 
    ```
    EARLYOOM_ARGS="-r 3600 --avoid '(^|/)(systemd|systemd-logind|dbus-daemon|dbus-broker|Hyprland|rusty-mcp)$'"

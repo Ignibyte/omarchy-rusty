@@ -1,7 +1,6 @@
-//! `rusty <noun> <verb>`: the commands the `rusty` binary answers (TICKET-029; out of
-//! the Qt binary since TICKET-038). The first noun is `session`, the back end under its
-//! user unit (`omarchy/rusty-mcp.service`); the Qt app it also started retired with
-//! TICKET-053. Built-in nouns come before store scripts (TICKET-010).
+//! `rusty <noun> <verb>`: the commands the `rusty` binary answers. The first noun is
+//! `session`, the back end under its systemd user unit (`omarchy/rusty-mcp.service`).
+//! Built-in nouns come before store scripts.
 
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};

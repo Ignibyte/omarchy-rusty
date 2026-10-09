@@ -13,6 +13,7 @@ optdepends=('ollama: local embeddings for semantic search'
             'poppler: capture PDFs as sources')
 provides=('rusty')
 conflicts=('rusty' 'rusty-git')
+install=rusty-bin.install
 source=("https://github.com/Ignibyte/omarchy-rusty/releases/download/v$pkgver/rusty-$pkgver-x86_64-linux.tar.gz")
 sha256sums=('SKIP')
 
@@ -27,6 +28,7 @@ package() {
   install -Dm644 omarchy/wayland-wm-oom.conf "$pkgdir/usr/share/rusty/wayland-wm-oom.conf"
   install -Dm644 omarchy/mcp-config.json "$pkgdir/usr/share/rusty/mcp-config.json"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 THIRD_PARTY_NOTICES.md "$pkgdir/usr/share/licenses/$pkgname/THIRD_PARTY_NOTICES.md"
   install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
   install -Dm644 CHANGELOG.md "$pkgdir/usr/share/doc/$pkgname/CHANGELOG.md"
 }

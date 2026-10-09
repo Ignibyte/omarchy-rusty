@@ -14,17 +14,23 @@ What Rusty is for, what 0.1.0 holds, and what comes next. The shape is in
   two optional Claude Code hooks that make an agent ask before it writes and record what
   it decided.
 - To-do lists, memories, notes, settings, and secrets behind a PIN.
-- A skills store whose `*.sh` files are commands (`rusty <name>`), with staging and a
-  safety scan before a skill is approved.
-- Sources: a web page, PDF or file kept as a page, marked untrusted when an agent reads it.
-- An Obsidian vault import; bookmarks in the vault; a change log any client can follow.
+- A skills store whose `*.sh` files are commands (`rusty <name>`), with optional staging
+  and a safety scan before a staged skill is approved.
+- Sources: a web page, PDF or text fetched from a URL and kept as a page, marked untrusted
+  when an agent reads it.
+- An Obsidian vault import; bookmarks in the vault; a feed of every change in the store
+  (`changes_since`).
+- A conversation archive of Claude Code transcripts.
 - `rusty-mcp` (90 tools, stdio and Streamable HTTP), `rusty-cli`, `rusty`, a systemd user
   service and an installer.
 - `rusty-cli export` and `import`: a whole store in one zip.
 
 ## Next
 
-- An Arch package on the AUR, and prebuilt binaries on each release.
+- `rusty-bin` and `rusty-git` on the AUR.
+- A `rusty-cli settings` command, so a terminal can change settings without an agent.
+- Staging by default for skills an agent writes, so nothing an agent authors runs before
+  you approve it.
 - An encrypted export, so a backup can carry the secrets safely.
 - An export tool over MCP for clients such as Marley, without the secrets.
 - Tiered context for agents: an abstract, an overview and the details per page and
@@ -39,12 +45,13 @@ What Rusty is for, what 0.1.0 holds, and what comes next. The shape is in
 - **Files are the truth for knowledge.** The vault is a folder of markdown any tool can
   open, and SQLite holds an index that can be rebuilt from it. Tasks, memories and
   settings live in the database, and an export carries them.
-- **One back end.** `rusty-mcp` serves every client: agents over stdio, long-running
-  clients over local HTTP. No web UI, no REST layer, no second protocol.
+- **One back end.** `rusty-mcp` serves every MCP client: agents over stdio, long-running
+  clients over local HTTP; `rusty-cli` uses the same managers in-process. No web UI, no
+  REST layer, no second protocol.
 - **Linux with systemd, at home on Omarchy.** The service and the installer need a systemd
   user session; nothing else assumes a desktop.
-- **The same gates on every change.** rustfmt, clippy with warnings as errors, the tests,
-  the docs build.
+- **The same gate on every change.** `bin/gate.sh --diff`, locally and in CI: rustfmt,
+  clippy with warnings as errors, the tests, the docs build, shell syntax, a secrets scan.
 
 ## Non-goals
 

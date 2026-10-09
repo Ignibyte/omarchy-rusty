@@ -13,7 +13,7 @@ sources:
     resource: repo://crates/rusty-core/src/skills/mod.rs
   - id: openwiki-source-5725b482ae3caf2b45126fc1
     resource: repo://crates/rusty-core/src/transfer.rs
-generated: {by: "claude-code", at: "2026-10-09T17:39:34.627Z"}
+generated: {by: "claude-code", at: "2026-10-09T18:25:07.825Z"}
 verified:
   - by: openwiki/0.3.3
     at: 2026-10-09T17:42:25.313Z
@@ -79,7 +79,10 @@ is recreated, and anything else under the home is not the store.
 ## Failure modes
 
 - A failure while unpacking removes the staging folder and leaves the home as it was.
-- Merging two stores is not supported; an import replaces or refuses.
+- Merging two stores is not supported; an import replaces or refuses. A machine where
+  Rusty has started once already holds a store (the installer starts the service, which
+  creates one), so moving to a new machine means stopping the service and the agents'
+  servers, then `import --replace`, which moves the fresh store aside.
 - The zip is not encrypted; `--include-secrets` puts the secrets file in it in the clear.
 
 ## Tests

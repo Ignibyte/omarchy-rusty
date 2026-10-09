@@ -1,6 +1,6 @@
-//! Rusty core: the manager layer behind the MCP server, the CLI and the desktop
-//! app. Tasks, notes, memories, the brain vault and its index, skills, secrets and
-//! settings live here. Nothing in this crate knows about a transport.
+//! Rusty core: the manager layer behind the MCP server and the CLI. To-do lists, notes,
+//! memories, the brain vault and its index, skills, secrets and settings, the change log
+//! and export and import live here. Nothing in this crate knows about a transport.
 
 pub mod brain;
 mod core;

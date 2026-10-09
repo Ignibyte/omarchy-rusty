@@ -7,7 +7,7 @@ on:
 
 jobs:
   gates:
-    name: fmt, clippy, tests, docs
+    name: gate (fmt, clippy, tests, docs, shell, secrets, whitespace)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,9 +19,7 @@ jobs:
       - run: |
           git config --global user.name "Rusty CI"
           git config --global user.email "ci@rusty.invalid"
-      - run: cargo fmt --all --check
-      - run: cargo clippy --workspace --all-targets -- -D warnings
-      # Includes crates/rusty-mcp/tests/smoke.rs, which spawns the built server over
-      # stdio in a scratch HOME and drives it with the rmcp client.
-      - run: cargo test --workspace
-      - run: cargo doc --workspace --no-deps --document-private-items
+      # The same gate a maintainer runs: fmt, clippy with warnings as errors, the tests
+      # (crates/rusty-mcp/tests/smoke.rs drives the built server over stdio in a scratch
+      # HOME), docs with warnings as errors, shell syntax, a secrets scan, whitespace.
+      - run: bin/gate.sh --diff

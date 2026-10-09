@@ -227,7 +227,7 @@ pub fn report_page(report: &ImportReport, date: &str) -> String {
         })
         .collect();
     format!(
-        "---\ntitle: Import of {name}\ntype: note\n---\n\nImported from `{source}` on {date}: {pages} pages in {folders} folders, {attachments} attachments, {tags} tags, {links} links rewritten to vault paths, {bookmarks_n} bookmarks (the app adds them to Bookmarks). The source vault was read and not changed.\n\n## Pages\n\n{page_list}\n## Attachments\n\n{attachment_list}\n## Tags\n\n{tag_list}\n## Skipped\n\n{skipped_list}\n## Unresolved links\n\n{unresolved_list}\n## Bookmarks\n\n{bookmark_list}",
+        "---\ntitle: Import of {name}\ntype: note\n---\n\nImported from `{source}` on {date}: {pages} pages in {folders} folders, {attachments} attachments, {tags} tags, {links} links rewritten to vault paths, {bookmarks_n} bookmarks added to the vault's bookmarks. The source vault was read and not changed.\n\n## Pages\n\n{page_list}\n## Attachments\n\n{attachment_list}\n## Tags\n\n{tag_list}\n## Skipped\n\n{skipped_list}\n## Unresolved links\n\n{unresolved_list}\n## Bookmarks\n\n{bookmark_list}",
         name = p.name,
         source = p.source,
         pages = report.imported_pages,

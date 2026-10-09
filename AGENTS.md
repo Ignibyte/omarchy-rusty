@@ -1,89 +1,115 @@
 # Rusty: agent guide
 
-Read [CONSTITUTION.md](CONSTITUTION.md) before changing this repository. It is binding.
+The guide for anyone changing this repository, agent or person. Codex reads this file;
+Claude Code reads it through `CLAUDE.md`. [CONSTITUTION.md](CONSTITUTION.md) holds the
+binding rules.
 
 ## Product
 
-Rusty is a local-first AI personal assistant for Omarchy:
+Rusty is a local-first memory and knowledge store for AI agents on Omarchy:
 
-- `crates/rusty-core`: the managers (tasks, notes, memories, brain vault and index,
-  semantic index, skills, secrets, settings, events, watcher).
-- `crates/rusty-mcp`: the back end, an MCP server (90 tools, resources, notifications)
-  over stdio for agents and Streamable HTTP for Marley and other HTTP clients.
-- `crates/rusty-cli`: terminal access to the same store.
-- `crates/rusty-cmd`: the `rusty` command: `rusty session` (the back end's unit) and
-  store scripts.
-- Rusty has no window of its own: Marley, a Zed fork, draws a knowledge workspace over
-  `rusty-mcp`. New UI work belongs there; what a front end needs from Rusty is a tool.
-- `docs/architecture.md`: the standing shape. `ROADMAP.md`: the product list.
+- `crates/rusty-core`: the managers (to-do lists, notes, memories, the brain vault and its
+  SQLite index, semantic search, skills and scripts, secrets and the PIN, settings, the
+  change log, the file watcher, export and import).
+- `crates/rusty-mcp`: the MCP server, 90 tools plus resources and change notifications,
+  over stdio for agents and Streamable HTTP for front ends.
+- `crates/rusty-cli`: the terminal client. It runs the same managers in-process.
+- `crates/rusty-cmd`: the `rusty` command: `rusty session start|status` for the back end's
+  systemd user service, and store scripts as `rusty <name>`.
 
-## Work routing
+Rusty has no window. [Marley](https://github.com/Ignibyte/marley_ide), a Zed fork, draws a
+knowledge workspace over `rusty-mcp`; when a front end needs something from Rusty, the
+answer is a new tool. `docs/architecture.md` shows how the crates and the store fit
+together, `docs/tools.md`, `docs/cli.md` and `docs/configuration.md` are the references,
+and `ROADMAP.md` lists what 0.1.0 holds and what comes next.
 
-The work record (`docs/planning/`: tickets, pipelines, AARs, the knowledge register,
-bulletins, intakes) is the maintainers' private checkout of its own, ignored by this
-repository. In a clone without it, skip the record's steps below: make the change, run
-`bin/gate.sh --diff`, and open a pull request; CI runs the same gate.
+## Without `docs/planning` (contributors)
 
-- Non-trivial feature, fix, migration or workflow changes use the repository skill
-  `rusty-workflow` (`.claude/skills/rusty-workflow/SKILL.md`). Read it and its
-  `references/phases.md` before touching files.
-- Product exploration that should not produce code goes into
-  `docs/planning/intake/` from `docs/planning/_templates/intake.md`.
+The maintainers keep a work record (tickets, specs, after-action reviews, a knowledge
+register) in a private checkout at `docs/planning/`, which this repository ignores. In a
+clone without it, follow this section and skip every step further down that names
+`docs/planning`:
+
+1. Read the code you will change, `openwiki/quickstart.md`, the wiki page for that
+   subsystem, and `docs/architecture.md`.
+2. Make the change with its tests. Tests use a scratch directory or `HOME`, never a real
+   store.
+3. Run `bin/gate.sh --diff` until it prints `GATE GREEN [diff]`.
+4. Open a pull request. CI runs the same gate.
+
+Do not create `docs/planning/` or anything in it, a waiver included: the hooks take that
+folder for the record and start enforcing the pipeline. Under Claude Code two hooks still
+apply. A commit that carries gated files (the list is `rusty_gated_paths` in
+`bin/lib-gate.sh`) needs a gate receipt for that exact tree and `HEAD`, so run
+`bin/gate.sh --diff` again after every change; and a write that looks like a credential is
+refused. You do not need the MCP servers in `.mcp.json`, and you do not update `openwiki/`;
+the maintainers reconcile it.
+
+## With the record (maintainers)
+
+- Non-trivial features, fixes, migrations and workflow changes run through the
+  `rusty-workflow` skill (`.claude/skills/rusty-workflow/SKILL.md`). Read it and its
+  `references/phases.md` before touching files. The pipeline:
+
+  ```
+  recall → plan → design → implement → inspect → validate → complete → delivery
+  ```
+
+- Product exploration that should not produce code is an intake in
+  `docs/planning/intake/`, from `docs/planning/_templates/intake.md`.
 - Read-only questions and diagnosis are answered directly.
-- A user may waive the ceremony for a small change: write the reason to
-  `docs/planning/pipeline/WAIVER.md`, report it at handoff, delete it after. Quality,
-  tests, secrets and receipt rules still apply.
-- One active spec/notes pair at a time.
-- Commit and push only when the user has authorized delivery. A standing authorization,
-  where one exists, is a bulletin in the record.
+- A maintainer may waive the ceremony for a small change: the reason goes in
+  `docs/planning/pipeline/WAIVER.md`, is reported at handoff, and the file is deleted
+  after. Quality, tests, secrets and receipt rules still apply.
+- At most one active spec/notes pair.
+- Commit and push only when the maintainer has authorized delivery. A standing
+  authorization, where one exists, is a bulletin in the record.
 
-The pipeline:
-
-```
-recall → plan → design → implement → inspect → validate → complete → delivery
-```
-
-## Quality commands
-
-```bash
-bin/gate.sh --fast     # fmt, clippy, test; no receipt
-bin/gate.sh --diff     # the delivery gate; green writes .git/rusty-gate-receipt
-bin/gate.sh --verify   # does the receipt match this worktree
-omarchy/install.sh     # rebuild and reinstall the binaries and the service on Omarchy
-```
-
-Run cargo commands one at a time. Never kill a running cargo.
-
-## Local knowledge
-
-Before designing or implementing:
+Before designing or implementing, recall:
 
 1. `docs/planning/bulletins/INDEX.md`, then `docs/planning/knowledge/INDEX.md` for `PR-`,
    `BF-` and `AD-` entries that touch the work.
 2. The nearest notes under `docs/planning/pipeline/completed/`.
-3. `openwiki/quickstart.md` and the wiki pages the work touches (the generated
-   engineering documentation), then `docs/architecture.md` and `docs/architecture/*.md`.
-4. The brain: `brain_search` and `brain_context` through the `rusty` MCP server, which
-   holds this project's pages and lessons.
-5. CodeGraph for the Rust symbols, callers and blast radius; QML and shell by reading.
+3. `openwiki/quickstart.md` and the wiki pages the work touches, then
+   `docs/architecture.md` and `docs/architecture/*.md`.
+4. The maintainer's brain through the `rusty` MCP server: `brain_search`, and `brain_ask`
+   before a decision.
+5. CodeGraph for Rust symbols, callers and blast radius; shell scripts by reading.
 
-At complete, reconcile the wiki through the `openwiki` skill (its `openwiki_finish` must
-return `complete`), then record lessons in the AAR, the knowledge register, and the
-brain.
+At complete, update the docs first, then reconcile the wiki through the OpenWiki skill
+(`.claude/skills/openwiki/SKILL.md`; `openwiki_finish` must return `complete`), then record
+the lessons in the AAR, the knowledge register and the brain.
 
-## Tools
+## Quality commands
 
-- `.mcp.json` wires the `rusty` server, CodeGraph and OpenWiki for Claude Code;
-  `.codex/config.toml` does the same for Codex. `scripts/setup-pipeline-tools.sh`
-  installs CodeGraph and OpenWiki pinned and project-local under `.dev/` (ignored);
-  `scripts/codegraph.sh` is CodeGraph's CLI wrapper, `scripts/mcp-openwiki.sh` OpenWiki's
-  server. OpenWiki is used only through its MCP lifecycle (the host agent writes the
-  pages; nothing is sent to a provider).
-- Hooks in `.claude/settings.json` refuse: edits to gated paths outside an
-  implementing pipeline (or a waiver), writes that contain something that looks like a
-  secret, `git commit` without a matching gate receipt, and delivery of a completed
-  pipeline without a matching OpenWiki completion receipt; a PostToolUse hook writes
-  that receipt when `openwiki_finish` returns `complete`.
+```bash
+bin/gate.sh --fast     # fmt, clippy, tests; no receipt
+bin/gate.sh --diff     # also docs, shell syntax, secrets, whitespace; green writes .git/rusty-gate-receipt
+bin/gate.sh --verify   # does the receipt match this worktree
+omarchy/install.sh     # build (or copy a release's) binaries, install and restart the service
+```
+
+Run cargo commands one at a time. Never kill a running cargo.
+
+## Tools and hosts
+
+- `.mcp.json` (Claude Code) and `.codex/config.toml` (Codex) wire three MCP servers:
+  `rusty` (needs `rusty-mcp` on `PATH`, which `omarchy/install.sh` provides), CodeGraph and
+  OpenWiki. `scripts/setup-pipeline-tools.sh` installs CodeGraph and OpenWiki pinned under
+  `.dev/` (ignored), and a `.git/hooks/pre-commit` that checks the receipts for every
+  committer. `scripts/codegraph.sh` is CodeGraph's CLI. OpenWiki runs only through its MCP
+  lifecycle: the agent writes the pages and nothing goes to a provider.
+- Claude Code runs the hooks in `.claude/settings.json` (`CLAUDE.md` lists them).
+- Codex runs none of them. Run `bin/gate.sh --diff` before each commit and keep the
+  pre-commit hook installed. After a real `openwiki_finish` that returned `complete`, a
+  maintainer records the OpenWiki receipt by handing that result to the hook script:
+
+  ```bash
+  echo '{"tool_name":"mcp__openwiki__openwiki_finish","tool_response":{"content":[{"type":"text","text":"{\"status\":\"complete\"}"}]}}' \
+    | bash .claude/hooks/record-pipeline-tool-use.sh
+  ```
+
+  The same command serves under Claude Code when its PostToolUse hook does not fire.
 
 <!-- OPENWIKI:START -->
 

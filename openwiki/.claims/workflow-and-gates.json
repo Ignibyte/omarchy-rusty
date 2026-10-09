@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:0620f4ed793718cd962fe0f14f1d6bbf8727bd8d2730432c73240a5b30465605",
+  "pageVersion": "sha256:29aba435448d5f57f0e03e2d19fcaa856034b476a0c355cfb2da1c97f16ad070",
   "claims": [
     {
       "id": "claim_ba5269afe6054bbbaef8c6effa948261",
@@ -85,12 +85,12 @@
           "version": "repo-lines-v1:sha256:348b67be6f560441caa73a88a98d19a7aa0026f11d019a9f2698619dc11ddecf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5ZDBiYTZjODI4M2Q0YmNiMzdjM2M2ZjVhOGZlODRlM2UxNDdmYTJjMjBjZjJhMDEyY2JiY2E5ZTM0MDMyN2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiZjEzYmRjODllZGJiMGI2NzE1MDY0NzA2ZTU0MzJmMjlhMjFmNDJlMTdmMGVmYjkyNWU0YmM3ZjE5MTk5OTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyMDE5N2ZkZWY2MmEzY2JmMjZhZGU4OGQxMTU0NzQ2MmIyMmQ4YWUzZDA5ZWM5YzEyOWVhNTA3NGMyNWY4NjgifQ"
         },
         {
-          "resource": "repo://.claude/hooks/enforce-phase-gate.sh#L14-L20",
-          "version": "repo-lines-v1:sha256:980fa2ae91e328e34519620eb817593b4a2094e36a9f090af5e3f4b7857cd310:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWRlODBmMzFmZjBlMGFiZTI5ZTFhZmE4YTQyZmJiYjI4NzQzZjFlZTQzYzEwNTlmNWZkMGU4M2VlMjgxNWY4MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzhmM2EzMDljYTZiMTZlYTA2MDkxZDExNDkwNjVhNjFhOGM3NjhhNzhhNGZlNjk2NmRhNGQwZTc0NjQxMDczMSJ9"
+          "resource": "repo://.claude/hooks/enforce-phase-gate.sh#L14-L22",
+          "version": "repo-lines-v1:sha256:11140e3c20cbbeaee7a7ab32dd70f74cffaff42c83aa0fbb70e1c664fc8f8937:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmI3Zjc2OWQ4MzU5YmFhZjIxNWNjN2Y3ZGU2Njg3ZjMyMDEzZjBiYjQ0ZDUyOTMxOTY1ZWExNzE5NDFiODM2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDk2NTllNTg1YzlkYmM3NmQ1MmVjNTIyYTBlNGNmZjM1ODFmYmE0YzExOTAxMjc0YWE5Y2UzNGYyMDAzNDJiYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDk5NTg3MWFmYTc4ODhjNjI4Y2IzYjY5MjQ4NjFkYmJjN2VhYTMxZWQxZTQ4ODRjOGJhZWJmM2RjOWFiZjU0YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmRhNjRhNjhkZTBiYzI3NjVlNDE3ZDJiMGE1YTk4NjM5NzFmNjNlZDM3NWM3MjJkY2JhZmQ0MWE1NGRlN2QzZiJ9"
         },
         {
-          "resource": "repo://scripts/check-pipeline.sh#L25-L39",
-          "version": "repo-lines-v1:sha256:39eeb30fee9296a3170f1d7004b131dec9c9b1a3b55810e40f6e79259788d150:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyYTdiNDA4YTdmOTc3NTM0ZWJkMzQ5YmI3ZDc1NDU4MDQ2YzE3NTQ5YjYzNzZkYTUxZGIxM2JhZDdlY2E3MGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMTdmYTAwNmJhOTIwODUwMGIyOTMwY2U2OWNiZGU0MzZjNjQ3YWZhOTE3Y2I3Mzk2YTliYzkxMTFhNDZkZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmY2ZiNTViYmUwMGYxZWY2ZGRmYTQ5ZTdkMTU4YTBjNmMwZjQ3ODk1YmNiMWE5ZjFjYmExNDUwYTVmODliMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJhYTc1NjJmODUzYzQzZjk4YjI0MjFjNTk0ZjlhNjRkZTdiOWQ4YjNlZDM2ODZjM2UwMzVkY2ZiMjg2OWE0NmEifQ"
+          "resource": "repo://scripts/check-pipeline.sh#L29-L33",
+          "version": "repo-lines-v1:sha256:f5d025441fb47b99ebb23f69485cdb09b2e5e56ef09746785908bc5816f3beeb:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjNjZDRkMWUyYTIwNGI5YTlmZmRjNmUyYzk5NTJlYTI3MGNhMThmZjM4MjQzYTc5OWFjMWE4YjhkNDlmNDgzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjZkN2M5NTljMDFlOGVhODc1NzE0NTYzOGI2ODU3YjY1MjMyNzg2NjFhNjk3MWEwYmM3MWQ2Y2IyZGQ5MmY2YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDViMzk3MzMzZmY1OWJiYjJjNWE5MTUwNjk5OTNjYWMxYmNkODdiZTExNzcyOWYwMDAzYzM3OTE5Nzc0MzRhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjAwNTBmMDM2MTBiMGE5Y2Y4MzM3NzE4YjM0NzQ2NTQ2MjQwNTNiZjgwMWNkZjMzODg5ZjllZjY1MTg4Y2U4NyJ9"
         }
       ]
     },
@@ -111,10 +111,38 @@
           "version": "repo-lines-v1:sha256:5bca110098c25b219235ecd5a8fed061a54fe55d4899512ef848ef1829aa2fe7:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODY2NWE0ZDkzMjI0NWM3MmRjYTE1YzMwNzhkNjRkOTdiNWY2MmU0YTg0NzZmNzJiZjQ0NjEwYTllMjkzNWY3YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWNlODAzNDQ0MzA4MTBlYWFiYzdlZTdmZTIzZWEyNThiYmE4YWI5MjUwMWEwNThkNzgwYzZiMGQ3MjkxMWQxOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWYzOGQzYTlkYjAyODM3MTM5YTY4ODMxMDk2ZmQ1MGVmZDRiOTM3OTc5NGJiNGU0OGQ0ZDE3YWU0ZjAwYWFmYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjVhNGJkNWNhMjgwMDU5NTRjOWE3OWFmOTkxN2UzODYxODRhY2FkODlmYWQyMmRlNjA0YzMyZTg4MGZiMzYyYyJ9"
         }
       ]
+    },
+    {
+      "id": "claim_5470aeac00294f01844f8a39df4a5df4",
+      "statement": "`scripts/check-pipeline.sh` fails unless `CLAUDE.md` starts with the line `@AGENTS.md`, so Claude Code and Codex read one guide; `CLAUDE.md` adds only the Claude Code hooks and skills.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check-pipeline.sh#L25-L27",
+          "version": "repo-lines-v1:sha256:57bbef17f742f90615c7a3245d080e2d4517e64c1ae9138e7b61cdddab209650:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQyNDM1NzEwZDMyN2JlY2M0YzcxYmJiZDNlOWY1ODMzNmY3YzZhMGUzNjNlMDE1MjliZTZmNjhhMzNiNzk4ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTU2YmU4MTVmMmU1ZTI2NTMzODNmNWZhNDIzMzdlMTNlNzc3M2IxYjUzMzgzZGViN2E0N2Y5NTUwNGZhM2MzNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWZjZmI1NWJiZTAwZjFlZjZkZGZhNDllN2QxNThhMGM2YzBmNDc4OTViY2IxYTlmMWNiYTE0NTBhNWY4OWIxNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2Y5M2U0MzIyZGMyNDZhOTlmODRkNDcwOTRmN2I3YTQxODJiNmJkZmUzMDdkMTQ1Mjc3MGEyZmIxNzhjZGQ3MiJ9"
+        },
+        {
+          "resource": "repo://CLAUDE.md",
+          "version": "repo-file-v1:sha256:f88d8cb0bbe44c950d4c36939bd9492649285f900fd70c419ef9adf1b9146ad9"
+        }
+      ]
+    },
+    {
+      "id": "claim_36185505436944739b55876ba1055e5a",
+      "statement": "The phase gate and the secrets hook run on Edit, Write and MultiEdit; the secrets hook reads `content`, `new_string` and every `edits[].new_string`, and refuses in a contributor's clone as well, since it does not consult the record.",
+      "evidence": [
+        {
+          "resource": "repo://.claude/settings.json",
+          "version": "repo-file-v1:sha256:e6695b1d918d194886dc02284919cbb21d2b7bf4b2bc30458a6ed2ee7af6af0e"
+        },
+        {
+          "resource": "repo://.claude/hooks/enforce-secrets.sh",
+          "version": "repo-file-v1:sha256:b4d0cff380c4a7d75ad158885ded131f15ff3c312560329f435eda5d5e5f7e77"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.3.3",
-    "at": "2026-10-09T16:52:40.059Z"
+    "at": "2026-10-09T18:25:07.825Z"
   }
 }
